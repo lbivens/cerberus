@@ -62,3 +62,6 @@
 
 (defn val-by-id [id]
   (.-value (by-id id)))
+
+(defn log [& parts]
+  (. js/console (log parts)))

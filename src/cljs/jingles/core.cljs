@@ -1,15 +1,49 @@
 (ns jingles.core
+  (:require-macros [cljs.core.async.macros :refer [go]]
+                   [cljs.core.match.macros :refer [match]])
   (:require [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]))
+            [cljs-http.client :as http]
+            [om.dom :as d :include-macros true]
+            [om-bootstrap.random :as r]
+            [om-bootstrap.button :as b]
+            [jingles.utils :refer [goto val-by-id by-id]]
+            [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]
+            [om-bootstrap.input :as i]))
 
-(defonce app-state (atom {:text "Hello Chestnut!"}))
+(set-state! :text "Hello Chestnut!")
+
+(defn login [app]
+  (let [path "/api/0.2.0/oauth/token"
+        login (fn []
+                ;; we need to use post because cljs-http does not allow empty replies :(
+                (go (let [response (<! (http/post path {:form-params
+                                                        {:grant_type "password"
+                                                         :username (val-by-id "login")
+                                                         :password (val-by-id "password")
+                                                    }}))]
+                      (if (= 200 (:status response))
+                        (let [e (js->clj (. js/JSON (parse (:body response))))
+                              token (e "access_token")]
+                          (swap! app-state assoc :account token)
+                          (goto "/")
+                          (set-state! :token token))))))]
+    (r/well
+     {:style {:max-width 400
+              :margin "300px auto 10px"}}
+     (d/form
+      nil
+      (i/input {:type "text" :placeholder "Login" :id "login"})
+      (i/input {:type "password" :placeholder "Password" :id "password"})
+      (b/button {:bs-style "primary"
+                 :on-click login} "Login")))))
 
 (defn main []
   (om/root
-    (fn [app owner]
-      (reify
-        om/IRender
-        (render [_]
-          (dom/h1 nil (:text app)))))
-    app-state
-    {:target (. js/document (getElementById "app"))}))
+   (fn [app owner]
+     (om/component
+      (if (:token app)
+        (d/h1 nil (:text app))
+        (do (goto)
+            (login app)))))
+   app-state
+   {:target (by-id "app")}))

@@ -1,6 +1,6 @@
 (ns jingles.state)
 
-(def app-state (atom {:view :root}))
+(def app-state (atom {:view :root :list []}))
 (def app-alerts (atom {}))
 (def breadcrumbs (atom []))
 (def token (atom))

@@ -7,6 +7,7 @@
             [om.dom :as d :include-macros true]
             [om-bootstrap.random :as r]
             [om-bootstrap.button :as b]
+            [jingles.list :as jlist]
             [jingles.utils :refer [goto log val-by-id by-id]]
             [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]
             [om-bootstrap.input :as i]))
@@ -45,9 +46,11 @@
      (om/component
       (if (:token app)
         (do (go (let [resp (<! (http/get "/api/0.2.0/vms" {"x-full-list" "true"}))]
-                  (pr  (:body resp))
-                  (set-state! :list (str (:body resp)))))
-            (d/h1 nil (str (:text app))))
+                  (set-state! :list (js->clj (:body resp)))))
+            (d/div #js{}
+                   (d/h1 nil (str (:text app)))
+                   (jlist/tbl [{:title "uuid" :key :uuid}
+                               {:title "alias" :key [:config :alias]} ] (:list app))))
         (do (goto)
             (login app)))))
    app-state

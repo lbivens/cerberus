@@ -46,11 +46,9 @@
     elements))
 
 (defn sort-and-paginate [config state]
-  (do
-    (pr (:sort state))
-    (if-let [sort (:sort state)]
-         (paginate (do-sort (:list state) sort) config state)
-         (paginate (:list state) config state))))
+  (if-let [sort (:sort state)]
+    (paginate (do-sort (:list state) sort) config state)
+    (paginate (:list state) config state)))
 
 (def flip-order {:asc :desc
                  :desc :asc})

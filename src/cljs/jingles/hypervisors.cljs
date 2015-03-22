@@ -1,22 +1,32 @@
-(ns jingles.servers
+(ns jingles.hypervisors
+  (:refer-clojure :exclude [get list])
   (:require [jingles.api :as api]
             [jingles.list :as jlist]
             [jingles.state :refer [set-state!]]))
 
-(def root :server)
+(def root :hypervisors)
 
 (def config {:fields {:name {:title "Name" :key :alias}
                       :uuid {:title "UUID" :key :uuid}}
              :root root
-             :title "Servers"})
+             :title "Hypervisors"})
 
 (set-state! [root :fields] (keys (:fields config)))
 
 (def list-fields
   "uuid,alias")
 
-(defn full-list []
-  (api/to-state [root :list] (api/full-list "hypervisors" list-fields)))
+(def list (partial api/list root list-fields))
+
+(def get (partial api/get root))
 
 (defn list-view [app]
   (jlist/view config app))
+
+(defn show-view [app]
+  (. js/JSON (stringify (clj->js (get-in app [root :element])))))
+
+(defn view [app]
+  (condp = (:view app)
+    :list (list-view app)
+    :show (show-view app)))

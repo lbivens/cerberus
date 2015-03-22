@@ -4,6 +4,7 @@
             [om-bootstrap.panel :as p]
             [om-bootstrap.grid :as g]
             [om-bootstrap.random :as r]
+            [jingles.utils :refer [goto]]
             [jingles.state :refer [set-state!]]))
 
 (defn value-by-key [key element]
@@ -91,6 +92,7 @@
     (d/tbody
      (map
       (fn [e] (d/tr
+               #js{:onClick #(goto (str "/" (name root) "/" (:uuid e)))}
                (map
                 (fn [field]
                   (d/td (show-field field e)))

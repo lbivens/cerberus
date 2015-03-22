@@ -1,3 +1,4 @@
+
 (ns jingles.core
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [cljs.core.match.macros :refer [match]])
@@ -7,11 +8,12 @@
             [om.dom :as d :include-macros true]
             [om-bootstrap.random :as r]
             [om-bootstrap.button :as b]
+            [om-bootstrap.grid :as g]
             [jingles.routing]
             [jingles.http :as http]
             [jingles.vms :as vms]
             [jingles.datasets :as datasets]
-            [jingles.servers :as servers]
+            [jingles.hypervisors :as hypervisors]
             [jingles.list :as jlist]
             [jingles.utils :refer [goto val-by-id by-id a]]
             [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]
@@ -45,8 +47,8 @@
       (b/button {:bs-style "primary"
                  :on-click login} "Login")))))
 
-(defn nav-style [app view]
-  (if (= view (:view app))
+(defn nav-style [app section view]
+  (if (and (= section (:section app)) (= view (:view app)))
     #js{:className "active"}
     #js{}))
 
@@ -66,16 +68,22 @@
            #js{:className "bs-navbar-collapse navbar-collapse"}
            (d/ul
             #js{:className "nav navbar-nav"}
-            (d/li (nav-style app :vm-list) (a "#/vms" "Machines"))
-            (d/li (nav-style app :dataset-list) (a "#/datasets" "Datasets"))
-            (d/li (nav-style app :server-list) (a "#/servers" "Servers"))
+            (d/li (nav-style app :vms :list) (a "#/vms" "Machines"))
+            (d/li (nav-style app :datasets :list) (a "#/datasets" "Datasets"))
+            (d/li (nav-style app :hypervisor :list) (a "#/hypervisors" "Hypervisors"))
             )))
-         (match
-          (:view app)
-          :vm-list (vms/list-view app)
-          :dataset-list (datasets/list-view app)
-          :server-list (server/list-view app)
-          :else    (goto "/vms")))
+         (g/grid
+          nil
+          (g/row
+           {}
+           (g/col
+            {:md 12}
+            (match
+             (:section app)
+             :vms (vms/view app)
+             :datasets (datasets/view app)
+             :hypervisors (hypervisors/view app)
+             :else    (goto "/vms"))))))
         (do (goto)
             (login app)))))
    app-state

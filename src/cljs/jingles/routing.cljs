@@ -4,7 +4,7 @@
    [goog.events :as events]
    [jingles.vms :as vms]
    [jingles.datasets :as datasets]
-   [jingles.servers :as servers]
+   [jingles.hypervisors :as hypervisors]
    [goog.history.EventType :as EventType]
    [secretary.core :as secretary :refer-macros [defroute]])
   (:import goog.History))
@@ -14,19 +14,31 @@
 (secretary/set-config! :prefix "#")
 
 (defroute "/" {:as params}
-  (set-view! :home))
+  (set-view! :home :home))
 
 (defroute "/vms" {:as params}
-  (vms/full-list)
-  (set-view! :vm-list))
+  (vms/list)
+  (set-view! :vms :list))
+
+(defroute "/vms/:uuid" {:as params}
+  (vms/get (:uuid params))
+  (set-view! :vms :show))
 
 (defroute "/datasets" {:as params}
-  (datasets/full-list)
-  (set-view! :dataset-list))
+  (datasets/list)
+  (set-view! :datasets :list))
 
-(defroute "/servers" {:as params}
-  (servers/full-list)
-  (set-view! :server-list))
+(defroute "/datasets/:uuid" {:as params}
+  (datasets/get (:uuid params))
+  (set-view! :datasets :show))
+
+(defroute "/hypervisors" {:as params}
+  (hypervisors/list)
+  (set-view! :hypervisors :list))
+
+(defroute "/hypervisors/:uuid" {:as params}
+  (hypervisors/get (:uuid params))
+  (set-view! :hypervisors :show))
 
 (let [h (History.)]
   (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))

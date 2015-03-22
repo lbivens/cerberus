@@ -6,8 +6,8 @@
 
 (def root :hypervisors)
 
-(def config {:fields {:name {:title "Name" :key :alias}
-                      :uuid {:title "UUID" :key :uuid}}
+(def config {:fields {:name {:id :name :title "Name" :key :alias}
+                      :uuid {:id :uuid :title "UUID" :key :uuid}}
              :root root
              :title "Hypervisors"})
 

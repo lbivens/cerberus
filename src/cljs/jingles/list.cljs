@@ -26,7 +26,7 @@
   (let [page (dec page)] ; we need to decrease page by one so we start with page 1 not 0
     (take size (drop (* page size) elements))))
 
-(defn paginate [elements config state]
+(defn paginate [elements state]
   (let [length (count elements)
         size (or (:page-size state) 20)
         page (or (:page state) 1)
@@ -38,18 +38,24 @@
      :size size
      :list (do-paginate elements size page)}))
 
-(defn do-sort [elements sort]
-  (if-let [key (:key sort)]
-    (let [sorted (sort-by (partial value-by-key key) elements)]
-      (if (= (:order sort) :desc)
-        (reverse  sorted)
-        sorted))
-    elements))
+(defn do-sort [config state]
+  (let [sort (:sort state)
+        list (:list state)
+        fields (:fields config)
+        elements (:elements state)
+        field (:field sort)]
+    (if-let [key (or (:sort-key (fields field)) (:key (fields field)))]
+      (let [sorted (sort-by (fn [uuid]
+                              (value-by-key key (elements uuid))) list)]
+        (if (= (:order sort) :desc)
+          (reverse sorted)
+          sorted))
+      list)))
 
 (defn sort-and-paginate [config state]
   (if-let [sort (:sort state)]
-    (paginate (do-sort (:list state) sort) config state)
-    (paginate (:list state) config state)))
+    (paginate (do-sort config state) state)
+    (paginate (:list state) state)))
 
 (def flip-order {:asc :desc
                  :desc :asc})
@@ -58,12 +64,12 @@
 (def order-str {:asc "v"
                 :desc "^"})
 (defn tbl-header [root sort field]
-  (let [key (:key field)
+  (let [id (:id field)
         order (:order sort)]
-    (if (= key (:key sort))
+    (if (= id (:field sort))
       (d/td (d/a #js{:onClick #(set-state! [root :sort :order] (flip-order order))
                      :className (order-class order)} (:title field) " " (order-str order)))
-      (d/td (d/a #js{:onClick #(set-state! [root :sort] {:key key :order :asc})} (:title field))))))
+      (d/td (d/a #js{:onClick #(set-state! [root :sort] {:field id :order :asc})} (:title field))))))
 
 (defn tbl-headers [root sort fields]
   (d/thead
@@ -83,32 +89,32 @@
        (partial page-link root current)
        (range 1 (inc page-count))))))
 
-(defn tbl [root fields sort data]
-  (d/div
-   nil
-   (table
-    {:striped? true :bordered? true :condensed? true :hover? true}
-    (tbl-headers root sort fields)
-    (d/tbody
-     (map
-      (fn [e] (d/tr
-               #js{:onClick #(goto (str "/" (name root) "/" (:uuid e)))}
-               (map
-                (fn [field]
-                  (d/td (show-field field e)))
-                fields)))
-      (:list data))))
-   (pagination root data)))
+(defn tbl [config state]
+  (let [root (:root config)
+        fields(expand-fields config (:fields state))
+        elements (sort-and-paginate config state)]
+    (d/div
+     nil
+     (table
+      {:striped? true :bordered? true :condensed? true :hover? true}
+      (tbl-headers root (:sort state) fields)
+      (d/tbody
+       (map
+        (fn [e] (d/tr
+                 #js{:onClick #(goto (str "/" (name root) "/" (:uuid e)))}
+                 (map
+                  (fn [field]
+                    (d/td (show-field field e)))
+                  fields)))
+        (map #(get-in state [:elements %]) (:list elements)))))
+     (pagination root elements))))
 
 
 (defn view [config app]
   (let [root (:root config)
         title (:title config)
-        state (root app)
-        elements (sort-and-paginate config state)]
+        state (root app)]
     (d/div
      nil
      (d/h1 nil title)
-     (tbl root (expand-fields config (:fields state)) (:sort state) elements))))
-
-
+     (tbl config state))))

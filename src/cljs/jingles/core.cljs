@@ -80,7 +80,7 @@
             {:md 12}
             (match
              (:section app)
-             :vms (vms/view app)
+             :vms (vms/render app)
              :datasets (datasets/view app)
              :hypervisors (hypervisors/view app)
              :else    (goto "/vms"))))))

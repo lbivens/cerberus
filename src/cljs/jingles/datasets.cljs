@@ -6,9 +6,9 @@
 
 (def root :datasets)
 
-(def config {:fields {:name    {:title "Name" :key :name}
-                      :version {:title "Version" :key :version}
-                      :uuid    {:title "UUID" :key :uuid}}
+(def config {:fields {:name    {:id :name :title "Name" :key :name}
+                      :version {:id :title :title "Version" :key :version}
+                      :uuid    {:id :uuid :title "UUID" :key :uuid}}
              :root root
              :title "Datasetse"})
 

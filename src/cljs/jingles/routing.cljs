@@ -2,9 +2,9 @@
   (:require
    [jingles.state :refer [set-view!]]
    [goog.events :as events]
-   [jingles.vms.list :as vm-list]
-   [jingles.datasets.list :as dataset-list]
-   [jingles.servers.list :as server-list]
+   [jingles.vms :as vms]
+   [jingles.datasets :as datasets]
+   [jingles.servers :as servers]
    [goog.history.EventType :as EventType]
    [secretary.core :as secretary :refer-macros [defroute]])
   (:import goog.History))
@@ -17,15 +17,15 @@
   (set-view! :home))
 
 (defroute "/vms" {:as params}
-  (vm-list/full-list)
+  (vms/full-list)
   (set-view! :vm-list))
 
 (defroute "/datasets" {:as params}
-  (dataset-list/full-list)
+  (datasets/full-list)
   (set-view! :dataset-list))
 
 (defroute "/servers" {:as params}
-  (server-list/full-list)
+  (servers/full-list)
   (set-view! :server-list))
 
 (let [h (History.)]

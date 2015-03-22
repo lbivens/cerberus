@@ -1,4 +1,4 @@
-(ns jingles.datasets.list
+(ns jingles.datasets
   (:require [jingles.api :as api]
             [jingles.list :as jlist]
             [jingles.state :refer [set-state!]]))
@@ -20,5 +20,5 @@
 (defn full-list []
   (api/to-state [:dataset :list] (api/full-list "datasets" list-fields)))
 
-(defn render [app]
+(defn list-view [app]
   (jlist/view config app))

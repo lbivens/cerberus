@@ -1,4 +1,4 @@
-(ns jingles.servers.list
+(ns jingles.servers
   (:require [jingles.api :as api]
             [jingles.list :as jlist]
             [jingles.state :refer [set-state!]]))
@@ -18,5 +18,5 @@
 (defn full-list []
   (api/to-state [root :list] (api/full-list "hypervisors" list-fields)))
 
-(defn render [app]
+(defn list-view [app]
   (jlist/view config app))

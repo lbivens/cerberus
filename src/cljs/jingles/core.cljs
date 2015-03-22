@@ -9,9 +9,9 @@
             [om-bootstrap.button :as b]
             [jingles.routing]
             [jingles.http :as http]
-            [jingles.vms.list :as vm-list]
-            [jingles.datasets.list :as dataset-list]
-            [jingles.servers.list :as server-list]
+            [jingles.vms :as vms]
+            [jingles.datasets :as datasets]
+            [jingles.servers :as servers]
             [jingles.list :as jlist]
             [jingles.utils :refer [goto val-by-id by-id a]]
             [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]
@@ -72,9 +72,9 @@
             )))
          (match
           (:view app)
-          :vm-list (do (vm-list/full-list) (vm-list/render app))
-          :dataset-list (do (dataset-list/full-list) (dataset-list/render app))
-          :server-list (do (server-list/full-list) (server-list/render app))
+          :vm-list (vms/list-view app)
+          :dataset-list (datasets/list-view app)
+          :server-list (server/list-view app)
           :else    (goto "/vms")))
         (do (goto)
             (login app)))))

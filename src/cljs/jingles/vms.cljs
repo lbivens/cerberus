@@ -1,4 +1,4 @@
-(ns jingles.vms.list
+(ns jingles.vms
   (:require [jingles.api :as api]
             [jingles.list :as jlist]
             [jingles.state :refer [set-state!]]))
@@ -18,5 +18,5 @@
 (defn full-list []
   (api/to-state [:vm :list] (api/full-list "vms" list-fields)))
 
-(defn render [app]
+(defn list-view [app]
   (jlist/view config app))

@@ -63,5 +63,5 @@
 (defn val-by-id [id]
   (.-value (by-id id)))
 
-(defn log [& parts]
-  (. js/console (log parts)))
+(defn a [url name]
+  (d/a #js{:href url} name))

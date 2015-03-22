@@ -3,12 +3,17 @@
                    [cljs.core.match.macros :refer [match]])
   (:require [om.core :as om :include-macros true]
             [cljs-http.client :as httpc]
-            [jingles.http :as http]
+            [cljs.core.match]
             [om.dom :as d :include-macros true]
             [om-bootstrap.random :as r]
             [om-bootstrap.button :as b]
+            [jingles.routing]
+            [jingles.http :as http]
+            [jingles.vms.list :as vm-list]
+            [jingles.datasets.list :as dataset-list]
+            [jingles.servers.list :as server-list]
             [jingles.list :as jlist]
-            [jingles.utils :refer [goto log val-by-id by-id]]
+            [jingles.utils :refer [goto val-by-id by-id a]]
             [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]
             [om-bootstrap.input :as i]))
 
@@ -28,7 +33,7 @@
                         (let [e (js->clj (. js/JSON (parse (:body response))))
                               token (e "access_token")]
                           (swap! app-state assoc :account token)
-                          (goto "/")
+                          (goto)
                           (set-state! :token token))))))]
     (r/well
      {:style {:max-width 400
@@ -45,12 +50,27 @@
    (fn [app owner]
      (om/component
       (if (:token app)
-        (do (go (let [resp (<! (http/get "/api/0.2.0/vms" {"x-full-list" "true"}))]
-                  (set-state! :list (js->clj (:body resp)))))
-            (d/div #js{}
-                   (d/h1 nil (str (:text app)))
-                   (jlist/tbl [{:title "uuid" :key :uuid}
-                               {:title "alias" :key [:config :alias]} ] (:list app))))
+        (d/div
+         #js{}
+         (d/div
+          #js{:className "container"}
+          (d/div
+           #js{:className "navbar-header"}
+           (d/a #js{:href (str "#/") :className"navbar-brand"} "FiFo"))
+          (d/nav
+           #js{:className "bs-navbar-collapse navbar-collapse"}
+           (d/ul
+            #js{:className "nav navbar-nav"}
+            (d/li nil (a "#/vms" "Machines"))
+            (d/li nil (a "#/datasets" "Datasets"))
+            (d/li nil (a "#/servers" "Servers"))
+            )))
+         (match
+          (:view app)
+          :vm-list (do (vm-list/full-list) (vm-list/render app))
+          :dataset-list (do (dataset-list/full-list) (dataset-list/render app))
+          :server-list (do (server-list/full-list) (server-list/render app))
+          :else    (goto "/vms")))
         (do (goto)
             (login app)))))
    app-state

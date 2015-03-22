@@ -10,7 +10,8 @@
     (cond
      (keyword? key) (key element)
      (fn? key) (key element)
-     (vector? key) (get-in element key))))
+     (list? key) (get-in element (vec key))
+     :else (do (pr (type key)) "-"))))
 
 (defn tbl-headers [fields]
   (d/thead
@@ -22,10 +23,17 @@
     {:striped? true :bordered? true :condensed? true :hover? true}
     (tbl-headers fields)
     (d/tbody
-           (map
-            (fn [e] (d/tr
-                     (map
-                      (fn [field]
-                        (d/td (show-field field e)))
-                      fields)))
-            elements))))
+     (map
+      (fn [e] (d/tr
+               (map
+                (fn [field]
+                  (d/td (show-field field e)))
+                fields)))
+      elements))))
+
+
+(defn view [title base app]
+  (d/div
+   nil
+   (d/h1 nil title)
+   (tbl (:fields (base app)) (:list (base app)))))

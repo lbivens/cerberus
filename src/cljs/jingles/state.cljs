@@ -12,7 +12,9 @@
   (swap! app-alerts assoc :type type))
 
 (defn set-state! [k v]
-  (swap! app-state assoc k v))
+  (if (vector? k)
+    (swap! app-state assoc-in k v)
+    (swap! app-state assoc k v)))
 
 (defn set-view! [view]
   (set-state! :view view))

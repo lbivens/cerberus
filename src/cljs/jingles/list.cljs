@@ -6,13 +6,15 @@
             [om-bootstrap.random :as r]
             [jingles.state :refer [set-state!]]))
 
+(defn value-by-key [key element]
+  (cond
+   (keyword? key) (key element)
+   (fn? key) (key element)
+   (list? key) (get-in element (vec key))
+   :else (do (pr (type key)) "-")))
+
 (defn show-field [field element]
-  (let [key (:key field)]
-    (cond
-     (keyword? key) (key element)
-     (fn? key) (key element)
-     (list? key) (get-in element (vec key))
-     :else (do (pr (type key)) "-"))))
+  (value-by-key (:key field) element))
 
 (defn expand-fields [config selected]
   (let [fields (:fields config)]
@@ -35,18 +37,39 @@
      :size size
      :list (do-paginate elements size page)}))
 
-(defn do-sort [elements sort config]
-  elements)
+(defn do-sort [elements sort]
+  (if-let [key (:key sort)]
+    (let [sorted (sort-by (partial value-by-key key) elements)]
+      (if (= (:order sort) :desc)
+        (reverse  sorted)
+        sorted))
+    elements))
 
 (defn sort-and-paginate [config state]
-  (if-let [sort (:sort state)]
-    (paginate (do-sort (:list state) sort config) config state)
-    (paginate (:list state) config state)))
+  (do
+    (pr (:sort state))
+    (if-let [sort (:sort state)]
+         (paginate (do-sort (:list state) sort) config state)
+         (paginate (:list state) config state))))
 
-(defn tbl-headers [fields]
+(def flip-order {:asc :desc
+                 :desc :asc})
+(def order-class {:asc "asc"
+                   :desc "desc"})
+(def order-str {:asc "v"
+                :desc "^"})
+(defn tbl-header [root sort field]
+  (let [key (:key field)
+        order (:order sort)]
+    (if (= key (:key sort))
+      (d/td (d/a #js{:onClick #(set-state! [root :sort :order] (flip-order order))
+                     :className (order-class order)} (:title field) " " (order-str order)))
+      (d/td (d/a #js{:onClick #(set-state! [root :sort] {:key key :order :asc})} (:title field))))))
+
+(defn tbl-headers [root sort fields]
   (d/thead
    (d/tr
-    (map #(d/td (:title %)) fields))))
+    (map (partial tbl-header root sort) fields))))
 
 (defn page-link [root current page]
   [" " (d/a #js{:onClick (fn [] (set-state! [root :page] page))
@@ -61,12 +84,12 @@
        (partial page-link root current)
        (range 1 (inc page-count))))))
 
-(defn tbl [root fields data]
+(defn tbl [root fields sort data]
   (d/div
    nil
    (table
     {:striped? true :bordered? true :condensed? true :hover? true}
-    (tbl-headers fields)
+    (tbl-headers root sort fields)
     (d/tbody
      (map
       (fn [e] (d/tr
@@ -86,6 +109,6 @@
     (d/div
      nil
      (d/h1 nil title)
-     (tbl root (expand-fields config (:fields state)) elements))))
+     (tbl root (expand-fields config (:fields state)) (:sort state) elements))))
 
 

@@ -5,8 +5,8 @@
 
 (def root :vm)
 
-(def config {:fields {:name {:title "Name" :key '(:config :alias)}
-                      :uuid {:title "UUID" :key :uuid}}
+(def config {:fields {:name {:id :name :title "Name" :key '(:config :alias)}
+                      :uuid {:id :uuid :title "UUID" :key :uuid}}
              :root root
              :title "Machines"})
 

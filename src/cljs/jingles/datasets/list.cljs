@@ -1,21 +1,18 @@
 (ns jingles.datasets.list
-  (:require-macros [cljs.core.async.macros :refer [go]]
-                   [cljs.core.match.macros :refer [match]])
-  (:require [om.core :as om :include-macros true]
-            [jingles.api :as api]
-            [om.dom :as d :include-macros true]
-            [om-bootstrap.random :as r]
-            [om-bootstrap.button :as b]
+  (:require [jingles.api :as api]
             [jingles.list :as jlist]
-            [jingles.utils :refer [goto val-by-id by-id a]]
-            [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]
-            [om-bootstrap.input :as i]))
+            [jingles.state :refer [set-state!]]))
 
-(set-state! [:dataset :all-fields] [{:title "Name" :key :name}
-                                    {:title "Version" :key :version}
-                                    {:title "UUID" :key :uuid}])
+(def root :dataset)
 
-(set-state! [:dataset :fields] (get-in @app-state [:dataset :all-fields]))
+(def config {:fields {:name    {:title "Name" :key :name}
+                      :version {:title "Version" :key :version}
+                      :uuid    {:title "UUID" :key :uuid}}
+             :root root
+             :title "Datasetse"})
+(set-state! [root :fields] (keys (:fields config)))
+
+
 
 (def list-fields
   "name,uuid,version")
@@ -24,4 +21,4 @@
   (api/to-state [:dataset :list] (api/full-list "datasets" list-fields)))
 
 (defn render [app]
-  (jlist/view "Datasets" :dataset app))
+  (jlist/view config app))

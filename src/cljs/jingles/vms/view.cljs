@@ -9,13 +9,13 @@
 
 (def root :vms)
 
-(def sub-element (partial api/get-sub-element root))
+(def sub-element (partial api/get-sub-element))
 
 (defn get-package [element]
-  (sub-element :package [:name] "packages" element))
+  (sub-element :packages :package [:name] element))
 
 (defn get-dataset [element]
-  (sub-element :dataset [:name] "datasets" element))
+  (sub-element :datasets :dataset [:name] element))
 
 (defn render [app]
   (do

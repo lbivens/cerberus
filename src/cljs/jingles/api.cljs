@@ -28,12 +28,12 @@
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
 
-(defn get-sub-element [root key path url element]
+(defn get-sub-element [root key path element]
   (let [uuid (element key)]
     (if (empty? uuid)
       ""
-      (if-let [sub (get-in @app-state [root :relations uuid])]
+      (if-let [sub (get-in @app-state [root :elements uuid])]
         (get-in sub path)
         (do
-          (to-state [root :relations uuid] (http/get (str url "/" uuid)))
+          (to-state [root :elements uuid] (http/get (str (name root) "/" uuid)))
           uuid)))))

@@ -10,6 +10,7 @@
 (def root :vms)
 
 (def sub-element (partial api/get-sub-element root))
+
 (def config {:fields {:name {:id :name :title "Name" :key '(:config :alias)}
                       :uuid {:id :uuid :title "UUID" :key :uuid}
                       :state {:id :state :title "State" :key :state}
@@ -36,6 +37,8 @@
   (. js/JSON (stringify (clj->js (get-in app [root :element])))))
 
 (defn render [app]
-  (condp = (:view app)
-    :list (list-view app)
-    :show (view/render app)))
+  (do
+    (pr (:view app))
+    (condp = (:view app)
+      :list (list-view app)
+      :show (view/render app))))

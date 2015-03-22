@@ -26,7 +26,7 @@
       (set-state! [root :list] list))))
 
 (defn get [root uuid]
-  (to-state [root :element] (http/get (str (name root) "/" uuid))))
+  (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
 
 (defn get-sub-element [root key path url element]
   (let [uuid (element key)]

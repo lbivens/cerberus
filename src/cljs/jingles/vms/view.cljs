@@ -9,20 +9,25 @@
 
 (def root :vms)
 
-(defn get-package [app]
-  (api/get-sub-element app [root :element] :name :package "packages/"))
+(def sub-element (partial api/get-sub-element root))
 
-(defn get-dataset [app]
-  (api/get-sub-element app [root :element] :name :dataset "datasets/"))
+(defn get-package [element]
+  (sub-element :package [:name] "packages" element))
+
+(defn get-dataset [element]
+  (sub-element :dataset [:name] "datasets" element))
 
 (defn render [app]
-  (let [element  (get-in app [root :element])]
-    (d/div
-     nil
-     (d/h1 nil (get-in element [:config :alias]))
-     "uuid: " (:uuid element) (d/br)
-     "package: " (get-package app) (d/br)
-     "dataset: " (get-dataset app) (d/br)
-     (r/well
-      {}
-      (. js/JSON (stringify (clj->js element)))))))
+  (do
+    (pr (keys (get-in app [root])))
+    (let [uuid (get-in app [root :selected])
+          element (get-in app [root :elements uuid])]
+      (d/div
+       nil
+       (d/h1 nil (get-in element [:config :alias]))
+       "uuid: " (:uuid element) (d/br)
+       "package: " (get-package element) (d/br)
+       "dataset: " (get-dataset element) (d/br)
+       (r/well
+        {}
+        (. js/JSON (stringify (clj->js element))))))))

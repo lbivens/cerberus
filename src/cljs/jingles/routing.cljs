@@ -1,6 +1,6 @@
 (ns jingles.routing
   (:require
-   [jingles.state :refer [set-view!]]
+   [jingles.state :refer [set-view! set-state!]]
    [goog.events :as events]
    [jingles.vms :as vms]
    [jingles.datasets :as datasets]
@@ -22,6 +22,7 @@
 
 (defroute "/vms/:uuid" {:as params}
   (vms/get (:uuid params))
+  (set-state! [:vms :selected] (:uuid params))
   (set-view! :vms :show))
 
 (defroute "/datasets" {:as params}
@@ -30,6 +31,7 @@
 
 (defroute "/datasets/:uuid" {:as params}
   (datasets/get (:uuid params))
+  (set-state! [:datasets :selected] (:uuid params))
   (set-view! :datasets :show))
 
 (defroute "/hypervisors" {:as params}
@@ -38,6 +40,7 @@
 
 (defroute "/hypervisors/:uuid" {:as params}
   (hypervisors/get (:uuid params))
+  (set-state! [:hypervisors :selected] (:uuid params))
   (set-view! :hypervisors :show))
 
 (let [h (History.)]

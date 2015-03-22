@@ -45,6 +45,11 @@
       (b/button {:bs-style "primary"
                  :on-click login} "Login")))))
 
+(defn nav-style [app view]
+  (if (= view (:view app))
+    #js{:className "active"}
+    #js{}))
+
 (defn main []
   (om/root
    (fn [app owner]
@@ -61,9 +66,9 @@
            #js{:className "bs-navbar-collapse navbar-collapse"}
            (d/ul
             #js{:className "nav navbar-nav"}
-            (d/li nil (a "#/vms" "Machines"))
-            (d/li nil (a "#/datasets" "Datasets"))
-            (d/li nil (a "#/servers" "Servers"))
+            (d/li (nav-style app :vm-list) (a "#/vms" "Machines"))
+            (d/li (nav-style app :dataset-list) (a "#/datasets" "Datasets"))
+            (d/li (nav-style app :server-list) (a "#/servers" "Servers"))
             )))
          (match
           (:view app)

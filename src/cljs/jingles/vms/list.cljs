@@ -1,8 +1,7 @@
 (ns jingles.vms.list
-  (:require-macros [cljs.core.async.macros :refer [go]]
-                   [cljs.core.match.macros :refer [match]])
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [om.core :as om :include-macros true]
-            [jingles.http :as http]
+            [jingles.api :as api]
             [om.dom :as d :include-macros true]
             [om-bootstrap.random :as r]
             [om-bootstrap.button :as b]
@@ -11,18 +10,16 @@
             [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]
             [om-bootstrap.input :as i]))
 
-(set-state! [:vm :all-fields] [{:title "uuid" :key :uuid}
-                               {:title "alias" :key '(:config :alias)}])
+(set-state! [:vm :all-fields] [{:title "Name" :key '(:config :alias)}
+                               {:title "UUID" :key :uuid}])
 
-(set-state! [:vm :fields] [{:title "Name" :key '(:config :alias)}
-                           {:title "UUID" :key :uuid}])
+(set-state! [:vm :fields] (get-in @app-state [:vm :all-fields]))
 
 (def list-fields
   "alias,uuid,config")
+
 (defn full-list []
-  (go (let [resp (<! (http/get "vms" {"x-full-list" "true"
-                                      "x-full-list-fields" list-fields}))]
-        (set-state! [:vm :list] (js->clj (:body resp))))))
+  (api/to-state [:vm :list] (api/full-list "vms" list-fields)))
 
 (defn render [app]
   (jlist/view "Machines" :vm app))

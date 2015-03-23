@@ -1,4 +1,4 @@
-(ns bjingles.core
+(ns jingles.core
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [cljs.core.match.macros :refer [match]])
   (:require [om.core :as om :include-macros true]

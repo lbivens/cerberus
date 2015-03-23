@@ -29,8 +29,7 @@
 
   :plugins [[lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]
-            [lein-sassc "0.10.4"]
-            [lein-auto "0.1.1"]]
+            [lein-less "1.7.2"]]
 
   :min-lein-version "2.5.1"
 
@@ -44,9 +43,8 @@
                                         :optimizations :none
                                         :pretty-print  true}}}}
 
-  :sassc [{:src "src/scss/style.scss"
-           :output-to "resources/public/css/style.css"}]
-  :auto {"sassc"  {:file-pattern  #"\.(scss)$"}}
+  :less {:source-paths ["src/less"]
+         :target-path "resources/public/css"}
 
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
@@ -79,7 +77,7 @@
                                                           :pretty-print  false}}}}}
 
              :uberjar {:source-paths ["env/prod/clj"]
-                       :hooks [leiningen.cljsbuild leiningen.sassc]
+                       :hooks [leiningen.cljsbuild leiningen.less]
                        :env {:production true}
                        :omit-source true
                        :aot :all

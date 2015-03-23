@@ -34,7 +34,7 @@
                 :figwheel-server server}]
     (fig-auto/autobuild* config)))
 
-(defn start-sass []
+(defn start-less []
   (future
-    (println "Starting sass.")
-    (lein/-main ["auto" "sassc" "once"])))
+    (println "Starting less.")
+    (lein/-main ["less" "auto" ])))

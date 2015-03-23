@@ -28,7 +28,8 @@
                  [cljs-http "0.1.17"]]
 
   :plugins [[lein-cljsbuild "1.0.3"]
-            [lein-environ "1.0.0"]]
+            [lein-environ "1.0.0"]
+            [lein-less "1.7.2"]]
 
   :min-lein-version "2.5.0"
 
@@ -41,6 +42,9 @@
                                         :preamble      ["react/react.min.js"]
                                         :optimizations :none
                                         :pretty-print  true}}}}
+
+  :less {:source-paths ["src/less"]
+         :target-path "resources/public/css"}
 
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
@@ -72,7 +76,7 @@
                                                           :pretty-print  false}}}}}
 
              :uberjar {:source-paths ["env/prod/clj"]
-                       :hooks [leiningen.cljsbuild]
+                       :hooks [leiningen.cljsbuild leiningen.less]
                        :env {:production true}
                        :omit-source true
                        :aot :all

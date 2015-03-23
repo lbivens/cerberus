@@ -47,7 +47,7 @@
 
                    :dependencies [[figwheel "0.2.1-SNAPSHOT"]
                                   [figwheel-sidecar "0.2.1-SNAPSHOT"]
-                                  [com.cemerick/piggieback "0.1.3"]
+                                  [com.cemerick/piggieback "0.1.5"]
                                   [weasel "0.4.2"]]
 
                    :repl-options {:init-ns jingles.server

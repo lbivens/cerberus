@@ -7,7 +7,7 @@
             [om-bootstrap.pagination :as pg]
             [om-bootstrap.button :as b]
             [om-bootstrap.input :as i]
-            [jingles.utils :refer [goto]]
+            [jingles.utils :refer [goto val-by-id]]
             [jingles.state :refer [set-state! update-state!]]))
 
 (defn value-by-key [key element]
@@ -43,9 +43,8 @@
      :last last
      :list (do-paginate elements size page)}))
 
-(defn do-sort [config state]
+(defn do-sort [config list state]
   (let [sort (:sort state)
-        list (:list state)
         fields (:fields config)
         elements (:elements state)
         field (:field sort)]
@@ -57,10 +56,21 @@
           sorted))
       list)))
 
+(defn apply-filter [config state]
+  (let [filter-str (:filter state)
+        fields (vals (:fields config))]
+    (if (empty? filter-str)
+      (:list state)
+      (let [re  (re-pattern filter-str)
+            list (:list state)]
+        (filter (fn [uuid]
+                  (let [e (get-in state [:elements uuid])]
+                    (some #(re-find re (str %)) (map #(show-field % e) fields)))) list)))))
+
 (defn sort-and-paginate [config state]
   (if-let [sort (:sort state)]
-    (paginate (do-sort config state) state)
-    (paginate (:list state) state)))
+    (paginate (do-sort config (apply-filter config state) state) state)
+    (paginate (apply-filter config state) state)))
 
 (def flip-order {:asc :desc
                  :desc :asc})
@@ -148,6 +158,10 @@
     (d/div
      nil
      (d/h1 nil title)
+     (i/input {:type "text"
+               :id "filter"
+               :value (:filter state)
+               :on-change #(set-state! [root :filter] (val-by-id "filter"))})
      (b/dropdown {:title (r/glyphicon {:glyph "align-justify"})}
                  (map-indexed
                   (fn [idx field]

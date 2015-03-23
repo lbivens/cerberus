@@ -12,9 +12,18 @@
             [om-bootstrap.nav :as n]
             [jingles.routing]
             [jingles.http :as http]
+
             [jingles.vms :as vms]
             [jingles.datasets :as datasets]
             [jingles.hypervisors :as hypervisors]
+            [jingles.packages :as packages]
+            [jingles.networks :as networks]
+            [jingles.ipranges :as ipranges]
+            [jingles.dtrace :as dtrace]
+            [jingles.users :as users]
+            [jingles.roles :as roles]
+            [jingles.orgs :as orgs]
+
             [jingles.list :as jlist]
             [jingles.utils :refer [goto val-by-id by-id a]]
             [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]))
@@ -65,7 +74,16 @@
            {:collapsible? true}
            (n/nav-item {:key 1 :href "#/vms"} "Machines")
            (n/nav-item {:key 2 :href "#/datasets"} "Datasets")
-           (n/nav-item {:key 3 :href "#/hypervisors"} "Hypervisors")))
+           (n/nav-item {:key 3 :href "#/hypervisors"} "Hypervisors")
+           (b/dropdown {:key 4 :title "Configuration"}
+                       (b/menu-item {:key 1 :href "#/users"} "Users")
+                       (b/menu-item {:key 2 :href "#/roles"} "Roles")
+                       (b/menu-item {:key 3 :href "#/orgs"} "Organisations")
+                       (b/menu-item {:divider? true})
+                       (b/menu-item {:key 4 :href "#/packages"} "Packages")
+                       (b/menu-item {:key 5 :href "#/networks"} "Networks")
+                       (b/menu-item {:key 6 :href "#/ipranges"} "IP Ranges")
+                       (b/menu-item {:key 6 :href "#/dtrace"} "Dtrace"))))
          (g/grid
           nil
           (g/row
@@ -77,6 +95,13 @@
              :vms (vms/render app)
              :datasets (datasets/view app)
              :hypervisors (hypervisors/view app)
+             :networks (networks/view app)
+             :packages (packages/view app)
+             :ipranges (ipranges/view app)
+             :dtrace (dtrace/view app)
+             :users (users/view app)
+             :roles (roles/render app)
+             :orgs (orgs/render app)
              :else    (goto "/vms"))))))
         (do (goto)
             (login app)))))

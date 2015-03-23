@@ -2,6 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [cljs.core.match.macros :refer [match]])
   (:require [om.core :as om :include-macros true]
+            [goog.net.cookies :as cks]
             [cljs-http.client :as httpc]
             [cljs.core.match]
             [om-tools.dom :as d :include-macros true]
@@ -32,6 +33,9 @@
 
 (set-state! :text "Hello Chestnut!")
 
+(if-let [token (.get goog.net.cookies "token")]
+  (set-state! :token token))
+
 (defn login [app]
   (let [path "/api/0.2.0/oauth/token"
         login (fn []
@@ -42,10 +46,11 @@
                                                           :password (val-by-id "password")}}))]
                       (if (= 200 (:status response))
                         (let [e (js->clj (. js/JSON (parse (:body response))))
-                              token (e "access_token")]
-                          (swap! app-state assoc :account token)
-                          (goto)
-                          (set-state! :token token))))))]
+                              token (e "access_token")
+                              expires-in (e "expires_in")]
+                          (.set goog.net.cookies "token" token expires-in)
+                          (set-state! :token token)
+                          (goto))))))]
     (r/well
      {:style {:max-width 400
               :margin "300px auto 10px"}}

@@ -20,7 +20,7 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.match "0.2.1"]
                  ;; ClojureScript related dependencies
-                 [org.clojure/clojurescript "0.0-2511" :scope "provided"]
+                 [org.clojure/clojurescript "0.0-2511"]
                  [org.omcljs/om "0.8.8"]
                  ;[cljsjs/react-with-addons "0.12.2-4"]
                  [racehub/om-bootstrap "0.4.2"]

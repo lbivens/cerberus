@@ -20,7 +20,7 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.match "0.2.2"]
                  ;; ClojureScript related dependencies
-                 [org.clojure/clojurescript "0.0-3126"]
+                 [org.clojure/clojurescript "0.0-3148"]
                  [org.omcljs/om "0.8.8"]
                  ;[cljsjs/react-with-addons "0.12.2-4"]
                  [racehub/om-bootstrap "0.4.2"]
@@ -29,9 +29,10 @@
 
   :plugins [[lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]
-            [lein-less "1.7.2"]]
+            [lein-sassc "0.10.4"]
+            [lein-auto "0.1.1"]]
 
-  :min-lein-version "2.5.0"
+  :min-lein-version "2.5.1"
 
   :uberjar-name "jingles.jar"
 
@@ -43,8 +44,9 @@
                                         :optimizations :none
                                         :pretty-print  true}}}}
 
-  :less {:source-paths ["src/less"]
-         :target-path "resources/public/css"}
+  :sassc [{:src "src/scss/style.scss"
+           :output-to "resources/public/css/style.css"}]
+  :auto {"sassc"  {:file-pattern  #"\.(scss)$"}}
 
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
@@ -52,7 +54,8 @@
                    :dependencies [[figwheel "0.2.5"]
                                   [figwheel-sidecar "0.2.5"]
                                   [com.cemerick/piggieback "0.1.5"]
-                                  [weasel "0.6.0"]]
+                                  [weasel "0.6.0"]
+                                  [leiningen "2.5.1"]]
 
                    :repl-options {:init-ns jingles.server
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
@@ -76,7 +79,7 @@
                                                           :pretty-print  false}}}}}
 
              :uberjar {:source-paths ["env/prod/clj"]
-                       :hooks [leiningen.cljsbuild leiningen.less]
+                       :hooks [leiningen.cljsbuild leiningen.sassc]
                        :env {:production true}
                        :omit-source true
                        :aot :all

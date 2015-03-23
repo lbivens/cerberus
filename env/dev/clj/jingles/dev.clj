@@ -6,7 +6,7 @@
             [figwheel-sidecar.auto-builder :as fig-auto]
             [figwheel-sidecar.core :as fig]
             [clojurescript-build.auto :as auto]
-            [clojure.java.shell :refer [sh]]))
+            [leiningen.core.main :as lein]))
 
 (def is-dev? (env :is-dev))
 
@@ -33,3 +33,8 @@
                                      :preamble             ["react/react.min.js"]}}]
                 :figwheel-server server}]
     (fig-auto/autobuild* config)))
+
+(defn start-sass []
+  (future
+    (println "Starting sass.")
+    (lein/-main ["auto" "sassc" "once"])))

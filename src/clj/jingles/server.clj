@@ -1,6 +1,6 @@
 (ns jingles.server
   (:require [clojure.java.io :as io]
-            [jingles.dev :refer [is-dev? inject-devmode-html browser-repl start-figwheel]]
+            [jingles.dev :refer [is-dev? inject-devmode-html browser-repl start-figwheel start-sass]]
             [compojure.core :refer [GET defroutes]]
             [compojure.route :refer [resources]]
             [net.cgrand.enlive-html :refer [deftemplate]]
@@ -43,7 +43,8 @@
 
 (defn run-auto-reload []
   (auto-reload *ns*)
-  (start-figwheel))
+  (start-figwheel)
+  (start-sass))
 
 (defn run []
   (when is-dev?

@@ -4,6 +4,7 @@
             [om-bootstrap.panel :as p]
             [om-bootstrap.grid :as g]
             [om-bootstrap.random :as r]
+            [om-bootstrap.pagination :as pg]
             [jingles.utils :refer [goto]]
             [jingles.state :refer [set-state!]]))
 
@@ -28,14 +29,16 @@
 
 (defn paginate [elements state]
   (let [length (count elements)
-        size (or (:page-size state) 20)
+        size (or (:page-size state) 5)
         page (or (:page state) 1)
+        last (Math/ceil  (/ length size))
         ;; If we're on a page that is too lage
         ;; we jump back to the first page
-        page (if (< length (* page size)) 1 page)]
+        page (if (> page last) last page)]
     {:length length
      :page page
      :size size
+     :last last
      :list (do-paginate elements size page)}))
 
 (defn do-sort [config state]
@@ -67,27 +70,43 @@
   (let [id (:id field)
         order (:order sort)]
     (if (= id (:field sort))
-      (d/td (d/a #js{:onClick #(set-state! [root :sort :order] (flip-order order))
+      (d/td (d/a {:onClick #(set-state! [root :sort :order] (flip-order order))
                      :className (order-class order)} (:title field) " " (order-str order)))
-      (d/td (d/a #js{:onClick #(set-state! [root :sort] {:field id :order :asc})} (:title field))))))
+      (d/td (d/a {:onClick #(set-state! [root :sort] {:field id :order :asc})} (:title field))))))
 
 (defn tbl-headers [root sort fields]
   (d/thead
    (d/tr
     (map (partial tbl-header root sort) fields))))
 
+(defn page-click-fn [root page]
+  (fn [e]
+    (do
+      (set-state! [root :page] page)
+      (.stopPropagation e)
+      (.preventDefault e))))
 (defn page-link [root current page]
-  [" " (d/a #js{:onClick (fn [] (set-state! [root :page] page))
-                :className (if (= page current) "current-page" "")}
-            page)])
+  (pg/page {:on-click (page-click-fn root page)
+            :active? (= page current)}
+       page))
 
 (defn pagination [root data]
   (let [page-count (Math/ceil (/ (:length data) (:size data)))
-        current (:page data)]
+        current (:page data)
+        last (:last data)]
     (if (> page-count 1)
-      (map
-       (partial page-link root current)
-       (range 1 (inc page-count))))))
+      (pg/pagination
+       {}
+       (concat
+        [(if (= 1 current)
+           (pg/previous {:on-click (page-click-fn root current)  :disabled? true})
+           (pg/previous {:on-click (page-click-fn root (dec current))}))]
+        (map
+         (partial page-link root current)
+         (range 1 (inc page-count)))
+        [(if (= last current)
+           (pg/next {:on-click (page-click-fn root current) :disabled? true})
+           (pg/next {:on-click (page-click-fn root (inc current))}))])))))
 
 (defn tbl [config state]
   (let [root (:root config)
@@ -96,12 +115,12 @@
     (d/div
      nil
      (table
-      {:striped? true :bordered? true :condensed? true :hover? true}
+      {:striped? true :bordered? true :condensed? true :hover? true :responsive? true}
       (tbl-headers root (:sort state) fields)
       (d/tbody
        (map
         (fn [e] (d/tr
-                 #js{:onClick #(goto (str "/" (name root) "/" (:uuid e)))}
+                 {:on-click #(goto (str "/" (name root) "/" (:uuid e)))}
                  (map
                   (fn [field]
                     (d/td (show-field field e)))

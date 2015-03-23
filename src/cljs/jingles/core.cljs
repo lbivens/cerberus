@@ -4,10 +4,12 @@
   (:require [om.core :as om :include-macros true]
             [cljs-http.client :as httpc]
             [cljs.core.match]
-            [om.dom :as d :include-macros true]
+            [om-tools.dom :as d :include-macros true]
             [om-bootstrap.random :as r]
             [om-bootstrap.button :as b]
             [om-bootstrap.grid :as g]
+            [om-bootstrap.input :as i]
+            [om-bootstrap.nav :as n]
             [jingles.routing]
             [jingles.http :as http]
             [jingles.vms :as vms]
@@ -15,8 +17,7 @@
             [jingles.hypervisors :as hypervisors]
             [jingles.list :as jlist]
             [jingles.utils :refer [goto val-by-id by-id a]]
-            [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]
-            [om-bootstrap.input :as i]))
+            [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]))
 
 (enable-console-print!)
 
@@ -57,24 +58,18 @@
      (om/component
       (if (:token app)
         (d/div
-         #js{}
-         (d/div
-          #js{:className "container"}
-          (d/div
-           #js{:className "navbar-header"}
-           (d/a #js{:href (str "#/") :className"navbar-brand"} "FiFo"))
-          (d/nav
-           #js{:className "bs-navbar-collapse navbar-collapse"}
-           (d/ul
-            #js{:className "nav navbar-nav"}
-            (d/li (nav-style app :vms :list) (a "#/vms" "Machines"))
-            (d/li (nav-style app :datasets :list) (a "#/datasets" "Datasets"))
-            (d/li (nav-style app :hypervisor :list) (a "#/hypervisors" "Hypervisors"))
-            )))
+         {}
+         (n/navbar
+          {:brand (d/a {:href (str "#/")} "FiFo")}
+          (n/nav
+           {:collapsible? true}
+           (n/nav-item {:key 1 :href "#/vms"} "Machines")
+           (n/nav-item {:key 2 :href "#/datasets"} "Datasets")
+           (n/nav-item {:key 3 :href "#/hypervisors"} "Hypervisors")))
          (g/grid
           nil
           (g/row
-           {}
+           nil
            (g/col
             {:md 12}
             (match

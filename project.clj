@@ -5,29 +5,29 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :source-paths ["src/clj"]
-:repl-options {:timeout 200000} ;; Defaults to 30000 (30 seconds)
+  :repl-options {:timeout 200000} ;; Defaults to 30000 (30 seconds)
 
   :test-paths ["spec/clj"]
 
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [ring "1.3.2"]
-                 [ring/ring-defaults "0.1.3"]
-                 [compojure "1.3.1"]
+                 [ring/ring-defaults "0.1.4"]
+                 [compojure "1.3.2"]
                  [enlive "1.1.5"]
                  [tailrecursion/ring-proxy "2.0.0-SNAPSHOT"]
                  [environ "1.0.0"]
-                 [cconf "1.0.0"]
+                 [cconf "1.1.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [org.clojure/core.match "0.2.1"]
+                 [org.clojure/core.match "0.2.2"]
                  ;; ClojureScript related dependencies
-                 [org.clojure/clojurescript "0.0-2760"]
+                 [org.clojure/clojurescript "0.0-3126"]
                  [org.omcljs/om "0.8.8"]
                  ;[cljsjs/react-with-addons "0.12.2-4"]
                  [racehub/om-bootstrap "0.4.2"]
                  [secretary "1.2.2"]
-                 [cljs-http "0.1.17"]]
+                 [cljs-http "0.1.27"]]
 
-  :plugins [[lein-cljsbuild "1.0.3"]
+  :plugins [[lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]
             [lein-less "1.7.2"]]
 
@@ -49,10 +49,10 @@
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
 
-                   :dependencies [[figwheel "0.2.1-SNAPSHOT"]
-                                  [figwheel-sidecar "0.2.1-SNAPSHOT"]
+                   :dependencies [[figwheel "0.2.5"]
+                                  [figwheel-sidecar "0.2.5"]
                                   [com.cemerick/piggieback "0.1.5"]
-                                  [weasel "0.4.2"]]
+                                  [weasel "0.6.0"]]
 
                    :repl-options {:init-ns jingles.server
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}

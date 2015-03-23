@@ -10,7 +10,7 @@
                       :version {:id :title :title "Version" :key :version}
                       :uuid    {:id :uuid :title "UUID" :key :uuid}}
              :root root
-             :title "Datasetse"})
+             :title "Datasets"})
 
 (set-state! [root :fields] (keys (:fields config)))
 

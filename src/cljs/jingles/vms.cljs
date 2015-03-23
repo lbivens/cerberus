@@ -20,7 +20,7 @@
              :root root
              :title "Machines"})
 
-(set-state! [root :fields] (keys (:fields config)))
+(set-state! [root :fields] (reduce #(assoc-in %1 [%2 :show] true) {} (keys (:fields config))))
 
 (def list-fields
   "alias,uuid,config,state,dataset,package")

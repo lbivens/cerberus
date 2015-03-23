@@ -9,9 +9,9 @@
 (def config {:fields {:name {:id :name :title "Name" :key :name}
                       :uuid {:id :uuid :title "UUID" :key :uuid}}
              :root root
-             :title "Orgs"})
+             :title "Organisations"})
 
-(set-state! [root :fields] (keys (:fields config)))
+(set-state! [root :fields] (reduce #(assoc-in %1 [%2 :show] true) {} (keys (:fields config))))
 
 (def list-fields
   "uuid,name")

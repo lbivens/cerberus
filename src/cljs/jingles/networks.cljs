@@ -11,7 +11,7 @@
              :root root
              :title "Networks"})
 
-(set-state! [root :fields] (keys (:fields config)))
+(set-state! [root :fields] (reduce #(assoc-in %1 [%2 :show] true) {} (keys (:fields config))))
 
 (def list-fields
   "uuid,name")

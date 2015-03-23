@@ -7,12 +7,12 @@
 (def root :datasets)
 
 (def config {:fields {:name    {:id :name :title "Name" :key :name}
-                      :version {:id :title :title "Version" :key :version}
+                      :version {:id :version :title "Version" :key :version}
                       :uuid    {:id :uuid :title "UUID" :key :uuid}}
              :root root
              :title "Datasets"})
 
-(set-state! [root :fields] (keys (:fields config)))
+(set-state! [root :fields] (reduce #(assoc-in %1 [%2 :show] true) {} (keys (:fields config))))
 
 (def list-fields
   "name,uuid,version")

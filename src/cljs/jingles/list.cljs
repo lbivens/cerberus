@@ -5,8 +5,10 @@
             [om-bootstrap.grid :as g]
             [om-bootstrap.random :as r]
             [om-bootstrap.pagination :as pg]
+            [om-bootstrap.button :as b]
+            [om-bootstrap.input :as i]
             [jingles.utils :refer [goto]]
-            [jingles.state :refer [set-state!]]))
+            [jingles.state :refer [set-state! update-state!]]))
 
 (defn value-by-key [key element]
   (cond
@@ -108,9 +110,13 @@
            (pg/next {:on-click (page-click-fn root current) :disabled? true})
            (pg/next {:on-click (page-click-fn root (inc current))}))])))))
 
+(defn used-fields [all-fields]
+  (let [used-fields (filter #(get-in all-fields [% :show]) (keys all-fields))]
+    (sort-by #(get-in all-fields [% :order]) used-fields)))
+
 (defn tbl [config state]
   (let [root (:root config)
-        fields(expand-fields config (:fields state))
+        fields (expand-fields config (used-fields (:fields state)))
         elements (sort-and-paginate config state)]
     (d/div
      nil
@@ -129,11 +135,33 @@
      (pagination root elements))))
 
 
+(defn toggle-field [field aset]
+  (if (contains? aset field)
+    (disj aset field)
+    (conj aset field)))
+
 (defn view [config app]
   (let [root (:root config)
+        fields (get-in app [root :fields])
         title (:title config)
         state (root app)]
     (d/div
      nil
      (d/h1 nil title)
+     (b/dropdown {:title (r/glyphicon {:glyph "align-justify"})}
+                 (map-indexed
+                  (fn [idx field]
+                    (let [id (:id field)
+                          toggle-fn (fn [e]
+                                      (do
+                                        (update-state! [root :fields id :show] not)
+                                        (.stopPropagation e)
+                                        (.preventDefault e)))]
+                      (b/menu-item
+                       {:key idx :on-click toggle-fn}
+                       (i/input {:type "checkbox"
+                                 :label (:title field)
+                                 :on-click toggle-fn
+                                 :checked (get-in fields [id :show])}))))
+                  (vals (:fields config))))
      (tbl config state))))

@@ -19,3 +19,6 @@
 (defn set-view! [section view]
   (set-state! :section section)
   (set-state! :view view))
+
+(defn update-state! [path update-fn]
+  (swap! app-state update-in path update-fn))

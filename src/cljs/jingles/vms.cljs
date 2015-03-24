@@ -28,7 +28,7 @@
                                 :key (fn [e]
                                        (let [locked (get-in e [:metadata :jingles :locked] false)
                                              set-lock (partial api/update-metadata root (:uuid e) [:jingles :locked])]
-                                         [(b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"}) :on-click (make-event identity)}
+                                         [(b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph }) :on-click (make-event identity)}
                                                       (if locked
                                                         (b/menu-item
                                                          {:key 1

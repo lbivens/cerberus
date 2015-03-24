@@ -143,7 +143,7 @@
     (d/div
      nil
      (table
-      {:striped? true :bordered? true :condensed? true :hover? true :responsive? true}
+      {:striped? false :bordered? true :condensed? true :hover? true :responsive? true}
       (tbl-headers root (:sort state) fields)
       (d/tbody
        (map
@@ -156,7 +156,8 @@
                         (d/td (cell-attrs field)
                               txt)
                         (d/td (cell-attrs field)
-                              (r/glyphicon {:glyph "search"
+                              (r/glyphicon {:glyph "pushpin"
+                                            :class "bingo"
                                             :on-click (filter-field root (str txt))}) " " txt))))
                   fields)))
         (map #(get-in state [:elements %]) (:list elements)))))

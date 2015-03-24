@@ -14,11 +14,17 @@
    [jingles.roles :as roles]
    [jingles.orgs :as orgs]
 
+   [jingles.config :as config]
    [goog.history.EventType :as EventType]
    [secretary.core :as secretary :refer-macros [defroute]])
   (:import goog.History))
 
 (enable-console-print!)
+
+(if-let [token (.get goog.net.cookies "token")]
+  (do (set-state! :token token)
+      (config/load)))
+
 
 (secretary/set-config! :prefix "#")
 
@@ -30,9 +36,18 @@
   (set-view! :vms :list))
 
 (defroute "/vms/:uuid" {:as params}
-  (vms/get (:uuid params))
-  (set-state! [:vms :selected] (:uuid params))
-  (set-view! :vms :show))
+  (let [uuid (:uuid params)]
+    (vms/get uuid)
+    (set-state! [:vms :selected] uuid)
+    (set-state! [:vms :section] "")
+    (set-view! :vms :show)))
+
+(defroute "/vms/:uuid/:section" {:as params}
+  (let [uuid (:uuid params)]
+    (vms/get uuid)
+    (set-state! [:vms :selected] uuid)
+    (set-state! [:vms :section] (:section params))
+    (set-view! :vms :show)))
 
 (defroute "/datasets" {:as params}
   (datasets/list)

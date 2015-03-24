@@ -40,10 +40,18 @@
           (to-state [root :elements uuid] (http/get (str (name root) "/" uuid)))
           uuid)))))
 
-(defn update-metadata [root uuid path value]
-  (let [key (last path)
-        path-str (map #(if (keyword? %) (name %) %) (butlast path))
-        path-url (str (name  root) "/" uuid "/metadata/"(join "/" path-str))]
-    (go (let [resp  (<! (http/put path-url {} {:json-params (hash-map key value)}))]
-          (if (= 204 (:status resp))
-            (get root uuid))))))
+
+(defn update-metadata
+  ([root uuid path value]
+     (let [key (last path)
+           path-str (map #(if (keyword? %) (name %) %) (butlast path))
+           path-url (str (name  root) "/" uuid "/metadata/"(join "/" path-str))]
+       (update-metadata root uuid path value
+                        #(go (let [resp  (<! (http/put path-url {} {:json-params (hash-map key value)}))]
+                               (if (= 204 (:status resp))
+                                 (get root uuid)))))))
+  ([root uuid path value done-fn]
+     (let [key (last path)
+           path-str (map #(if (keyword? %) (name %) %) (butlast path))
+           path-url (str (name  root) "/" uuid "/metadata/"(join "/" path-str))]
+       (done-fn))))

@@ -7,6 +7,7 @@
             [om-bootstrap.pagination :as pg]
             [om-bootstrap.button :as b]
             [om-bootstrap.input :as i]
+            [jingles.config :as conf]
             [jingles.utils :refer [goto val-by-id make-event value-by-key]]
             [jingles.state :refer [set-state! update-state!]]))
 
@@ -55,7 +56,7 @@
       list)))
 
 (defn apply-filter [config state]
-  (let [filter-str (:filter state)
+  (let [filter-str (conf/get-config [(:root config) :filter])
         fields (filter #(not= (:filter %) false) (vals (:fields config)))
         fields (map #(partial get-filter-field %) fields)]
     (if (empty? filter-str)
@@ -126,7 +127,7 @@
 
 (defn tbl [config state]
   (let [root (:root config)
-        fields (expand-fields config (used-fields (:fields state)))
+        fields (expand-fields config (used-fields (conf/get-config [root :fields])))
         elements (sort-and-paginate config state)]
     (d/div
      nil
@@ -156,22 +157,22 @@
 
 (defn view [config app]
   (let [root (:root config)
-        fields (get-in app [root :fields])
+        fields (conf/get-config [root :fields] (jingles.utils/initial-state config))
         title (:title config)
         state (root app)
-        filter (:filter state)]
+        filter (conf/get-config [root :filter])]
     (d/div
      nil
      (d/h1 nil title)
      (i/input {:type "text"
                :id "filter"
                :value filter
-               :on-change #(set-state! [root :filter] (val-by-id "filter"))})
+               :on-change #(conf/set-config! [root :filter] (val-by-id "filter"))})
      (b/dropdown {:title (r/glyphicon {:glyph "align-justify"})}
                  (map-indexed
                   (fn [idx field]
                     (let [id (:id field)
-                          toggle-fn (make-event #(update-state! [root :fields id :show] not))]
+                          toggle-fn (make-event #(conf/update-config! [root :fields id :show] not))]
                       (b/menu-item
                        {:key idx :on-click toggle-fn}
                        (i/input {:type "checkbox"

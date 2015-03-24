@@ -25,16 +25,19 @@
             [jingles.roles :as roles]
             [jingles.orgs :as orgs]
 
+            [jingles.config :as config]
+
             [jingles.list :as jlist]
             [jingles.utils :refer [goto val-by-id by-id a]]
-            [jingles.state :refer [app-state app-alerts set-alerts! set-state!]]))
+            [jingles.state :refer [app-state set-state!]]))
 
 (enable-console-print!)
 
 (set-state! :text "Hello Chestnut!")
 
 (if-let [token (.get goog.net.cookies "token")]
-  (set-state! :token token))
+  (do (set-state! :token token)
+      (config/load)))
 
 (defn login [app]
   (let [path "/api/0.2.0/oauth/token"

@@ -53,6 +53,7 @@
                               expires-in (e "expires_in")]
                           (.set goog.net.cookies "token" token expires-in)
                           (set-state! :token token)
+                          (config/load)
                           (goto))))))]
     (r/well
      {:style {:max-width 400

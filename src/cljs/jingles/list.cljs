@@ -140,8 +140,8 @@
                  (map
                   (fn [field]
                     (let [txt (show-field field e)]
-                      (if (empty? txt)
-                        (d/td nil)
+                      (if (or (empty? txt) (= (:filter field) false))
+                        (d/td txt)
                         (d/td (r/glyphicon {:glyph "search"
                                             :on-click (filter-field root txt)}) " " txt))))
                   fields)))

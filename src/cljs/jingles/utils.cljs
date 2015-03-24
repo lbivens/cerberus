@@ -68,3 +68,12 @@
     (fun)
     (.stopPropagation event)
     (.preventDefault event)))
+
+(defn initial-state [config]
+  (reduce
+   (fn [acc e]
+     (-> acc
+         (assoc-in [e :show] true)
+         (assoc-in [e :order] (get-in config [:fields e :order] 0))))
+   {}
+   (keys (:fields config))))

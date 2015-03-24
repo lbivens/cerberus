@@ -43,14 +43,14 @@
      :list (do-paginate elements size page)}))
 
 (defn do-sort [config list state]
-  (let [sort (:sort state)
+  (let [sort (conf/get-config [(:root config) :sort])
         fields (:fields config)
         elements (:elements state)
-        field (:field sort)]
+        field (keyword (:field sort))]
     (if-let [key (or (:sort-key (fields field)) (:key (fields field)))]
       (let [sorted (sort-by (fn [uuid]
                               (value-by-key key (elements uuid))) list)]
-        (if (= (:order sort) :desc)
+        (if (= (keyword (:order sort)) :desc)
           (reverse sorted)
           sorted))
       list)))
@@ -69,7 +69,7 @@
                     (some #(re-find re (if (string? %) % (str %))) test-fields))) list)))))
 
 (defn sort-and-paginate [config state]
-  (if-let [sort (:sort state)]
+  (if-let [sort (conf/get-config [(:root config) :sort])]
     (paginate (do-sort config (apply-filter config state) state) state)
     (paginate (apply-filter config state) state)))
 
@@ -77,15 +77,17 @@
                  :desc :asc})
 (def order-class {:asc "asc"
                   :desc "desc"})
+
 (def order-str {:asc "v"
                 :desc "^"})
+
 (defn tbl-header [root sort field]
   (let [id (:id field)
-        order (:order sort)]
-    (if (= id (:field sort))
-      (d/td (d/a {:onClick #(set-state! [root :sort :order] (flip-order order))
+        order (keyword (:order sort))]
+    (if (= id (keyword (:field sort)))
+      (d/td (d/a {:onClick #(conf/set-config! [root :sort :order] (flip-order order))
                   :className (order-class order)} (:title field) " " (order-str order)))
-      (d/td (d/a {:onClick #(set-state! [root :sort] {:field id :order :asc})} (:title field))))))
+      (d/td (d/a {:onClick #(conf/set-config! [root :sort] {:field id :order :asc})} (:title field))))))
 
 (defn tbl-headers [root sort fields]
   (d/thead
@@ -144,7 +146,7 @@
      nil
      (table
       {:striped? false :bordered? true :condensed? true :hover? true :responsive? true}
-      (tbl-headers root (:sort state) fields)
+      (tbl-headers root (conf/get-config [root :sort]) fields)
       (d/tbody
        (map
         (fn [e] (d/tr

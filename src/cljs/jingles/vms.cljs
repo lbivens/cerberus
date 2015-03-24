@@ -3,6 +3,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
    [om-bootstrap.button :as b]
+   [om-bootstrap.random :as r]
    [jingles.api :as api]
    [jingles.http :as http]
    [jingles.list :as jlist]
@@ -25,7 +26,7 @@
                                 :key (fn [e]
                                        (let [locked (get-in e [:metadata :jingles :locked] false)
                                              set-lock (partial api/update-metadata root (:uuid e) [:jingles :locked])]
-                                         [(b/dropdown {:bs-size "xsmall" :title "..." :on-click (make-event identity)}
+                                         [(b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"}) :on-click (make-event identity)}
                                                       (if locked
                                                         (b/menu-item
                                                          {:key 1

@@ -58,14 +58,15 @@
 
 (defn apply-filter [config state]
   (let [filter-str (:filter state)
-        fields (vals (:fields config))]
+        fields (filter #(not= (:filter %) false) (vals (:fields config)))]
     (if (empty? filter-str)
       (:list state)
       (let [re  (re-pattern filter-str)
             list (:list state)]
         (filter (fn [uuid]
-                  (let [e (get-in state [:elements uuid])]
-                    (some #(re-find re (str %)) (map #(show-field % e) fields)))) list)))))
+                  (let [e (get-in state [:elements uuid])
+                        test-fields (map #(show-field % e) fields)]
+                    (some #(re-find re (if (string? %) % (str %))) test-fields))) list)))))
 
 (defn sort-and-paginate [config state]
   (if-let [sort (:sort state)]
@@ -158,13 +159,14 @@
   (let [root (:root config)
         fields (get-in app [root :fields])
         title (:title config)
-        state (root app)]
+        state (root app)
+        filter (:filter state)]
     (d/div
      nil
      (d/h1 nil title)
      (i/input {:type "text"
                :id "filter"
-               :value (:filter state)
+               :value filter
                :on-change #(set-state! [root :filter] (val-by-id "filter"))})
      (b/dropdown {:title (r/glyphicon {:glyph "align-justify"})}
                  (map-indexed

@@ -83,4 +83,5 @@
    (keyword? key) (key element)
    (fn? key) (key element)
    (list? key) (get-in element (vec key))
+   (vector? key) (get-in element (vec key))
    :else ""))

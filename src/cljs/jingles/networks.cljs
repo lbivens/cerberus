@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get list])
   (:require [jingles.api :as api]
             [jingles.list :as jlist]
+            [jingles.utils :refer [initial-state make-event]]
             [jingles.state :refer [set-state!]]))
 
 (def root :networks)
@@ -11,7 +12,7 @@
              :root root
              :title "Networks"})
 
-(set-state! [root :fields] (reduce #(assoc-in %1 [%2 :show] true) {} (keys (:fields config))))
+(set-state! [root :fields] (initial-state config))
 
 (def list-fields
   "uuid,name")
@@ -19,6 +20,7 @@
 (def list (partial api/list root list-fields))
 
 (def get (partial api/get root))
+
 
 (defn list-view [app]
   (jlist/view config app))

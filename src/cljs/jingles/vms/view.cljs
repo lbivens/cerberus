@@ -19,7 +19,6 @@
 
 (defn render [app]
   (do
-    (pr (keys (get-in app [root])))
     (let [uuid (get-in app [root :selected])
           element (get-in app [root :elements uuid])]
       (d/div

@@ -78,8 +78,8 @@
 (def order-class {:asc "asc"
                   :desc "desc"})
 
-(def order-str {:asc "v"
-                :desc "^"})
+(def order-str {:asc (r/glyphicon {:glyph "chevron-up"})
+                :desc (r/glyphicon {:glyph "chevron-down"})})
 
 (defn tbl-header [root sort field]
   (let [id (:id field)

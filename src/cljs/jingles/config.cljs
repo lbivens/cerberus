@@ -7,6 +7,7 @@
 (enable-console-print!)
 
 (def metadata-root [:metadata :jingles])
+
 (defn load []
   (go (let [resp (<! (http/get "sessions"))]
         (if (= 200 (:status resp))
@@ -14,10 +15,9 @@
                 uuid (:uuid (:body resp))]
             (set-state! :config conf)
             (set-state! :user uuid)
-            (pr conf))))))
+            conf)))))
 
 (defn set-config! [path value]
-  
   (do
     (if-let [uuid (:user @app-state)]
       (api/update-metadata :users uuid (vec (concat [:jingles] path)) value))
@@ -29,7 +29,6 @@
      (let [v (get-in @app-state (concat [:config] path):no-value-set)]
        (if (= v :no-value-set)
          (do
-           (pr "!" path default)
            (set-config! path default)
            default)
          v)))

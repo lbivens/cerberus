@@ -17,8 +17,10 @@
             (pr conf))))))
 
 (defn set-config! [path value]
+  
   (do
-    (api/update-metadata :users (:user @app-state) (vec (concat [:jingles] path)) value)
+    (if-let [uuid (:user @app-state)]
+      (api/update-metadata :users uuid (vec (concat [:jingles] path)) value))
     (set-state! (vec (concat [:config] path)) value)
     value))
 

@@ -30,7 +30,7 @@
 
 (defn paginate [elements state]
   (let [length (count elements)
-        size (or (:page-size state) 5)
+        size (or (:page-size state) 20)
         page (or (:page state) 1)
         last (Math/ceil  (/ length size))
         ;; If we're on a page that is too lage
@@ -123,7 +123,18 @@
     (sort-by #(get-in all-fields [% :order]) used-fields)))
 
 (defn filter-field [root text]
-  (make-event #(set-state! [root :filter] text)))
+  (make-event #(conf/set-config! [root :filter] text)))
+
+
+(defn cell-opt [opts opt field]
+  (if-let [style (opt field)]
+    (assoc opts opt style)
+    opts))
+
+(defn cell-attrs [field]
+  (-> {}
+      (cell-opt :style field)
+      (cell-opt :class field)))
 
 (defn tbl [config state]
   (let [root (:root config)
@@ -141,10 +152,12 @@
                  (map
                   (fn [field]
                     (let [txt (show-field field e)]
-                      (if (or (empty? txt) (= (:filter field) false))
-                        (d/td txt)
-                        (d/td (r/glyphicon {:glyph "search"
-                                            :on-click (filter-field root txt)}) " " txt))))
+                      (if (or (= txt "") (= (:filter field) false))
+                        (d/td (cell-attrs field)
+                              txt)
+                        (d/td (cell-attrs field)
+                              (r/glyphicon {:glyph "search"
+                                            :on-click (filter-field root (str txt))}) " " txt))))
                   fields)))
         (map #(get-in state [:elements %]) (:list elements)))))
      (pagination root elements))))

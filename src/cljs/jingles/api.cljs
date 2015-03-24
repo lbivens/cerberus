@@ -3,6 +3,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [jingles.http :as http]
             [clojure.string :refer [join]]
+            [jingles.utils :refer [value-by-key]]
             [jingles.state :refer [app-state set-state!]]))
 
 
@@ -34,7 +35,7 @@
     (if (empty? uuid)
       ""
       (if-let [sub (get-in @app-state [root :elements uuid])]
-        (get-in sub path)
+        (value-by-key path sub)
         (do
           (to-state [root :elements uuid] (http/get (str (name root) "/" uuid)))
           uuid)))))

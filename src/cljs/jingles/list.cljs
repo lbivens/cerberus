@@ -7,18 +7,16 @@
             [om-bootstrap.pagination :as pg]
             [om-bootstrap.button :as b]
             [om-bootstrap.input :as i]
-            [jingles.utils :refer [goto val-by-id make-event]]
+            [jingles.utils :refer [goto val-by-id make-event value-by-key]]
             [jingles.state :refer [set-state! update-state!]]))
-
-(defn value-by-key [key element]
-  (cond
-   (keyword? key) (key element)
-   (fn? key) (key element)
-   (list? key) (get-in element (vec key))
-   :else (do (pr (type key)) "-")))
 
 (defn show-field [field element]
   (value-by-key (:key field) element))
+
+(defn get-filter-field [field element]
+  (if-let [key (:filter-key field)]
+    (value-by-key key element)
+    (value-by-key (:key field) element)))
 
 (defn expand-fields [config selected]
   (let [fields (:fields config)]
@@ -58,14 +56,15 @@
 
 (defn apply-filter [config state]
   (let [filter-str (:filter state)
-        fields (filter #(not= (:filter %) false) (vals (:fields config)))]
+        fields (filter #(not= (:filter %) false) (vals (:fields config)))
+        fields (map #(partial get-filter-field %) fields)]
     (if (empty? filter-str)
       (:list state)
       (let [re  (re-pattern filter-str)
             list (:list state)]
         (filter (fn [uuid]
                   (let [e (get-in state [:elements uuid])
-                        test-fields (map #(show-field % e) fields)]
+                        test-fields (map #(% e) fields)]
                     (some #(re-find re (if (string? %) % (str %))) test-fields))) list)))))
 
 (defn sort-and-paginate [config state]

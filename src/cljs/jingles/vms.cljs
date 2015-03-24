@@ -19,7 +19,8 @@
                       :uuid {:id :uuid :title "UUID" :key :uuid :order 1}
                       :state {:id :state :title "State" :key :state}
                       :dataset {:id :dataset :title "Dataset"
-                                :key (partial api/get-sub-element :datasets :dataset [:name])}
+                                :key (partial api/get-sub-element :datasets :dataset
+                                              #(str (:name %) "-" (:version %)))}
                       :package {:id :package :title "Package"
                                 :key (partial api/get-sub-element :packages :package [:name])}
                       :actions {:id :actions :title "Actions" :order 99999 :filter false

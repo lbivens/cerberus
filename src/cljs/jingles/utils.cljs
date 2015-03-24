@@ -77,3 +77,10 @@
          (assoc-in [e :order] (get-in config [:fields e :order] 0))))
    {}
    (keys (:fields config))))
+
+(defn value-by-key [key element]
+  (cond
+   (keyword? key) (key element)
+   (fn? key) (key element)
+   (list? key) (get-in element (vec key))
+   :else ""))

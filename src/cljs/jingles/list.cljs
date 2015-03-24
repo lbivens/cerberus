@@ -159,7 +159,7 @@
                               txt)
                         (d/td (cell-attrs field)
                               (r/glyphicon {:glyph "pushpin"
-                                            :class "bingo"
+                                            :class "filterby"
                                             :on-click (filter-field root (str txt))}) " " txt))))
                   fields)))
         (map #(get-in state [:elements %]) (:list elements)))))
@@ -177,9 +177,11 @@
         title (:title config)
         state (root app)
         filter (conf/get-config [root :filter])]
-    (d/div
+    (d/div {:class "listview"}
      nil
      (d/h1 nil title)
+     (d/div {:class "filterbar"}
+
      (i/input {:type "text"
                :id "filter"
                :value filter
@@ -196,4 +198,7 @@
                                  :on-click toggle-fn
                                  :checked (get-in fields [id :show])}))))
                   (vals (:fields config))))
+
+      )
+
      (tbl config state))))

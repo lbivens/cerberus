@@ -7,7 +7,7 @@
             [om-bootstrap.pagination :as pg]
             [om-bootstrap.button :as b]
             [om-bootstrap.input :as i]
-            [jingles.utils :refer [goto val-by-id]]
+            [jingles.utils :refer [goto val-by-id make-event]]
             [jingles.state :refer [set-state! update-state!]]))
 
 (defn value-by-key [key element]
@@ -75,7 +75,7 @@
 (def flip-order {:asc :desc
                  :desc :asc})
 (def order-class {:asc "asc"
-                   :desc "desc"})
+                  :desc "desc"})
 (def order-str {:asc "v"
                 :desc "^"})
 (defn tbl-header [root sort field]
@@ -83,7 +83,7 @@
         order (:order sort)]
     (if (= id (:field sort))
       (d/td (d/a {:onClick #(set-state! [root :sort :order] (flip-order order))
-                     :className (order-class order)} (:title field) " " (order-str order)))
+                  :className (order-class order)} (:title field) " " (order-str order)))
       (d/td (d/a {:onClick #(set-state! [root :sort] {:field id :order :asc})} (:title field))))))
 
 (defn tbl-headers [root sort fields]
@@ -92,15 +92,12 @@
     (map (partial tbl-header root sort) fields))))
 
 (defn page-click-fn [root page]
-  (fn [e]
-    (do
-      (set-state! [root :page] page)
-      (.stopPropagation e)
-      (.preventDefault e))))
+  (make-event #(set-state! [root :page] page)))
+
 (defn page-link [root current page]
   (pg/page {:on-click (page-click-fn root page)
             :active? (= page current)}
-       page))
+           page))
 
 (defn pagination [root data]
   (let [page-count (Math/ceil (/ (:length data) (:size data)))
@@ -124,6 +121,9 @@
   (let [used-fields (filter #(get-in all-fields [% :show]) (keys all-fields))]
     (sort-by #(get-in all-fields [% :order]) used-fields)))
 
+(defn filter-field [root text]
+  (make-event #(set-state! [root :filter] text)))
+
 (defn tbl [config state]
   (let [root (:root config)
         fields (expand-fields config (used-fields (:fields state)))
@@ -139,7 +139,11 @@
                  {:on-click #(goto (str "/" (name root) "/" (:uuid e)))}
                  (map
                   (fn [field]
-                    (d/td (show-field field e)))
+                    (let [txt (show-field field e)]
+                      (if (empty? txt)
+                        (d/td nil)
+                        (d/td (r/glyphicon {:glyph "search"
+                                            :on-click (filter-field root txt)}) " " txt))))
                   fields)))
         (map #(get-in state [:elements %]) (:list elements)))))
      (pagination root elements))))
@@ -166,11 +170,7 @@
                  (map-indexed
                   (fn [idx field]
                     (let [id (:id field)
-                          toggle-fn (fn [e]
-                                      (do
-                                        (update-state! [root :fields id :show] not)
-                                        (.stopPropagation e)
-                                        (.preventDefault e)))]
+                          toggle-fn (make-event #(update-state! [root :fields id :show] not))]
                       (b/menu-item
                        {:key idx :on-click toggle-fn}
                        (i/input {:type "checkbox"

@@ -154,7 +154,7 @@
                  (map
                   (fn [field]
                     (let [txt (show-field field e)]
-                      (if (or (= txt "") (= (:filter field) false))
+                      (if (or (= txt "") (= (:filter field) false) (:no-quick-filter field))
                         (d/td (cell-attrs field)
                               txt)
                         (d/td (cell-attrs field)
@@ -183,9 +183,7 @@
      (d/div
       {:class "filterbar"}
       (i/input
-       {:type "text"
-        :id "filter"
-        :value filter
+       {:type "text" :id "filter" :value filter
         :on-change #(conf/set-config! [root :filter] (val-by-id "filter"))})
       (b/dropdown
        {:title (r/glyphicon {:glyph "align-justify"})}

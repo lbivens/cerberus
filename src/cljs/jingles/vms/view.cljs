@@ -96,10 +96,34 @@
         logs))))))
 
 
+(defn group-li [& args]
+  (d/li {:class "list-group-item"} args))
+(defn render-network [{interface :interface
+                       tag :nic_tag
+                       ip :ip
+                       netmask :netmask
+                       gateway :gateway
+                       mac :mac}]
+  (g/col
+   {:md 4}
+   (p/panel
+    {:header interface
+     :list-group
+     (d/ul {:class "list-group"}
+           (group-li "Tag: " tag)
+           (group-li  "IP: " ip)
+           (group-li  "Netmask: " netmask)
+           (group-li  "Gateway: " gateway)
+           (group-li  "MAC: " mac))})))
+
 (defn render-networks [app element]
-  (r/well
-   {}
-   (. js/JSON (stringify (clj->js (get-in element [:config :networks]))))))
+  (let [networks (get-in element [:config :networks])
+        rows (partition 4 4 nil networks)]
+    (r/well
+     nil
+     (g/grid
+      nil
+      (map #(g/row nil (map render-network %)) rows)))))
 
 (defn render-package [app element]
   (let [package (api/get-sub-element :packages :package identity element)]
@@ -120,7 +144,7 @@
 (defn render-fw-rules [app element]
   (r/well
    {}
-   (pr-str (:log element))))
+   (pr-str (:fw_rules element))))
 
 (defn render-metadata [app element]
   (r/well

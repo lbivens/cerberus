@@ -2,7 +2,7 @@
   (:require
    [jingles.state :refer [set-view! set-state!]]
    [goog.events :as events]
-   [jingles.vms :as vms]
+   [jingles.vms.api :as vms]
    [jingles.datasets :as datasets]
    [jingles.hypervisors :as hypervisors]
 

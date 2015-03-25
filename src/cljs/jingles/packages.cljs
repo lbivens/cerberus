@@ -13,10 +13,8 @@
 
 (set-state! [root :fields] (reduce #(assoc-in %1 [%2 :show] true) {} (keys (:fields config))))
 
-(def list-fields
-  "uuid,name")
 
-(def list (partial api/list root list-fields))
+(defn list [] (api/list root))
 
 (def get (partial api/get root))
 

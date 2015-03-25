@@ -154,7 +154,7 @@
                  (map
                   (fn [field]
                     (let [txt (show-field field e)]
-                      (if (or (= txt "") (= (:filter field) false) (:no-quick-filter field))
+                      (if (or (= txt "") (= (:filter field) false) (= (:no-quick-filter field) true))
                         (d/td (cell-attrs field)
                               txt)
                         (d/td (cell-attrs field)

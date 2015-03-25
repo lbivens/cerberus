@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+   [jingles.vms.api :refer [root]]
    [om-bootstrap.button :as b]
    [om-bootstrap.random :as r]
    [jingles.api :as api]
@@ -10,10 +11,6 @@
    [jingles.vms.view :as view]
    [jingles.utils :refer [initial-state make-event]]
    [jingles.state :refer [set-state!]]))
-
-(def root :vms)
-
-
 
 (def config {:fields {:name {:id :name :title "Name" :key '(:config :alias) :order 0}
                       :cpu {:id :cpu :title "CPU" :key '(:config :cpu_cap) :order 0}
@@ -24,7 +21,8 @@
                                               #(str (:name %) "-" (:version %)))}
                       :package {:id :package :title "Package"
                                 :key (partial api/get-sub-element :packages :package [:name])}
-                      :actions {:id :actions :title "Actions" :order 99999 :filter false
+                      :actions {:id :actions :title "" :order 99999 :filter false
+                                :style {:width "20px"}
                                 :key (fn [e]
                                        (let [locked (get-in e [:metadata :jingles :locked] false)
                                              set-lock (partial api/update-metadata root (:uuid e) [:jingles :locked])]
@@ -48,13 +46,6 @@
              :title "Machines"})
 
 (set-state! [root :fields] (initial-state config))
-
-(def list-fields
-  "alias,uuid,config,state,dataset,package,metadata")
-
-(def list (partial api/list root list-fields))
-
-(def get (partial api/get root))
 
 (defn list-view [app]
   (jlist/view config app))

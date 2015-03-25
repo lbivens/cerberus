@@ -16,6 +16,10 @@
     (swap! app-state assoc-in k v)
     (swap! app-state assoc k v)))
 
+
+(defn delete-state! [k]
+  (swap! app-state dissoc k))
+
 (defn set-view! [section view]
   (set-state! :section section)
   (set-state! :view view))

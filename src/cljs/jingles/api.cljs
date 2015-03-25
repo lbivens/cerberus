@@ -3,9 +3,14 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [jingles.http :as http]
             [clojure.string :refer [join]]
-            [jingles.utils :refer [value-by-key]]
+            [jingles.utils :refer [goto value-by-key]]
             [jingles.state :refer [app-state set-state!]]))
 
+
+(defn check-login []
+  (do
+    (set-state! :token false)
+    (goto)))
 
 (defn to-state
   ([state-path req]
@@ -13,19 +18,39 @@
            (set-state! state-path (js->clj (:body resp))))))
   ([state-path req map-fn]
      (go (let [resp (<! req)]
-           (set-state! state-path (map map-fn (js->clj (:body resp))))))))
+           (if (= 401 (:status resp))
+             (check-login)
+             (set-state! state-path (map map-fn (js->clj (:body resp)))))))))
 
-(defn full-list [path fields]
-  (http/get path {"x-full-list" "true" "x-full-list-fields" fields}))
+(defn full-list
+  ([path]
+     (http/get path {"x-full-list" "true"}))
+  ([path fields]
+     (http/get path {"x-full-list" "true" "x-full-list-fields" fields})))
 
-(defn list [root list-fields]
-  (go
-    (let [resp (<! (full-list (name root) list-fields))
-          elements (js->clj (:body resp))
-          list (map :uuid elements)
-          elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
-      (set-state! [root :elements] elements)
-      (set-state! [root :list] list))))
+(defn list
+  ([root]
+     (go
+       (let [resp (<! (full-list (name root)))
+             elements (js->clj (:body resp))
+             list (map :uuid elements)
+             elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
+         (if (= 401 (:status resp))
+           (check-login)
+           (do
+             (set-state! [root :elements] elements)
+             (set-state! [root :list] list))))))
+  ([root list-fields]
+     (go
+       (let [resp (<! (full-list (name root) list-fields))
+             elements (js->clj (:body resp))
+             list (map :uuid elements)
+             elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
+         (if (= 401 (:status resp))
+           (check-login)
+           (do
+             (set-state! [root :elements] elements)
+             (set-state! [root :list] list)))))))
 
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
@@ -40,18 +65,24 @@
           (to-state [root :elements uuid] (http/get (str (name root) "/" uuid)))
           uuid)))))
 
+(defn request-and-get
+  ([request root uuid path]
+     (let [path-str (map #(if (keyword? %) (name %) %) path)
+           path-url (str (name  root) "/" uuid "/" (join "/" path-str))]
+       (go (let [resp  (<! (request path-url))]
+             (if (and (>= (:status resp) 200) (< (:status resp) 300))
+               (get root uuid))))))
+  ([request root uuid path value]
+     (let [path-str (map #(if (keyword? %) (name %) %) path)
+           path-url (str (name  root) "/" uuid "/" (join "/" path-str))]
+       (go (let [resp  (<! (request path-url {} {:json-params value}))]
+             (if (and (>= (:status resp) 200) (< (:status resp) 300))
+               (get root uuid)))))))
 
-(defn update-metadata
-  ([root uuid path value]
-     (let [key (last path)
-           path-str (map #(if (keyword? %) (name %) %) (butlast path))
-           path-url (str (name  root) "/" uuid "/metadata/"(join "/" path-str))]
-       (update-metadata root uuid path value
-                        #(go (let [resp  (<! (http/put path-url {} {:json-params (hash-map key value)}))]
-                               (if (= 204 (:status resp))
-                                 (get root uuid)))))))
-  ([root uuid path value done-fn]
-     (let [key (last path)
-           path-str (map #(if (keyword? %) (name %) %) (butlast path))
-           path-url (str (name  root) "/" uuid "/metadata/"(join "/" path-str))]
-       (done-fn))))
+(defn update-metadata [root uuid path value]
+  (let [key (last path)
+        path (butlast path)]
+    (request-and-get http/put root uuid (concat [:metadata] path) (hash-map key value))))
+
+(defn delete-metadata [root uuid path]
+  (request-and-get http/delete root uuid (concat [:metadata] path)))

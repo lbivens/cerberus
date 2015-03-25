@@ -5,12 +5,12 @@
             [om-bootstrap.grid :as g]
             [om-bootstrap.random :as r]
             [om-bootstrap.nav :as n]
-            [jingles.utils :refer [goto]]
+            [jingles.utils :refer [goto grid-row]]
             [jingles.http :as http]
-            [jingles.api :as api]))
+            [jingles.api :as api]
+            [jingles.vms.api :refer [root]]
+            [jingles.state :refer [set-state!]]))
 
-
-(def root :vms)
 
 (def sub-element (partial api/get-sub-element))
 
@@ -27,7 +27,6 @@
         package (api/get-sub-element :packages :package identity element)
         dataset (api/get-sub-element :datasets :dataset identity element)
         services (:services element)]
-    (pr "package: " dataset)
     (r/well
      {}
      "Alias: "          (:alias conf)(d/br)
@@ -125,11 +124,63 @@
       nil
       (map #(g/row nil (map render-network %)) rows)))))
 
+(defn cmp-vals [package cmp-package val]
+  (if-let [cmp-vap (cmp-package val)]
+    (let [val (package val)
+          diff (- cmp-vap val)]
+      (cond
+       (> diff 0) [val " (+" diff ")"]
+       (< diff 0) [val " (" diff ")"]
+       :else val))
+    (package val)))
+
 (defn render-package [app element]
-  (let [package (api/get-sub-element :packages :package identity element)]
+  (let [current-package (:package element)
+        packages (get-in app [:packages :elements])
+        package (get-in app [:packages :elements current-package])
+        cmp-pkg (get-in app [:tmp :pkg])
+        cmp-vals (partial cmp-vals package cmp-pkg)]
+    (jingles.packages/list)
     (r/well
      {}
-     (pr-str package))))
+     (grid-row
+      (g/col
+       {:md 4}
+       (p/panel
+        {:header (:name package)
+         :list-group
+         (d/ul {:class "list-group"}
+               (group-li "CPU: " (cmp-vals :cpu_cap))
+               (group-li "Memory: " (cmp-vals :ram))
+               (group-li "Quota: " (cmp-vals :quota)))}))
+      (g/col
+       {:md 8}
+       (table
+        {}
+        (d/thead
+         {}
+         (map d/td
+              ["Name" "CPU" "Memory" "Quota"]))
+        (apply d/tbody
+               {}
+               (map
+                (fn [[uuid {name :name :as pkg}]]
+                  (let [cmp #(cond
+                              (> %2 (package %1)) (r/glyphicon {:glyph "chevron-up"})
+                              (< %2 (package %1)) (r/glyphicon {:glyph "chevron-down"})
+                              :else "")
+                        td #(d/td (pkg %) (cmp % (pkg %))) ]
+                    (d/tr
+                     {:class (if (= uuid current-package) "current" "")
+                      :on-mouse-over (fn [e] (set-state! [:tmp :pkg] pkg))
+                      :on-mouse-leave (fn [e] (set-state! [:tmp :pkg] {}))
+                      :on-click (fn [e] (pr pkg))}
+                     (d/td name)
+                     (td :cpu_cap)
+                     (td :ram)
+                     (td :quota))))
+                packages)))))
+     )))
 
 (defn render-snapshots [app element]
   (r/well
@@ -150,7 +201,6 @@
   (r/well
    {}
    (pr-str (:metadata element))))
-
 
 (def sections {""          {:key 1 :fn render-home      :title "General"}
                "networks"  {:key 2 :fn render-networks  :title "Networks"}

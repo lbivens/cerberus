@@ -2,7 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [jingles.http :as http]
             [jingles.api :as api]
-            [jingles.state :refer [app-state set-state!]]))
+            [jingles.state :refer [app-state set-state! delete-state! update-state!]]))
 
 (enable-console-print!)
 
@@ -37,3 +37,13 @@
 
 (defn update-config! [path update-fn]
   (set-config! path (update-fn (get-config path))))
+
+(defn delete-config! [path]
+  (if (and (vector? path) (> (count path) 1))
+    (let [key (last path)
+          path (butlast path)]
+      (update-config! path #(dissoc % key)))
+    (update-state! [:config] #(dissoc % path))))
+
+
+

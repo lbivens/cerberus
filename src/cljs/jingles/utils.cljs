@@ -86,6 +86,5 @@
    (vector? key) (get-in element (vec key))
    :else ""))
 
-
 (defn grid-row [& body]
   (g/grid {} (g/row {} body)))

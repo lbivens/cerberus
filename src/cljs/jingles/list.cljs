@@ -199,7 +199,4 @@
                :on-click toggle-fn
                :checked (get-in fields [id :show])}))))
         (vals (:fields config)))))
-     (b/toolbar
-      {}
-      (b/button {:bs-style "success" :class "addnew"} "+"))
      (tbl config state))))

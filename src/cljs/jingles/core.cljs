@@ -131,12 +131,13 @@
            "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(conf/set-config! [:add :state] "minimised")})
            "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/set-config! [:add :state] "maximised")})
            :else (if (addable? (:section app))
-                   (b/button {:bs-style "success" :class "addnew"}
-                             (r/glyphicon {:glyph "plus" :on-click
-                                           (fn []
-                                             (do
-                                               (conf/set-config! [:add :section] (name (:section app)))
-                                               (conf/set-config! [:add :state] "maximised")))})))))))
+                   (b/button {:bs-style "success" :class "addnew"
+                              :on-click
+                              (fn []
+                                (do
+                                  (conf/set-config! [:add :section] (name (:section app)))
+                                  (conf/set-config! [:add :state] "maximised")))}
+                             (r/glyphicon {:glyph "plus" })))))))
 
 
 (defn submit-add [app]

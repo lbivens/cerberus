@@ -862,42 +862,57 @@
 
 //== Custom
 //
-//##
 
-// still to be commented
+// ## STYLING FOR ALL REUSABLE LIST VIEWS ## // 
+
+// create new item button
+div.listview div.btn-toolbar {
+  position: fixed;
+  top: 61px;
+  right: 31px;
+}
+
+div.listview div.btn-toolbar button.addnew {
+  border-radius: 50%;
+  margin: 0;
+  height: 50px;
+  width: 50px;
+} 
+
+// filterbar properties
 div.filterbar {
   display: inline-block;
   width: 100%;
 }
-// still to be commented
+// filterbar width wide enough for full uuid display
 div.filterbar div.form-group {
-  width: 200px;
+  width: 325px;
   float: right;
 }
-// still to be commented
+// float btngroup to the right
 div.filterbar div.btn-group {
   float: right;
 }
-// still to be commented
+// change hover color
 div.filterbar .btn-group button.dropdown-toggle.btn.btn-default:hover{
   opacity:.5;
   color: #F0602B;
 }
-// still to be commented
+// control filter selector dropdown placement
 div.filterbar .btn-group .dropdown-menu{
   top: 45px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.3);
   border-radius: 2px;
 }
-// still to be commented
+// filter selector hover attributes
 div.filterbar .btn-group .dropdown-menu li a:hover{
   background-color: transparent;
 }
-// still to be commented
+// spacing between horizontal line and table headings 
 .listview table thead tr td{
   padding-top: 18px;
 }
-// still to be commented
+// slight rounded edges on filter input entry box 
 .listview .form-group .form-control{
   border-radius: 2px;
 }
@@ -905,55 +920,67 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 .listview .form-group div {
   margin: 0;
 }
+// change spacing for and size for column sort chevron
+.listview table thead tr td .glyphicon {
+  font-size: 10px;
+  padding-left: 3px;
+}
+// hover colour for column sort chevron
+.listview table thead tr td a:hover {
+  cursor: pointer;
+  color: #F0602B;
+}
 // still to be commented
-div .btn-group>.btn {
+.listview div .btn-group>.btn {
   background-color: transparent;
 }
-// still to be commented
-div .btn-group>.btn span.caret{
+// change color on action dropdown hover
+.listview div .btn-group>.btn:hover {
+  opacity:.5;
+  color: #F0602B;
+}
+// remove caret icon from action dropdown menu
+.listview div .btn-group>.btn span.caret{
   display: none;
 }
-// still to be commented
-button.dropdown-toggle btn btn-default {
-}
-// still to be commented
+// change uuid font to monospaced font that ties in and with fallback 
 .uuid {
-//font-family: "Lucida Console", Monaco, monospace
-  font-family: "Lato","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-family:   "Courier New", Menlo, Monaco, Consolas, monospace;
 }
 // expandable drop down 3 dots next to items
 .btn-xs {
   background-color: transparent;
 }
 // remove ugly caret icon next to table list action dropdown
-table span.caret {
+.listview table span.caret {
   display: none;
 }
 // alignment and style of table list action dropdown
-table .dropdown-menu {
+.listview table .dropdown-menu {
   left: -95px;
   top: 28px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.3);
   min-width: 120px;
   border-radius: 2px;
 }
-// still to be commented
-table td span.filterby {
+// filterby padding
+.listview table td span.filterby {
   padding-right: 5px;
 }
-// still to be commented
-table td .filterby {
+// filterby item size
+.listview table td .filterby {
   font-size: 80%;
   opacity:.1
 }
-// still to be commented
-table td .filterby:hover {
+// change hover color on filter icons
+.listview table td .filterby:hover {
   cursor: pointer;
   opacity:.5;
   color: #F0602B;
 }
-// still to be commented
-thead tr td a {
+// add some space on table header names so they dont sit over filter icons
+.listview thead tr td a {
   /* text-align: start; */
   padding-left: 16px;
 }
+// ## END - STYLING FOR ALL REUSABLE LIST VIEWS ## // 

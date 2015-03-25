@@ -180,6 +180,9 @@
     (d/div {:class "listview"}
      nil
      (d/h1 nil title)
+     (b/toolbar {}        
+           (b/button {:bs-style "success" :class "addnew"} "+")
+            )
      (d/div {:class "filterbar"}
 
      (i/input {:type "text"

@@ -137,23 +137,38 @@
                                      (conf/set-config! [:add :section] (name (:section app)))
                                      (conf/set-config! [:add :state] "maximised")))}))))))
 
+
+(defn submit-add [app]
+  (if (conf/get-config [:add :valid] false)
+    (let [section (conf/get-config [:add :section])
+          data (conf/get-config [:add :data])]
+      (go
+        (let [reply (<! (http/post section {} {:json-params data}))]
+          (pr reply)
+          (goto (str "/" section))))
+      (conf/delete-config! :add))
+    (pr "invalid "(conf/get-config [:add :data]))))
+
+(def add-renderer
+  {"vms"      vms-create/render
+   "users"    users-create/render
+   "roles"    roles-create/render
+   "orgs"     orgs-create/render
+   "packages" packages-create/render
+   "networks" networks-create/render
+   "ipranges" ipranges-create/render
+   "dtrace"   dtrace-create/render})
+
 (defn add-body [app]
   (if (= (conf/get-config [:add :state]) "maximised")
-    (g/row
+    (if-let [create-view (add-renderer (conf/get-config [:add :section] "vms"))]
+      (g/row
      nil
      (g/col
       {:md 12}
       (r/glyphicon {:glyph "remove" :on-click #(conf/delete-config! :add)})
-      (match
-       (conf/get-config [:add :section] "vms")
-       "vms" (vms-create/render app)
-       "users" (users-create/render app)
-       "roles" (roles-create/render app)
-       "orgs" (orgs-create/render app)
-       "packages" (packages-create/render app)
-       "networks" (networks-create/render app)
-       "ipranges" (ipranges-create/render app)
-       "dtrace" (dtrace-create/render app))))))
+      (r/glyphicon {:glyph "ok" :on-click #(submit-add app)})
+      (create-view app))))))
 
 (defn add-view [app]
   (g/grid

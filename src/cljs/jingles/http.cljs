@@ -23,17 +23,21 @@
 (defn post
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [hdrs req]]
-  (let [hdrs (merge hdrs (default-headers))]
-    (cljs-http.client/post (api url) (assoc req :headers hdrs))))
+  (let [hdrs (merge hdrs (default-headers))
+        req (assoc req :headers hdrs)]
+    (pr "post" url req)
+    (cljs-http.client/post (api url) req)))
 
 (defn put
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [hdrs req]]
-  (let [hdrs (merge hdrs (default-headers))]
-    (cljs-http.client/put (api url) (assoc req :headers hdrs))))
+  (let [hdrs (merge hdrs (default-headers))
+        req (assoc req :headers hdrs)]
+    (cljs-http.client/put (api url) req)))
 
 (defn delete
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [hdrs req]]
   (let [hdrs (merge hdrs (default-headers))]
     (cljs-http.client/delete (api url) (assoc req :headers hdrs))))
+

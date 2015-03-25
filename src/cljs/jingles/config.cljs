@@ -6,6 +6,12 @@
 
 (enable-console-print!)
 
+
+(def updates (atom []))
+
+(defn add-update [updates path value]
+  (conj (vec (filter #(not= (first %) path) updates)) [path value]))
+
 (def metadata-root [:metadata :jingles])
 
 (defn load []
@@ -20,7 +26,9 @@
 (defn set-config! [path value]
   (do
     (if-let [uuid (:user @app-state)]
-      (api/update-metadata :users uuid (vec (concat [:jingles] path)) value))
+      (swap! updates add-update [:users uuid (vec (concat [:jingles] path))] value)
+      ;(api/update-metadata :users uuid (vec (concat [:jingles] path)) value)
+      )
     (set-state! (vec (concat [:config] path)) value)
     value))
 
@@ -46,4 +54,14 @@
     (update-state! [:config] #(dissoc % path))))
 
 
+(defn apply-updates [updates]
+  (do
+    (doall
+     (map
+      (fn [[[section uuid path] value]]
+        (api/update-metadata section uuid path value))
+      updates))
+    []))
 
+(js/setInterval
+ (fn [] (swap! updates apply-updates)) 10000)

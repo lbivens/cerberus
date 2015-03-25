@@ -9,6 +9,7 @@
             [jingles.http :as http]
             [jingles.api :as api]))
 
+
 (def root :vms)
 
 (def sub-element (partial api/get-sub-element))
@@ -19,8 +20,6 @@
 (defn get-dataset [element]
   (sub-element :datasets :dataset [:name] element))
 
-
-
 (defn render-home [app element]
   (r/well
    {}
@@ -28,15 +27,59 @@
    (d/hr)
    (pr-str (:config element))))
 
+(defn render-services [app element]
+  (let [services (:services element)]
+    (r/well
+     {}
+     (table
+      {:striped? true :bordered? true :condensed? true :hover? true :responsive? true}
+      (d/thead
+       {:striped? false}
+       (d/tr
+        {}
+        (d/td {} "Service")
+        (d/td {} "State")))
+      (d/tbody
+       {}
+       (map
+        (fn [[srv state]]
+          (d/tr
+           (d/td (clojure.string/replace (str srv) #"^:" ""))
+           (d/td state)))
+        services))))))
+
+(defn render-logs [app element]
+  (let [logs (:log element)]
+    (r/well
+     {}
+     (table
+      {:striped? true :bordered? true :condensed? true :hover? true :responsive? true}
+      (d/thead
+       {:striped? false}
+       (d/tr
+        {}
+        (d/td {} "Date")
+        (d/td {} "Etnry")))
+      (d/tbody
+       {}
+       (map
+        (fn [{date :date log :log}]
+          (d/tr
+           (d/td (str (js/Date. date)))
+           (d/td log)))
+        logs))))))
+
+
 (defn render-networks [app element]
   (r/well
    {}
    (. js/JSON (stringify (clj->js (get-in element [:config :networks]))))))
 
 (defn render-package [app element]
-  (r/well
-   {}
-   (pr-str (:package element))))
+  (let [package (api/get-sub-element :packages :package identity element)]
+    (r/well
+     {}
+     (pr-str package))))
 
 (defn render-snapshots [app element]
   (r/well
@@ -47,16 +90,6 @@
   (r/well
    {}
    (pr-str (:backups element))))
-
-(defn render-services [app element]
-  (r/well
-   {}
-   (pr-str (:services element))))
-
-(defn render-logs [app element]
-  (r/well
-   {}
-   (pr-str (:log element))))
 
 (defn render-fw-rules [app element]
   (r/well
@@ -85,7 +118,6 @@
           element (get-in app [root :elements uuid])
           section (get-in app [root :section])
           key (get-in sections [section :key] 1)]
-      (pr "key" key)
       (d/div
        {}
        (apply n/nav {:bs-style "tabs" :active-key key}
@@ -94,7 +126,7 @@
                  (n/nav-item {:key (:key data)
                               :href (str "#/vms/" uuid (if (empty? section) "" (str "/" section)))}
                              (:title data)))
-               (sort-by (fn [[section data]] (pr (:key data)) (:key data)) (seq sections))))
+               (sort-by (fn [[section data]] (:key data)) (seq sections))))
        (if-let [f (get-in sections [section :fn] )]
          (f app element)
          (goto (str "#/vms/" uuid)))))))

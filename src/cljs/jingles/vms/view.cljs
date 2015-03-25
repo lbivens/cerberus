@@ -21,11 +21,37 @@
   (sub-element :datasets :dataset [:name] element))
 
 (defn render-home [app element]
-  (r/well
-   {}
-   (pr-str (dissoc element :config :services :backups :snapshots :network_mappings :info :log :fw_rules :metadata))
-   (d/hr)
-   (pr-str (:config element))))
+
+  (let [conf (:config element)
+        owner (api/get-sub-element :orgs :owner identity element)
+        package (api/get-sub-element :packages :package identity element)
+        dataset (api/get-sub-element :datasets :dataset identity element)
+        services (:services element)]
+    (pr "package: " dataset)
+    (r/well
+     {}
+     "Alias: "          (:alias conf)(d/br)
+     "Type: "           (:type conf)(d/br)
+     "Max Swap: "       (:max_swap conf)(d/br)
+     "State: "          (:state conf)(d/br)
+     "Memroy: "         (:ram conf)(d/br)
+     "Resolvers: "      (clojure.string/join ", " (:resolvers conf))(d/br)
+     "DNS Domain: "     (:dns_domain conf)(d/br)
+     "Quota: "          (:quota conf)(d/br)
+     "I/O Prioroty: "   (:zfs_io_priority conf)(d/br)
+     "CPU Shares: "     (:cpu_shares conf)(d/br)
+     "CPU Cap: "        (:cpu_cap conf)(d/br)
+
+     "Owner: "          (:name owner)(d/br)
+     "Autoboot: "       (:autoboot conf)(d/br)
+     "Dataset: "        (:name dataset)(d/br)
+     "Created: "        (:created_at conf)(d/br)
+     "Backups: "        (count  (:backups conf))(d/br)
+     "Snapshots: "      (count  (:backups conf))(d/br)
+     "Firewall Rules: " (count  (:fw_rules conf))(d/br)
+     "Services: "       (count (filter (fn [[_ state]] (= state "maintainance")) services)) "/"
+     (count (filter (fn [[_ state]] (= state "online")) services)) "/"
+     (count (filter (fn [[_ state]] (= state "disabled")) services)))))
 
 (defn render-services [app element]
   (let [services (:services element)]

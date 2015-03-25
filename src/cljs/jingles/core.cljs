@@ -79,6 +79,88 @@
 
 (def addable?
   #{:vms :users :roles :orgs :packages :networks :ipranges :dtrace})
+
+(defn nav-bar [app]
+  (n/navbar
+   {:brand (d/a {:href (str "#/")} "FiFo")}
+   (n/nav
+    {:collapsible? true}
+    (n/nav-item {:key 1 :href "#/vms"} "Machines")
+    (n/nav-item {:key 2 :href "#/datasets"} "Datasets")
+    (n/nav-item {:key 3 :href "#/hypervisors"} "Hypervisors")
+    (b/dropdown {:key 4 :title "Configuration"}
+                (b/menu-item {:key 1 :href "#/users"} "Users")
+                (b/menu-item {:key 2 :href "#/roles"} "Roles")
+                (b/menu-item {:key 3 :href "#/orgs"} "Organisations")
+                (b/menu-item {:divider? true})
+                (b/menu-item {:key 4 :href "#/packages"} "Packages")
+                (b/menu-item {:key 5 :href "#/networks"} "Networks")
+                (b/menu-item {:key 6 :href "#/ipranges"} "IP Ranges")
+                (b/menu-item {:key 6 :href "#/dtrace"} "Dtrace")))))
+(defn main-view [app]
+  (g/grid
+   nil
+   (g/row
+    nil
+    (g/col
+     {:xs 18 :md 12}
+     (match
+      (:section app)
+      :vms         (vms/render app)
+      :datasets    (datasets/view app)
+      :hypervisors (hypervisors/view app)
+      :networks    (networks/view app)
+      :packages    (packages/view app)
+      :ipranges    (ipranges/view app)
+      :dtrace      (dtrace/view app)
+      :users       (users/view app)
+      :roles       (roles/render app)
+      :orgs        (orgs/render app)
+      :else        (goto "/vms"))))))
+
+
+(defn add-btn [app]
+  (g/row
+   nil
+   ;; menu-up
+   ;; menu-down
+   ;; glyphicon-plus
+   (g/col {:xs 2 :xs-offset 5 :style {:text-align " center"}}
+          (match
+           (conf/get-config [:add :state] "none")
+           "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(conf/set-config! [:add :state] "minimised")})
+           "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/set-config! [:add :state] "maximised")})
+           :else (if (addable? (:section app))
+                   (r/glyphicon {:glyph "plus" :on-click
+                                 (fn []
+                                   (do
+                                     (conf/set-config! [:add :section] (name (:section app)))
+                                     (conf/set-config! [:add :state] "maximised")))}))))))
+
+(defn add-body [app]
+  (if (= (conf/get-config [:add :state]) "maximised")
+    (g/row
+     nil
+     (g/col
+      {:md 12}
+      (r/glyphicon {:glyph "remove" :on-click #(conf/delete-config! :add)})
+      (match
+       (conf/get-config [:add :section] "vms")
+       "vms" (vms-create/render app)
+       "users" (users-create/render app)
+       "roles" (roles-create/render app)
+       "orgs" (orgs-create/render app)
+       "packages" (packages-create/render app)
+       "networks" (networks-create/render app)
+       "ipranges" (ipranges-create/render app)
+       "dtrace" (dtrace-create/render app))))))
+
+(defn add-view [app]
+  (g/grid
+   nil
+   (add-btn app)
+   (add-body app)))
+
 (defn main []
   (om/root
    (fn [app owner]
@@ -86,77 +168,9 @@
       (if (:token app)
         (d/div
          {}
-         (n/navbar
-          {:brand (d/a {:href (str "#/")} "FiFo")}
-          (n/nav
-           {:collapsible? true}
-           (n/nav-item {:key 1 :href "#/vms"} "Machines")
-           (n/nav-item {:key 2 :href "#/datasets"} "Datasets")
-           (n/nav-item {:key 3 :href "#/hypervisors"} "Hypervisors")
-           (b/dropdown {:key 4 :title "Configuration"}
-                       (b/menu-item {:key 1 :href "#/users"} "Users")
-                       (b/menu-item {:key 2 :href "#/roles"} "Roles")
-                       (b/menu-item {:key 3 :href "#/orgs"} "Organisations")
-                       (b/menu-item {:divider? true})
-                       (b/menu-item {:key 4 :href "#/packages"} "Packages")
-                       (b/menu-item {:key 5 :href "#/networks"} "Networks")
-                       (b/menu-item {:key 6 :href "#/ipranges"} "IP Ranges")
-                       (b/menu-item {:key 6 :href "#/dtrace"} "Dtrace"))))
-         (g/grid
-          nil
-          (g/row
-           nil
-           (g/col
-            {:xs 18 :md 12}
-            (match
-             (:section app)
-             :vms (vms/render app)
-             :datasets (datasets/view app)
-             :hypervisors (hypervisors/view app)
-             :networks (networks/view app)
-             :packages (packages/view app)
-             :ipranges (ipranges/view app)
-             :dtrace (dtrace/view app)
-             :users (users/view app)
-             :roles (roles/render app)
-             :orgs (orgs/render app)
-             :else    (goto "/vms")))))
-         (g/grid
-          nil
-          (g/row
-           nil
-           ;; menu-up
-           ;; menu-down
-           ;; glyphicon-plus
-           (g/col {:xs 2 :xs-offset 5 :style {:text-align " center"}}
-                  (match
-                   (conf/get-config [:add :state] "none")
-                   "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(conf/set-config! [:add :state] "minimised")})
-                   "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/set-config! [:add :state] "maximised")})
-                   :else (if (addable? (:section app))
-                           (r/glyphicon {:glyph "plus" :on-click
-                                         (fn []
-                                           (do
-                                             (conf/set-config! [:add :section] (name (:section app)))
-                                             (conf/set-config! [:add :state] "maximised")))}))))
-           (if (= (conf/get-config [:add :state]) "maximised")
-             (g/row
-              nil
-              (g/col
-               {:md 12}
-               (r/glyphicon {:glyph "remove" :on-click #(conf/delete-config! :add)})
-               (match
-                (conf/get-config [:add :section] "vms")
-                "vms" (vms-create/render app)
-                "users" (users-create/render app)
-                "roles" (roles-create/render app)
-                "orgs" (orgs-create/render app)
-                "packages" (packages-create/render app)
-                "networks" (networks-create/render app)
-                "ipranges" (ipranges-create/render app)
-                "dtrace" (dtrace-create/render app))
-               "here goes the contetn"))
-             ))))
+         (nav-bar app)
+         (main-view app)
+         (add-view app))
         (do (goto)
             (login app)))))
    app-state

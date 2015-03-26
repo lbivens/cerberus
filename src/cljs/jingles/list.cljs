@@ -179,24 +179,26 @@
         filter (conf/get-config [root :filter])]
     (d/div
      {:class "listview"}
-     (d/h1 title)
-     (d/div
-      {:class "filterbar"}
-      (i/input
-       {:type "text" :id "filter" :value filter
-        :on-change #(conf/set-config! [root :filter] (val-by-id "filter"))})
-      (b/dropdown
-       {:title (r/glyphicon {:glyph "align-justify"})}
-       (map-indexed
-        (fn [idx field]
-          (let [id (:id field)
-                toggle-fn (make-event #(conf/update-config! [root :fields id :show] not))]
-            (b/menu-item
-             {:key idx :on-click toggle-fn}
-             (i/input
-              {:type "checkbox"
-               :label (:title field)
-               :on-click toggle-fn
-               :checked (get-in fields [id :show])}))))
-        (vals (:fields config)))))
+     (d/h1
+      {}
+      title
+      (d/div
+       {:class "filterbar pull-right"}
+       (i/input
+        {:type "text" :id "filter" :value filter
+         :on-change #(conf/set-config! [root :filter] (val-by-id "filter"))})
+       (b/dropdown
+        {:title (r/glyphicon {:glyph "align-justify"})}
+        (map-indexed
+         (fn [idx field]
+           (let [id (:id field)
+                 toggle-fn (make-event #(conf/update-config! [root :fields id :show] not))]
+             (b/menu-item
+              {:key idx :on-click toggle-fn}
+              (i/input
+               {:type "checkbox"
+                :label (:title field)
+                :on-click toggle-fn
+                :checked (get-in fields [id :show])}))))
+         (vals (:fields config))))))
      (tbl config state))))

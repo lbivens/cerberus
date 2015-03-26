@@ -882,7 +882,7 @@ button.addnew {
 // filterbar properties
 div.filterbar {
   display: inline-block;
-  width: 100%;
+height: 50px
 }
 // filterbar width wide enough for full uuid display
 div.filterbar div.form-group {
@@ -908,11 +908,11 @@ div.filterbar .btn-group .dropdown-menu{
 div.filterbar .btn-group .dropdown-menu li a:hover{
   background-color: transparent;
 }
-// spacing between horizontal line and table headings 
+// spacing between horizontal line and table headings
 .listview table thead tr td{
-  padding-top: 18px;
+  padding-top: 20px;
 }
-// slight rounded edges on filter input entry box 
+// slight rounded edges on filter input entry box
 .listview .form-group .form-control{
   border-radius: 2px;
 }
@@ -1006,6 +1006,15 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 #add-body{
   height: 300px;
 }
+
+.add-open #add-body {
+    display: block;
+}
+
+.add-closed #add-body {
+    display: none;
+}
+
 #add-btn {
   height: 20px;
 }

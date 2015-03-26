@@ -174,18 +174,18 @@
    "dtrace"   "Create DTrace Script"})
 
 (defn add-body [app]
-  (if (= (conf/get-config [:add :state]) "maximised")
+  (g/row
+   {:id "add-body"}
+   (if (= (conf/get-config [:add :state]) "maximised")
     (if-let [section (conf/get-config [:add :section] "vms")]
       (if-let [create-view (add-renderer section)]
-        (g/row
-         {:id "add-body"}
-         (g/col
-          {:md 12 :style {:text-align "center"}}
-          (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
-                (add-title section)
-                (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(conf/delete-config! :add)})
-                (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add app)}))
-          (create-view app)))))))
+        (g/col
+         {:md 12 :style {:text-align "center"}}
+         (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
+               (add-title section)
+               (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(conf/delete-config! :add)})
+               (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add app)}))
+         (create-view app)))))))
 
 (defn add-view [app]
   (g/grid
@@ -199,7 +199,7 @@
      (om/component
       (if (:token app)
         (d/div
-         {}
+         {:class (if (= (conf/get-config [:add :state] "minimised") "maximised") "add-open" "add-closed")}
          (nav-bar app)
          (main-view app)
          (add-view app))

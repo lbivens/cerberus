@@ -148,8 +148,10 @@
         (let [resp (<! (http/post section {} {:json-params data}))]
           (if (:success resp)
             (do
-              ((goto (str "/" section "/" (:uuid (:body resp)))))
-              (conf/delete-config! :add))))))
+              (pr "success" resp)
+              (goto (str "/" section "/" (:uuid (:body resp))))
+              (conf/delete-config! :add))
+            (pr "success" resp)))))
     (pr "invalid "(conf/get-config [:add :data]))))
 
 (def add-renderer

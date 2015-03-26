@@ -97,6 +97,7 @@
 
 (defn group-li [& args]
   (d/li {:class "list-group-item"} args))
+
 (defn render-network [{interface :interface
                        tag :nic_tag
                        ip :ip
@@ -125,22 +126,23 @@
       (map #(g/row nil (map render-network %)) rows)))))
 
 (defn cmp-vals [package cmp-package val]
-  (if-let [cmp-vap (cmp-package val)]
-    (let [val (package val)
-          diff (- cmp-vap val)]
-      (cond
-       (> diff 0) [val " (+" diff ")"]
-       (< diff 0) [val " (" diff ")"]
-       :else val))
-    (package val)))
+  (do
+    (if-let [cmp-vap (cmp-package val)]
+      (let [val (package val)
+            diff (- cmp-vap val)]
+        (cond
+         (> diff 0) [val " (+" diff ")"]
+         (< diff 0) [val " (" diff ")"]
+         :else val))
+      (package val))))
 
 (defn render-package [app element]
   (let [current-package (:package element)
         packages (get-in app [:packages :elements])
         package (get-in app [:packages :elements current-package])
-        cmp-pkg (get-in app [:tmp :pkg])
+        cmp-pkg (get-in app [:tmp :pkg] {})
         cmp-vals (partial cmp-vals package cmp-pkg)]
-    (jingles.packages/list)
+    (jingles.packages.api/list)
     (r/well
      {}
      (grid-row
@@ -161,6 +163,7 @@
          {}
          (map d/td
               ["Name" "CPU" "Memory" "Quota"]))
+
         (apply d/tbody
                {}
                (map
@@ -173,8 +176,7 @@
                     (d/tr
                      {:class (if (= uuid current-package) "current" "")
                       :on-mouse-over (fn [e] (set-state! [:tmp :pkg] pkg))
-                      :on-mouse-leave (fn [e] (set-state! [:tmp :pkg] {}))
-                      :on-click (fn [e] (pr pkg))}
+                      :on-mouse-leave (fn [e] (set-state! [:tmp :pkg] {}))}
                      (d/td name)
                      (td :cpu_cap)
                      (td :ram)

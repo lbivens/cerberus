@@ -123,8 +123,9 @@
     (sort-by #(get-in all-fields [% :order]) used-fields)))
 
 (defn filter-field [root text]
-  (make-event #(conf/set-config! [root :filter] (str (conf/get-config [root :filter] "") " " text))))
-
+  (let [cur (conf/get-config [root :filter] "")
+        cur (if (empty? cur) cur (str cur " "))]
+    (make-event #(conf/set-config! [root :filter]  (str  cur text)))))
 
 (defn cell-opt [opts opt field]
   (if-let [style (opt field)]

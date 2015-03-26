@@ -1002,7 +1002,7 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 }
 
 #add-view {
-    background-color: @gray-light;
+  background-color: #DBE2E9;
   position: fixed;
   bottom: 0px;
   margin-left: auto;
@@ -1015,38 +1015,51 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   height: 300px;
 }
 
+.add-closed #add-view {
+  background-color: transparent;
+}
+
+.add-closed #add-view span{
+  background-color: #5CB85C;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 15%;
+  opacity:.8
+}
+
+.add-closed #add-view span:hover {
+  padding: 15px;
+  opacity:1;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+div .add-open #add-btn {
+  display: none;
+}
+
+div .add-open #add-view {
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+div .add-open #add-view .glyphicon-ok:hover,.glyphicon-remove:hover {
+  cursor: pointer;
+  opacity:.5;
+  color: #F0602B;
+}
+
 .add-open #add-body {
-    display: block;
+  display: block;
+  color: #424f5c;
 }
 
 .add-closed #add-body {
-    display: none;
+  display: none;
 }
 
 #add-btn {
   height: 20px;
-}
-// still to be commented
-.add-view div.row {
-  // position: absolute;
-}
-// still to be commented
-#add-view span.createicon {
-  // position: fixed;
-  // right: 100px;
-  // top: 65px;
-  // background-color: #5CB85C;
-  // opacity:.9;
-  // width: 50px;
-  // height: 50px;
-  // border-radius: 50%;
-}
-
-#add-view span.createicon:hover {
-  // opacity:1;
-  // width: 60px;
-  // height: 60px;
-  // cursor: pointer;
 }
 
 // -----------> # END # - STYLING FOR CREATION BOX  ## //

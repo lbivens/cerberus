@@ -89,7 +89,10 @@
 (defn grid-row [& body]
   (g/grid {} (g/row {} body)))
 
-(defn ip-to-int [ip]
+(defn str->int [v]
+  (js/parseInt v))
+
+(defn ip->int [ip]
   (let [parts (clojure.string/split ip #"\.")
-        [a b c d] (map #(js/parseInt %) parts)]
-    (+ (bit-shift-left a 24) (bit-shift-left b 16) (bit-shift-left c 8) d)))
+        [a b c d] (map str->int parts)]
+    (bit-or (* 16777216 a) (* 65536 b) (* 256 c) d)))

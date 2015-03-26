@@ -199,7 +199,7 @@
      (om/component
       (if (:token app)
         (d/div
-         {:class (if (= (conf/get-config [:add :state] "minimised") "maximised") "add-open" "add-closed")}
+         {:class (if (= (conf/get-config [:add :state] "none") "maximised") "add-open" "add-closed")}
          (nav-bar app)
          (main-view app)
          (add-view app))

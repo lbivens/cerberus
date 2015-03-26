@@ -1,22 +1,25 @@
 (ns jingles.create
-  (:refer-clojure :exclude [get list])
-  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.input :as i]
    [jingles.api :as api]
-   [jingles.http :as http]
    [jingles.config :as conf]
-   [jingles.utils :refer [initial-state make-event val-by-id]]
-   [jingles.state :refer [set-state!]]))
+   [jingles.utils :refer [make-event val-by-id str->int]]))
 
 
+
+(defn default-validator [data-type]
+  (condp = data-type
+    :string #(not (empty? %))
+    :integer #(not= % js/nan)))
 
 (defn validate-data [spec]
   (let [data (conf/get-config [:add :data])
         results (map
-                 (fn [{validator :validator key :key}]
+                 (fn [{validator :validator key :key data-type :data-type
+                       :or {data-type :string}}]
                    (let [path (if (vector? key) key [key])
+                         validator (or validator (default-validator data-type))
                          val (get-in data path)]
                      (validator val))) spec)
         result (every? identity results)]
@@ -24,8 +27,19 @@
       (conf/set-config! [:add :valid] result))))
 
 
-(defn input [spec {id :id key :key validator :validator label :label type :type}]
+(defn to-dt [data-type val]
+  (condp = data-type
+    :integer (str->int val)
+    val))
+
+(defn from-dt [data-type val]
+  (condp = data-type
+    val))
+
+(defn input [spec {id :id key :key validator :validator label :label type :type data-type :data-type
+                   :or {data-type :string}}]
   (let [path (concat [:add :data] (if (vector? key) key [key]))
+        validator (or validator (default-validator data-type))
         val (conf/get-config path "")]
     (i/input {:type type :label label
               :label-classname "col-xs-1"
@@ -35,9 +49,9 @@
               :bs-style (if (validator val) "success" "error")
               :on-change #(do
                             (if key
-                              (conf/set-config! path (val-by-id id)))
+                              (conf/set-config! path (to-dt data-type (val-by-id id))))
                             (validate-data spec))
-              :value val})))
+              :value (from-dt data-type val)})))
 
 (defn render [app & spec]
   (d/form {:class "form-horizontal"}

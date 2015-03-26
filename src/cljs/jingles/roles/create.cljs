@@ -1,12 +1,8 @@
 (ns jingles.roles.create
-  (:refer-clojure :exclude [get list])
-  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
-   ;[jingles.roles.api :refer [root]]
-   [jingles.api :as api]
-   [jingles.http :as http]
-   [jingles.utils :refer [initial-state make-event]]
-   [jingles.state :refer [set-state!]]))
+   [jingles.create :as create]))
 
 (defn render [app]
-  "This is a add role section")
+  (create/render
+   app
+   {:type :input :label "Name" :id "role-name" :key :name :validator #(not (empty? %))}))

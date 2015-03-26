@@ -2,31 +2,27 @@
   (:refer-clojure :exclude [get list])
   (:require [jingles.api :as api]
             [jingles.list :as jlist]
-            [jingles.state :refer [set-state!]]))
+            [jingles.orgs.api :refer [root]]
+            [om-bootstrap.random :as r]
+            [jingles.utils :refer [initial-state]]
 
-(def root :orgs)
+            [jingles.state :refer [set-state!]]))
 
 (def config {:fields {:name {:id :name :title "Name" :key :name}
                       :uuid {:id :uuid :title "UUID" :key :uuid}}
              :root root
              :title "Organisations"})
 
-(set-state! [root :fields] (reduce #(assoc-in %1 [%2 :show] true) {} (keys (:fields config))))
-
-(def list-fields
-  "uuid,name")
-
-(def list (partial api/list root list-fields))
-
-(def get (partial api/get root))
-
-(defn list-view [app]
-  (jlist/view config app))
+(set-state! [root :fields] (initial-state config))
 
 (defn show-view [app]
-  (. js/JSON (stringify (clj->js (get-in app [root :element])))))
+  (let [uuid (get-in app [root :selected])
+        element (get-in app [root :elements uuid])]
+    (r/well
+     {}
+     (pr-str element))))
 
 (defn render [app]
   (condp = (:view app)
-    :list (list-view app)
+    :list (jlist/view config app)
     :show (show-view app)))

@@ -2,17 +2,18 @@
   (:require
    [jingles.state :refer [set-view! set-state!]]
    [goog.events :as events]
-   [jingles.vms.api :as vms]
-   [jingles.datasets :as datasets]
-   [jingles.hypervisors :as hypervisors]
 
-   [jingles.packages :as packages]
-   [jingles.networks :as networks]
-   [jingles.ipranges :as ipranges]
-   [jingles.dtrace :as dtrace]
-   [jingles.users :as users]
-   [jingles.roles :as roles]
-   [jingles.orgs :as orgs]
+   [jingles.vms.api :as vms]
+   [jingles.datasets.api :as datasets]
+   [jingles.hypervisors.api :as hypervisors]
+
+   [jingles.packages.api :as packages]
+   [jingles.networks.api :as networks]
+   [jingles.ipranges.api :as ipranges]
+   [jingles.dtrace.api :as dtrace]
+   [jingles.users.api :as users]
+   [jingles.roles.api :as roles]
+   [jingles.orgs.api :as orgs]
 
    [jingles.config :as config]
    [goog.history.EventType :as EventType]

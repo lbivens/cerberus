@@ -24,17 +24,18 @@
       (conf/set-config! [:add :valid] result))))
 
 
-(defn input [spec {id :id key :key validator :validator label :label}]
+(defn input [spec {id :id key :key validator :validator label :label type :type}]
   (let [path (concat [:add :data] (if (vector? key) key [key]))
         val (conf/get-config path "")]
-    (i/input {:type "text" :label label
+    (i/input {:type type :label label
               :label-classname "col-xs-2"
               :wrapper-classname "col-xs-10"
               :id id
               :has-feedback? true
               :bs-style (if (validator val) "success" "error")
               :on-change #(do
-                            (conf/set-config! path (val-by-id id))
+                            (if key
+                              (conf/set-config! path (val-by-id id)))
                             (validate-data spec))
               :value val})))
 
@@ -43,4 +44,5 @@
           (map
            (fn [{type :type :as data}]
              (condp = type
-               :input (input spec data))) spec)))
+               :input    (input spec (assoc data :type "text"))
+               :password (input spec (assoc data :type "password")))) spec)))

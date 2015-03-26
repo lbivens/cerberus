@@ -47,13 +47,7 @@
 
 (set-state! [root :fields] (initial-state config))
 
-(defn list-view [app]
-  (jlist/view config app))
-
-(defn show-view [app]
-  (. js/JSON (stringify (clj->js (get-in app [root :element])))))
-
 (defn render [app]
   (condp = (:view app)
-    :list (list-view app)
+    :list (jlist/view config app)
     :show (view/render app)))

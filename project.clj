@@ -22,7 +22,8 @@
                  ;; ClojureScript related dependencies
                  [org.clojure/clojurescript "0.0-3148"]
                  [org.omcljs/om "0.8.8"]
-                 ;[cljsjs/react-with-addons "0.12.2-4"]
+                 [com.lucasbradstreet/instaparse-cljs "1.3.5"]
+                 ;;[cljsjs/react-with-addons "0.12.2-4"]
                  [racehub/om-bootstrap "0.4.2"]
                  [secretary "1.2.2"]
                  [cljs-http "0.1.27"]]

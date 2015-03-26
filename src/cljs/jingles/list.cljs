@@ -7,6 +7,7 @@
             [om-bootstrap.pagination :as pg]
             [om-bootstrap.button :as b]
             [om-bootstrap.input :as i]
+            [jingles.match :as jmatch]
             [jingles.config :as conf]
             [jingles.utils :refer [goto val-by-id make-event value-by-key]]
             [jingles.state :refer [set-state! update-state!]]))
@@ -58,15 +59,12 @@
 (defn apply-filter [config state]
   (let [filter-str (conf/get-config [(:root config) :filter])
         fields (filter #(not= (:filter %) false) (vals (:fields config)))
-        fields (map #(partial get-filter-field %) fields)]
+        fields (map #(partial get-filter-field %) fields)
+        list (:list state)]
     (if (empty? filter-str)
-      (:list state)
-      (let [re  (re-pattern filter-str)
-            list (:list state)]
-        (filter (fn [uuid]
-                  (let [e (get-in state [:elements uuid])
-                        test-fields (map #(% e) fields)]
-                    (some #(re-find re (if (string? %) % (str %))) test-fields))) list)))))
+      list
+      (let [match (jmatch/parse config filter-str)]
+        (filter #(jmatch/run match (get-in state [:elements %])) list)))))
 
 (defn sort-and-paginate [config state]
   (if-let [sort (conf/get-config [(:root config) :sort])]
@@ -125,7 +123,7 @@
     (sort-by #(get-in all-fields [% :order]) used-fields)))
 
 (defn filter-field [root text]
-  (make-event #(conf/set-config! [root :filter] text)))
+  (make-event #(conf/set-config! [root :filter] (str (conf/get-config [root :filter] "") " " text))))
 
 
 (defn cell-opt [opts opt field]
@@ -160,7 +158,7 @@
                         (d/td (cell-attrs field)
                               (r/glyphicon {:glyph "pushpin"
                                             :class "filterby"
-                                            :on-click (filter-field root (str txt))}) " " txt))))
+                                            :on-click (filter-field root (str (name (:id field)) ":" txt))}) " " txt))))
                   fields)))
         (map #(get-in state [:elements %]) (:list elements)))))
      (pagination root elements))))

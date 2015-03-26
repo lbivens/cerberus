@@ -902,6 +902,8 @@ div.filterbar .btn-group button.dropdown-toggle.btn.btn-default:hover{
 div.filterbar .btn-group .dropdown-menu{
   top: 45px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
   border-radius: 2px;
 }
 // filter selector hover attributes
@@ -914,7 +916,11 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 }
 // slight rounded edges on filter input entry box
 .listview .form-group .form-control{
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
   border-radius: 2px;
+  opacity: 0.9;
+  color: #F0602B;
 }
 // still to be commented
 .listview .form-group div {
@@ -961,6 +967,8 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   top: 28px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.3);
   min-width: 120px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
   border-radius: 2px;
 }
 // filterby padding
@@ -1000,7 +1008,7 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 #add-view.container {
 
 }
-
+// still to be commented
 #add-view {
   background-color: #DBE2E9;
   position: fixed;
@@ -1010,15 +1018,15 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   left: 0px;
   right: 0px;
 }
-
+// still to be commented
 #add-body{
   height: 300px;
 }
-
+// still to be commented
 .add-closed #add-view {
   background-color: transparent;
 }
-
+// still to be commented
 .add-closed #add-view span{
   background-color: #5CB85C;
   padding: 15px;
@@ -1026,38 +1034,48 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   border-radius: 15%;
   opacity:.8
 }
-
+// still to be commented
 .add-closed #add-view span:hover {
   padding: 15px;
   opacity:1;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
   border-radius: 50%;
   cursor: pointer;
 }
-
+// still to be commented
 div .add-open #add-btn {
   display: none;
 }
-
+// still to be commented
 div .add-open #add-view {
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
   border-radius: 5px;
   margin-bottom: 20px;
 }
-
+// still to be commented
 div .add-open #add-view .glyphicon-ok:hover,.glyphicon-remove:hover {
   cursor: pointer;
   opacity:.5;
   color: #F0602B;
 }
-
+// still to be commented
+div .add-open #add-view .glyphicon-ok {
+  position: relative;
+  top: 245px;
+  right: -15px;
+}
+// still to be commented
 .add-open #add-body {
   display: block;
   color: #424f5c;
 }
-
+// still to be commented
 .add-closed #add-body {
   display: none;
 }
-
+// still to be commented
 #add-btn {
   height: 20px;
 }

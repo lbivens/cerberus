@@ -123,7 +123,7 @@
 
 (defn add-btn [app]
   (g/row
-   nil
+   {:class "add-btn"}
    ;; menu-up
    ;; menu-down
    ;; glyphicon-plus
@@ -166,7 +166,7 @@
   (if (= (conf/get-config [:add :state]) "maximised")
     (if-let [create-view (add-renderer (conf/get-config [:add :section] "vms"))]
       (g/row
-       nil
+       {:class "add-body"}
        (g/col
         {:md 12}
         (r/glyphicon {:glyph "remove" :on-click #(conf/delete-config! :add)})
@@ -175,7 +175,7 @@
 
 (defn add-view [app]
   (g/grid
-   {:class "creationgrid"}
+   {:class "add-view"}
    (add-btn app)
    (add-body app)))
 

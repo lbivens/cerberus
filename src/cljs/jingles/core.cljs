@@ -121,7 +121,7 @@
              :roles (roles/render app)
              :orgs (orgs/render app)
              :else    (goto "/vms")))))
-         (g/grid
+         (g/grid {:class "creationgrid"}
           nil
           (g/row
            nil
@@ -134,7 +134,7 @@
                    "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(conf/set-config! [:add :state] "minimised")})
                    "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/set-config! [:add :state] "maximised")})
                    :else (if (addable? (:section app))
-                           (r/glyphicon {:glyph "plus" :on-click
+                           (r/glyphicon {:class "createicon" :glyph "plus" :on-click
                                          (fn []
                                            (do
                                              (conf/set-config! [:add :section] (name (:section app)))

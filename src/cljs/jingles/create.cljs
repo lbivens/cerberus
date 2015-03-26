@@ -28,8 +28,8 @@
   (let [path (concat [:add :data] (if (vector? key) key [key]))
         val (conf/get-config path "")]
     (i/input {:type type :label label
-              :label-classname "col-xs-2"
-              :wrapper-classname "col-xs-10"
+              :label-classname "col-xs-1"
+              :wrapper-classname "col-xs-11"
               :id id
               :has-feedback? true
               :bs-style (if (validator val) "success" "error")

@@ -123,7 +123,7 @@
 
 (defn add-btn [app]
   (g/row
-   {:class "add-btn"}
+   {:id "add-btn"}
    ;; menu-up
    ;; menu-down
    ;; glyphicon-plus
@@ -163,21 +163,33 @@
    "networks" networks-create/render
    "ipranges" ipranges-create/render
    "dtrace"   dtrace-create/render})
+(def add-title
+  {"vms"      "Create VM"
+   "users"    "Create User"
+   "roles"    "Create Role"
+   "orgs"     "Create Organisation"
+   "packages" "Create Package"
+   "networks" "Create Network"
+   "ipranges" "Create IP-Range"
+   "dtrace"   "Create DTrace Script"})
 
 (defn add-body [app]
   (if (= (conf/get-config [:add :state]) "maximised")
-    (if-let [create-view (add-renderer (conf/get-config [:add :section] "vms"))]
-      (g/row
-       {:class "add-body"}
-       (g/col
-        {:md 12}
-        (r/glyphicon {:glyph "remove" :on-click #(conf/delete-config! :add)})
-        (r/glyphicon {:glyph "ok" :on-click #(submit-add app)})
-        (create-view app))))))
+    (if-let [section (conf/get-config [:add :section] "vms")]
+      (if-let [create-view (add-renderer section)]
+        (g/row
+         {:id "add-body"}
+         (g/col
+          {:md 12 :style {:text-align "center"}}
+          (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
+                (add-title section)
+                (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(conf/delete-config! :add)})
+                (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add app)}))
+          (create-view app)))))))
 
 (defn add-view [app]
   (g/grid
-   {:class "add-view"}
+   {:id "add-view"}
    (add-btn app)
    (add-body app)))
 

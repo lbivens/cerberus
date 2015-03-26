@@ -81,10 +81,9 @@ Now your app is running at
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014 Heinz N. Gies
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the Common Development Aand Distribuation License (CDDL) Version 1.0
 
 ## Chestnut
 

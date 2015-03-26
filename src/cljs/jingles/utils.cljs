@@ -88,3 +88,8 @@
 
 (defn grid-row [& body]
   (g/grid {} (g/row {} body)))
+
+(defn ip-to-int [ip]
+  (let [parts (clojure.string/split ip #"\.")
+        [a b c d] (map #(js/parseInt %) parts)]
+    (+ (bit-shift-left a 24) (bit-shift-left b 16) (bit-shift-left c 8) d)))

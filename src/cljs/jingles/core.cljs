@@ -97,6 +97,8 @@
                 (b/menu-item {:key 5 :href "#/networks"} "Networks")
                 (b/menu-item {:key 6 :href "#/ipranges"} "IP Ranges")
                 (b/menu-item {:key 6 :href "#/dtrace"} "Dtrace")))))
+
+
 (defn main-view [app]
   (g/grid
    nil
@@ -131,7 +133,7 @@
            "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(conf/set-config! [:add :state] "minimised")})
            "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/set-config! [:add :state] "maximised")})
            :else (if (addable? (:section app))
-                   (r/glyphicon {:glyph "plus" :on-click
+                   (r/glyphicon {:glyph "plus" :class "createicon" :on-click
                                  (fn []
                                    (do
                                      (conf/set-config! [:add :section] (name (:section app)))
@@ -164,16 +166,16 @@
   (if (= (conf/get-config [:add :state]) "maximised")
     (if-let [create-view (add-renderer (conf/get-config [:add :section] "vms"))]
       (g/row
-     nil
-     (g/col
-      {:md 12}
-      (r/glyphicon {:glyph "remove" :on-click #(conf/delete-config! :add)})
-      (r/glyphicon {:glyph "ok" :on-click #(submit-add app)})
-      (create-view app))))))
+       nil
+       (g/col
+        {:md 12}
+        (r/glyphicon {:glyph "remove" :on-click #(conf/delete-config! :add)})
+        (r/glyphicon {:glyph "ok" :on-click #(submit-add app)})
+        (create-view app))))))
 
 (defn add-view [app]
   (g/grid
-   nil
+   {:class "creationgrid"}
    (add-btn app)
    (add-body app)))
 

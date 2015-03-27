@@ -5,7 +5,7 @@
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.input :as i]
    [om-bootstrap.random :as r]
-   ;[om-bootstrap.button :as b]
+
    [om-bootstrap.grid :as g]
 
    [jingles.api :as api]
@@ -20,7 +20,6 @@
    [jingles.roles.create :as roles]
    [jingles.datasets.create :as datasets]
    [jingles.vms.create :as vms]))
-
 
 (def add-renderer
   {"vms"      vms/render
@@ -55,7 +54,7 @@
   (do
     (conf/delete! :add)
     (if-let [stash (conf/get :stash)]
-      (do 
+      (do
         (conf/write! :add stash)
         (conf/write! [:add :state] "maximised")
         (conf/delete! :stash)))))
@@ -89,7 +88,7 @@
      (g/col
       {:xs 1 :xs-offset 4 :style {:text-align "right"}}
       (if (and state (not (conf/get [:stash])))
-        (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click
+        (r/glyphicon {:glyph "cloud-upload" :id "add-stash-btn" :on-click
                       #(let [add (conf/get [:add])]
                          (conf/delete! :add)
                          (conf/write! [:stash] add)
@@ -99,26 +98,25 @@
 
 
 (defn add-body [app]
-  [(g/row
-    {:id "add-hdr"}
-    (if (= (conf/get [:add :state]) "maximised")
-      (if-let [section (conf/get [:add :section] "vms")]
-        (if-let [create-view (add-renderer section)]
-          (g/col
-           {:md 12 :style {:text-align "center"}}
-           (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
-                 (add-title section)
-                 (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add)})
-                 (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add app)})))))))
+  (d/div
+   {:id "add-body"}
    (g/row
-    {:id "add-body" :style {:max-height "300px"
-                            }}
-    (if (= (conf/get [:add :state]) "maximised")
-      (if-let [section (conf/get [:add :section] "vms")]
-        (if-let [create-view (add-renderer section)]
-          (g/col
-           {:md 12}
-           (create-view app))))))])
+    {:id "add-hdr"}
+    (if-let [section (conf/get [:add :section])]
+      (if-let [create-view (add-renderer section)]
+        (g/col
+         {:md 12 :style {:text-align "center"}}
+         (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
+               (add-title section)
+               (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add)})
+               (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add app)}))))))
+   (g/row
+    {:id "add-content"}
+    (if-let [section (conf/get [:add :section])]
+      (if-let [create-view (add-renderer section)]
+        (g/col
+         {:md 12}
+         (create-view app)))))))
 
 (defn render [app]
   (g/grid

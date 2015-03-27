@@ -1,5 +1,5 @@
 (ns jingles.config
-  (:refer-clojure :exclude [get])
+  (:refer-clojure :exclude [get print])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [jingles.http :as http]
             [jingles.api :as api]
@@ -95,3 +95,5 @@
 (if-let [token (.get goog.net.cookies "token")]
   (do (set-state! :token token)
       (load)))
+
+(defn print [] (pr (get-in @app-state [:config])))

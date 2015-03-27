@@ -752,7 +752,7 @@
 
 //== Wells
 //
-//## 
+//##
 
 @well-bg:                     @gray-light;
 @well-border:                 transparent;
@@ -869,6 +869,10 @@
   border-radius: 2px;
 }
 
+
+.app {
+    padding-bottom: 30px;
+}
 // ## STYLING FOR ALL REUSABLE LIST VIEWS ## //
 
 // create new item button
@@ -995,6 +999,15 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   /* text-align: start; */
   padding-left: 16px;
 }
+
+.pagination>.active>a {
+    z-index: 0;
+}
+
+.pagination>.active>a:hover {
+    z-index: 0;
+}
+
 // ## END - STYLING FOR ALL REUSABLE LIST VIEWS ## //
 
 .nav-tabs > li.active > a {
@@ -1005,10 +1018,18 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
     background-color: @gray-light;
 }
 
+
+
 // -----------> # START # - STYLING FOR CREATION BOX  ## //
 
 // still to be commented
 #add-view {
+    -webkit-border-top-left-radius: 2px;
+    -webkit-border-top-right-radius: 2px;
+    -moz-border-top-left-radius: 2px;
+    -moz-border-top-right-radius: 2px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
     background-color: @gray-lighter;
     position: fixed;
     bottom: 0px;
@@ -1019,32 +1040,34 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
     color: @gray-dark;
 }
 
-.add-closed #add-ctrl {
+#add-ctrl {
     padding-top: 10px;
     height: 40px;
 }
 
-.add-open #add-ctrl {
-    height: 20px;
-}
+
 // still to be commented
-#add-body{
-    height: 300px;
-    max-height: 300px;
-    overflow-y: scroll;
-    overflow-x: hidden;
+#add-body {
+    overflow: hidden;
 }
 
 // still to be commented
 .add-open #add-body {
-    display: block;
+    transition: height 0.3s 0.3s;
+    height: 350px;
 }
 
 // still to be commented
 .add-closed #add-body {
-    display: none;
+    transition: height 0.3s 0.3s;
+    height: 0px;
 }
 
+#add-content {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    max-height: 300px;
+}
 #add-body .form-group .form-control {
     background-color: rgb(235, 235, 235);
     color: #F0602B;

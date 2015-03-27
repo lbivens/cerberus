@@ -33,27 +33,31 @@
      (go
        (let [resp (<! (full-list (name root)))
              elements (js->clj (:body resp))
-             list (map :uuid elements)
              elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
          (if (= 401 (:status resp))
            (check-login)
-           (do
-             (set-state! [root :elements] elements)
-             (set-state! [root :list] list))))))
+           (set-state! [root :elements] elements)))))
   ([root list-fields]
      (go
        (let [resp (<! (full-list (name root) list-fields))
              elements (js->clj (:body resp))
-             list (map :uuid elements)
              elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
          (if (= 401 (:status resp))
            (check-login)
-           (do
-             (set-state! [root :elements] elements)
-             (set-state! [root :list] list)))))))
+           (set-state! [root :elements] elements))))))
 
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
+
+
+
+(defn post [root data]
+  (go
+    (let [resp (<! (http/post (name root) {} {:json-params data}))]
+      (if (:success resp)
+        (let [body (:body resp)
+              uuid (:uuid body)]
+          (set-state! [root :elements uuid] body))))))
 
 (defn get-sub-element [root key path element]
   (let [uuid (element key)]

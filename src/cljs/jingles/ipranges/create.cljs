@@ -6,19 +6,19 @@
    [jingles.config :as conf]))
 
 (defn network []
-  (or (conf/get-config [:add :data :network]) "0.0.0.0"))
+  (or (conf/get [:add :data :network]) "0.0.0.0"))
 
 (defn netmask []
-  (or (conf/get-config [:add :data :netmask]) "255.255.255.255"))
+  (or (conf/get [:add :data :netmask]) "255.255.255.255"))
 
 (defn gateway []
-  (or (conf/get-config [:add :data :gateway]) "0.0.0.0"))
+  (or (conf/get [:add :data :gateway]) "0.0.0.0"))
 
 (defn first-ip []
-  (or (conf/get-config [:add :data :first]) "0.0.0.0"))
+  (or (conf/get [:add :data :first]) "0.0.0.0"))
 
 (defn last-ip []
-  (or (conf/get-config [:add :data :last]) "0.0.0.0"))
+  (or (conf/get [:add :data :last]) "0.0.0.0"))
 
 (def ip-re #"^([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])$")
 

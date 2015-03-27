@@ -135,7 +135,7 @@
 @table-bg-active:               @table-bg-hover;
 
 //** Border color for table and cell borders.
-@table-border-color:            @gray-light;  
+@table-border-color:            @gray-light;
 
 
 //== Buttons
@@ -863,6 +863,12 @@
 //== Custom
 //
 
+.form-control {
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+}
+
 // ## STYLING FOR ALL REUSABLE LIST VIEWS ## //
 
 // create new item button
@@ -882,7 +888,7 @@ button.addnew {
 // filterbar properties
 div.filterbar {
   display: inline-block;
-height: 50px
+  height: 50px;
 }
 // filterbar width wide enough for full uuid display
 div.filterbar div.form-group {
@@ -898,6 +904,7 @@ div.filterbar .btn-group button.dropdown-toggle.btn.btn-default:hover{
   opacity:.5;
   color: #F0602B;
 }
+
 // control filter selector dropdown placement
 div.filterbar .btn-group .dropdown-menu{
   top: 45px;
@@ -915,10 +922,7 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   padding-top: 20px;
 }
 // slight rounded edges on filter input entry box
-.listview .form-group .form-control{
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  border-radius: 2px;
+.listview .form-group .form-control {
   opacity: 0.9;
   color: #F0602B;
 }
@@ -991,12 +995,7 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   /* text-align: start; */
   padding-left: 16px;
 }
-// // change zindex for pagination so it goes behind active action box 
-// .listview .pagination>.active>a, .pagination>.active>span, .pagination>.active>a:hover, .pagination>.active>span:hover, .pagination>.active>a:focus, .pagination>.active>span:focus {
-//   z-index: 0; 
-// }
-
-// ## END - STYLING FOR ALL REUSABLE LIST VIEWS ## // 
+// ## END - STYLING FOR ALL REUSABLE LIST VIEWS ## //
 
 .nav-tabs > li.active > a {
     background-color: @gray-light;
@@ -1006,16 +1005,11 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
     background-color: @gray-light;
 }
 
-
 // -----------> # START # - STYLING FOR CREATION BOX  ## //
 
 // still to be commented
-#add-view.container {
-
-}
-// still to be commented
 #add-view {
-  background-color: #DBE2E9;
+  background-color: @gray-lighter;
   position: fixed;
   bottom: 0px;
   margin-left: auto;
@@ -1023,66 +1017,53 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   left: 0px;
   right: 0px;
 }
+
+
+.add-closed #add-ctrl {
+    padding-top: 10px;
+    height: 40px;
+}
+
+.add-open #add-ctrl {
+    height: 20px;
+}
 // still to be commented
 #add-body{
   height: 300px;
+  max-height: 300px;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
-// still to be commented
-.add-closed #add-view {
-  background-color: transparent;
-}
-// still to be commented
-.add-closed #add-view span{
-  background-color: #5CB85C;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 15%;
-  opacity:.8
-}
-// still to be commented
-.add-closed #add-view span:hover {
-  padding: 15px;
-  opacity:1;
-  -webkit-border-radius: 50%;
-  -moz-border-radius: 50%;
-  border-radius: 50%;
-  cursor: pointer;
-}
-// still to be commented
-div .add-open #add-btn {
-  display: none;
-}
-// still to be commented
-div .add-open #add-view {
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-}
-// still to be commented
-div .add-open #add-view .glyphicon-ok:hover,.glyphicon-remove:hover {
-  cursor: pointer;
-  opacity:.5;
-  color: #F0602B;
-}
-// still to be commented
-div .add-open #add-view .glyphicon-ok {
-  position: relative;
-  top: 245px;
-  right: -15px;
-}
+
 // still to be commented
 .add-open #add-body {
   display: block;
-  color: #424f5c;
 }
+
 // still to be commented
 .add-closed #add-body {
   display: none;
 }
-// still to be commented
-#add-btn {
-  height: 20px;
+
+#add-body .form-group .form-control {
+    background-color: rgb(235, 235, 235);
+    color: #F0602B;
 }
+
+// still to be commented
+.add-open #add-hrd .glyphicon-ok:hover,.glyphicon-remove:hover {
+  cursor: pointer;
+  opacity: .5;
+//  color: @grey-dark;
+}
+
+#remote-datasets tr.selected {
+    background-color: @brand-info;
+}
+
+#remote-datasets tr.installed {
+    background-color: @brand-success;
+}
+
 
 // -----------> # END # - STYLING FOR CREATION BOX  ## //

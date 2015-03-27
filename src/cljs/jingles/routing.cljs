@@ -22,9 +22,6 @@
 
 (enable-console-print!)
 
-(if-let [token (.get goog.net.cookies "token")]
-  (do (set-state! :token token)
-      (config/load)))
 
 
 (secretary/set-config! :prefix "#")

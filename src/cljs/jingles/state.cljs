@@ -26,3 +26,9 @@
 
 (defn update-state! [path update-fn]
   (swap! app-state update-in path update-fn))
+
+(defn clear-state! []
+  (reset! app-state {}))
+
+(defn print-state []
+  (pr @app-state))

@@ -3,7 +3,9 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [jingles.http :as http]
             [jingles.api :as api]
-            [jingles.state :refer [app-state set-state! delete-state! update-state!]]))
+            [goog.net.cookies]
+            [jingles.utils :refer [goto]]
+            [jingles.state :refer [clear-state! app-state set-state! delete-state! update-state!]]))
 
 (enable-console-print!)
 
@@ -23,11 +25,27 @@
             (set-state! :user uuid)
             conf)))))
 
+(defn login [token expires-in]
+  (do
+    (.set goog.net.cookies "token" token expires-in)
+    (set-state! :token token)
+    (load)
+    (goto)))
+
+(defn logout []
+  (.remove goog.net.cookies "token")
+  (clear-state!))
+
+
+(defn clear []
+  (go
+    (let [req (<! (http/delete (str "users/" (:user @app-state) "/metadata/jingles")))]
+      (logout))))
+
 (defn write! [path value]
   (do
     (if-let [uuid (:user @app-state)]
-      (swap! updates add-update [:users uuid (vec (concat [:jingles] path))] value)
-      )
+      (swap! updates add-update [:users uuid (vec (concat [:jingles] path))] value))
     (set-state! (vec (concat [:config] path)) value)
     value))
 
@@ -71,3 +89,7 @@
   (swap! updates apply-updates))
 
 (js/setInterval flush! 10000)
+
+(if-let [token (.get goog.net.cookies "token")]
+  (do (set-state! :token token)
+      (load)))

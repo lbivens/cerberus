@@ -44,10 +44,7 @@
                         (let [e (js->clj (. js/JSON (parse (:body response))))
                               token (e "access_token")
                               expires-in (e "expires_in")]
-                          (.set goog.net.cookies "token" token expires-in)
-                          (set-state! :token token)
-                          (conf/load)
-                          (goto))))))]
+                          (conf/login token expires-in))))))]
     (r/well
      {:style {:max-width 400
               :margin "300px auto 10px"}}
@@ -79,7 +76,11 @@
                 (b/menu-item {:key 4 :href "#/packages"} "Packages")
                 (b/menu-item {:key 5 :href "#/networks"} "Networks")
                 (b/menu-item {:key 6 :href "#/ipranges"} "IP Ranges")
-                (b/menu-item {:key 6 :href "#/dtrace"} "Dtrace")))))
+                (b/menu-item {:key 7 :href "#/dtrace"} "DTrace")
+                (b/menu-item {:divider? true})
+                (b/menu-item {:key 8 :href "#/" :on-click #(conf/logout)} "Logout")
+                (b/menu-item {:key 9 :href "#/" :on-click #(conf/clear)} "Logout & Reset UI")
+                ))))
 
 (defn main-view [app]
   (g/grid

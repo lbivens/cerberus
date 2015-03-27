@@ -991,7 +991,7 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   /* text-align: start; */
   padding-left: 16px;
 }
-// ## END - STYLING FOR ALL REUSABLE LIST VIEWS ## // 
+// ## END - STYLING FOR ALL REUSABLE LIST VIEWS ## //
 
 .nav-tabs > li.active > a {
     background-color: @gray-light;
@@ -1001,83 +1001,86 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
     background-color: @gray-light;
 }
 
-
 // -----------> # START # - STYLING FOR CREATION BOX  ## //
 
 // still to be commented
-#add-view.container {
-
-}
-// still to be commented
 #add-view {
-  background-color: #DBE2E9;
+  background-color: @gray-light;
   position: fixed;
   bottom: 0px;
   margin-left: auto;
   margin-right: auto;
   left: 0px;
   right: 0px;
+  width: 100%;
+}
+
+
+.add-closed #add-ctrl {
+    padding-top: 10px;
+    height: 40px;
+    
+}
+
+.add-open #add-ctrl {
+    height: 20px;
 }
 // still to be commented
 #add-body{
   height: 300px;
+  max-height: 300px;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
-// still to be commented
-.add-closed #add-view {
-  background-color: transparent;
-}
-// still to be commented
-.add-closed #add-view span{
-  background-color: #5CB85C;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 15%;
-  opacity:.8
-}
-// still to be commented
-.add-closed #add-view span:hover {
-  padding: 15px;
-  opacity:1;
-  -webkit-border-radius: 50%;
-  -moz-border-radius: 50%;
-  border-radius: 50%;
-  cursor: pointer;
-}
-// still to be commented
-div .add-open #add-btn {
-  display: none;
-}
-// still to be commented
-div .add-open #add-view {
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-}
-// still to be commented
-div .add-open #add-view .glyphicon-ok:hover,.glyphicon-remove:hover {
-  cursor: pointer;
-  opacity:.5;
-  color: #F0602B;
-}
-// still to be commented
-div .add-open #add-view .glyphicon-ok {
-  position: relative;
-  top: 245px;
-  right: -15px;
-}
+
 // still to be commented
 .add-open #add-body {
   display: block;
-  color: #424f5c;
 }
+
 // still to be commented
 .add-closed #add-body {
   display: none;
 }
+
 // still to be commented
-#add-btn {
-  height: 20px;
+// .add-closed #add-plus-btn {
+//   background-color: #5CB85C;
+//   padding: 15px;
+//   margin-bottom: 20px;
+//   border-radius: 15%;
+//   opacity:.8;
+// }
+
+// // still to be commented
+// .add-closed #add-plus-btn:hover {
+//   padding: 15px;
+//   opacity:1;
+//   -webkit-border-radius: 50%;
+//   -moz-border-radius: 50%;
+//   border-radius: 50%;
+//   cursor: pointer;
+// }
+
+// still to be commented
+.add-open #add-hrd .glyphicon-ok:hover,.glyphicon-remove:hover {
+  cursor: pointer;
+  opacity: .5;
+//  color: @grey-dark;
 }
+
+// // still to be commented
+// .add-open #add-view .glyphicon-ok {
+//   position: relative;
+// }
+
+// .add-open #add-hdr {
+//   display: block;
+//   color: #424f5c;
+// }
+// // still to be commented
+// #add-ctrl {
+//   height: 20px;
+// }
 
 // -----------> # END # - STYLING FOR CREATION BOX  ## //

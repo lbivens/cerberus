@@ -16,6 +16,7 @@
 
             [jingles.hypervisors :as hypervisors]
             [jingles.datasets :as datasets]
+            [jingles.datasets.create :as datasets-create]
 
             [jingles.vms :as vms]
             [jingles.vms.create :as vms-create]
@@ -42,8 +43,6 @@
             [jingles.state :refer [app-state set-state!]]))
 
 (enable-console-print!)
-
-(set-state! :text "Hello Chestnut!")
 
 (defn login [app]
   (let [path "/api/0.2.0/oauth/token"
@@ -75,9 +74,6 @@
   (if (and (= section (:section app)) (= view (:view app)))
     #js{:className "active"}
     #js{}))
-
-(def addable?
-  #{:vms :users :roles :orgs :packages :networks :ipranges :dtrace})
 
 (defn nav-bar [app]
   (n/navbar
@@ -118,9 +114,31 @@
       :orgs        (orgs/render app)
       :else        (goto "/vms"))))))
 
+(def add-renderer
+  {"vms"      vms-create/render
+   "users"    users-create/render
+   "roles"    roles-create/render
+   "orgs"     orgs-create/render
+   "packages" packages-create/render
+   "networks" networks-create/render
+   "ipranges" ipranges-create/render
+   "dtrace"   dtrace-create/render
+   "datasets"  datasets-create/render})
+
+(def add-title
+  {"vms"      "Create VM"
+   "users"    "Create User"
+   "roles"    "Create Role"
+   "orgs"     "Create Organisation"
+   "packages" "Create Package"
+   "networks" "Create Network"
+   "ipranges" "Create IP-Range"
+   "dtrace"   "Create DTrace Script"
+   "datasets"   "Import Dataset"})
+
 (defn add-btn [app]
   (g/row
-   {:id "add-btn"}
+   {:id "add-ctrl"}
    ;; menu-up
    ;; menu-down
    ;; glyphicon-plus
@@ -130,8 +148,8 @@
            "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(do (conf/write! [:add :state] "minimised")
                                                                        (conf/flush!))})
            "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/write! [:add :state] "maximised")})
-           :else (if (addable? (:section app))
-                   (r/glyphicon {:glyph "plus" :class "createicon" :on-click
+           :else (if (add-title (name  (:section app)))
+                   (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click
                                  (fn []
                                    (do
                                      (conf/write! [:add :section] (name (:section app)))
@@ -151,38 +169,28 @@
             (pr "success" resp)))))
     (pr "invalid "(conf/get [:add :data]))))
 
-(def add-renderer
-  {"vms"      vms-create/render
-   "users"    users-create/render
-   "roles"    roles-create/render
-   "orgs"     orgs-create/render
-   "packages" packages-create/render
-   "networks" networks-create/render
-   "ipranges" ipranges-create/render
-   "dtrace"   dtrace-create/render})
-(def add-title
-  {"vms"      "Create VM"
-   "users"    "Create User"
-   "roles"    "Create Role"
-   "orgs"     "Create Organisation"
-   "packages" "Create Package"
-   "networks" "Create Network"
-   "ipranges" "Create IP-Range"
-   "dtrace"   "Create DTrace Script"})
 
 (defn add-body [app]
-  (g/row
-   {:id "add-body"}
-   (if (= (conf/get [:add :state]) "maximised")
-    (if-let [section (conf/get [:add :section] "vms")]
-      (if-let [create-view (add-renderer section)]
-        (g/col
-         {:md 12 :style {:text-align "center"}}
-         (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
-               (add-title section)
-               (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(conf/delete! :add)})
-               (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add app)}))
-         (create-view app)))))))
+  [(g/row
+    {:id "add-hdr"}
+    (if (= (conf/get [:add :state]) "maximised")
+      (if-let [section (conf/get [:add :section] "vms")]
+        (if-let [create-view (add-renderer section)]
+          (g/col
+           {:md 12 :style {:text-align "center"}}
+           (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
+                 (add-title section)
+                 (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(conf/delete! :add)})
+                 (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add app)})))))))
+   (g/row
+    {:id "add-body" :style {:max-height "300px"
+                            }}
+    (if (= (conf/get [:add :state]) "maximised")
+      (if-let [section (conf/get [:add :section] "vms")]
+        (if-let [create-view (add-renderer section)]
+          (g/col
+           {:md 12}
+           (create-view app))))))])
 
 (defn add-view [app]
   (g/grid

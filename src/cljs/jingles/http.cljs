@@ -11,33 +11,33 @@
   (str "/api/0.2.0/" url))
 
 (defn default-headers []
-  {"Accept" "application/json"
-   "Authorization" (str "Bearer " (:token @app-state))})
+  {"Accept" "application/json"})
+
+(defn add-headers [req hdrs]
+  (assoc req :headers hdrs :oauth-token (:token @app-state)))
+
+
+(defn do-req [req-fn url hdrs req]
+     (let [hdrs (merge hdrs (default-headers))]
+    (req-fn (api url) (add-headers req hdrs))))
 
 (defn get
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [hdrs req]]
-  (let [hdrs (merge hdrs (default-headers))]
-    (cljs-http.client/get (api url) (assoc req :headers hdrs))))
+  (do-req cljs-http.client/get url hdrs req))
 
 (defn post
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [hdrs req]]
-  (let [hdrs (merge hdrs (default-headers))
-        req (assoc req :headers hdrs)]
-    (pr "post" url req)
-    (cljs-http.client/post (api url) req)))
+  (do-req cljs-http.client/post url hdrs req))
 
 (defn put
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [hdrs req]]
-  (let [hdrs (merge hdrs (default-headers))
-        req (assoc req :headers hdrs)]
-    (cljs-http.client/put (api url) req)))
+  (do-req cljs-http.client/put url hdrs req))
 
 (defn delete
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [hdrs req]]
-  (let [hdrs (merge hdrs (default-headers))]
-    (cljs-http.client/delete (api url) (assoc req :headers hdrs))))
+  (do-req cljs-http.client/delete url hdrs req))
 

@@ -7,7 +7,6 @@
 
 (enable-console-print!)
 
-
 (def updates (atom []))
 
 (defn add-update [updates path value]
@@ -47,11 +46,16 @@
   (write! path (update-fn (get path))))
 
 (defn delete! [path]
-  (if (and (vector? path) (> (count path) 1))
-    (let [key (last path)
-          path (butlast path)]
-      (update! path #(dissoc % key)))
-    (update-state! [:config] #(dissoc % path))))
+  (let [uuid (:user @app-state)
+        path (if (vector? path) path [path])]
+    (api/delete-metadata :users uuid (concat [:jingles] path))
+    (if (> (count path) 1)
+      (let [key (last path)
+            path (butlast path)]
+        (api/delete-metadata :users uuid path)
+        (set-state! (vec (concat [:config] path))
+                    (dissoc (get path) key)))
+      (update-state! [:config] #(dissoc % (first path))))))
 
 
 (defn apply-updates [updates]

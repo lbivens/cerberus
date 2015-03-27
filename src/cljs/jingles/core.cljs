@@ -16,28 +16,16 @@
 
             [jingles.hypervisors :as hypervisors]
             [jingles.datasets :as datasets]
-            [jingles.datasets.create :as datasets-create]
-
             [jingles.vms :as vms]
-            [jingles.vms.create :as vms-create]
             [jingles.packages :as packages]
-            [jingles.packages.create :as packages-create]
             [jingles.networks :as networks]
-            [jingles.networks.create :as networks-create]
             [jingles.ipranges :as ipranges]
-            [jingles.ipranges.create :as ipranges-create]
             [jingles.dtrace :as dtrace]
-            [jingles.dtrace.create :as dtrace-create]
             [jingles.users :as users]
-            [jingles.users.create :as users-create]
             [jingles.roles :as roles]
-            [jingles.roles.create :as roles-create]
             [jingles.orgs :as orgs]
-            [jingles.orgs.create :as orgs-create]
-
             [jingles.config :as conf]
-
-            [jingles.list :as jlist]
+            [jingles.add :as add]
 
             [jingles.utils :refer [goto val-by-id by-id a]]
             [jingles.state :refer [app-state set-state!]]))
@@ -114,90 +102,6 @@
       :orgs        (orgs/render app)
       :else        (goto "/vms"))))))
 
-(def add-renderer
-  {"vms"      vms-create/render
-   "users"    users-create/render
-   "roles"    roles-create/render
-   "orgs"     orgs-create/render
-   "packages" packages-create/render
-   "networks" networks-create/render
-   "ipranges" ipranges-create/render
-   "dtrace"   dtrace-create/render
-   "datasets"  datasets-create/render})
-
-(def add-title
-  {"vms"      "Create VM"
-   "users"    "Create User"
-   "roles"    "Create Role"
-   "orgs"     "Create Organisation"
-   "packages" "Create Package"
-   "networks" "Create Network"
-   "ipranges" "Create IP-Range"
-   "dtrace"   "Create DTrace Script"
-   "datasets"   "Import Dataset"})
-
-(defn add-btn [app]
-  (g/row
-   {:id "add-ctrl"}
-   ;; menu-up
-   ;; menu-down
-   ;; glyphicon-plus
-   (g/col {:xs 2 :xs-offset 5 :style {:text-align " center"}}
-          (match
-           (conf/get [:add :state] "none")
-           "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(do (conf/write! [:add :state] "minimised")
-                                                                       (conf/flush!))})
-           "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/write! [:add :state] "maximised")})
-           :else (if (add-title (name  (:section app)))
-                   (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click
-                                 (fn []
-                                   (do
-                                     (conf/write! [:add :section] (name (:section app)))
-                                     (conf/write! [:add :state] "maximised")))}))))))
-
-(defn submit-add [app]
-  (if (conf/get [:add :valid] false)
-    (let [section (conf/get [:add :section])
-          data (conf/get [:add :data])]
-      (go
-        (let [resp (<! (http/post section {} {:json-params data}))]
-          (if (:success resp)
-            (do
-              (pr "success" resp)
-              (goto (str "/" section "/" (:uuid (:body resp))))
-              (conf/delete! :add))
-            (pr "success" resp)))))
-    (pr "invalid "(conf/get [:add :data]))))
-
-
-(defn add-body [app]
-  [(g/row
-    {:id "add-hdr"}
-    (if (= (conf/get [:add :state]) "maximised")
-      (if-let [section (conf/get [:add :section] "vms")]
-        (if-let [create-view (add-renderer section)]
-          (g/col
-           {:md 12 :style {:text-align "center"}}
-           (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
-                 (add-title section)
-                 (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(conf/delete! :add)})
-                 (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add app)})))))))
-   (g/row
-    {:id "add-body" :style {:max-height "300px"
-                            }}
-    (if (= (conf/get [:add :state]) "maximised")
-      (if-let [section (conf/get [:add :section] "vms")]
-        (if-let [create-view (add-renderer section)]
-          (g/col
-           {:md 12}
-           (create-view app))))))])
-
-(defn add-view [app]
-  (g/grid
-   {:id "add-view"}
-   (add-btn app)
-   (add-body app)))
-
 (defn main []
   (om/root
    (fn [app owner]
@@ -207,7 +111,7 @@
          {:class (if (= (conf/get [:add :state] "none") "maximised") "add-open" "add-closed")}
          (nav-bar app)
          (main-view app)
-         (add-view app))
+         (add/render app))
         (do (goto)
             (login app)))))
    app-state

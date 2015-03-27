@@ -46,11 +46,9 @@
 (defn do-sort [config list state]
   (let [sort (conf/get [(:root config) :sort])
         fields (:fields config)
-        elements (:elements state)
         field (keyword (:field sort))]
     (if-let [key (or (:sort-key (fields field)) (:key (fields field)))]
-      (let [sorted (sort-by (fn [uuid]
-                              (value-by-key key (elements uuid))) list)]
+      (let [sorted (sort-by (partial value-by-key key) list)]
         (if (= (keyword (:order sort)) :desc)
           (reverse sorted)
           sorted))
@@ -60,11 +58,11 @@
   (let [filter-str (conf/get [(:root config) :filter])
         fields (filter #(not= (:filter %) false) (vals (:fields config)))
         fields (map #(partial get-filter-field %) fields)
-        list (:list state)]
+        list (vals (:elements state))]
     (if (empty? filter-str)
       list
       (let [match (jmatch/parse config filter-str)]
-        (filter #(jmatch/run match (get-in state [:elements %])) list)))))
+        (filter #(jmatch/run match %) list)))))
 
 (defn sort-and-paginate [config state]
   (if-let [sort (conf/get [(:root config) :sort])]
@@ -161,7 +159,7 @@
                                             :class "filterby"
                                             :on-click (filter-field root (str (name (:id field)) ":" txt))}) " " txt))))
                   fields)))
-        (map #(get-in state [:elements %]) (:list elements)))))
+        (:list elements))))
      (pagination root elements))))
 
 

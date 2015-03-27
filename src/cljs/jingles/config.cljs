@@ -11,10 +11,24 @@
 
 (def updates (atom []))
 
+(def metadata-root [:metadata :jingles])
+
+
+(defn apply-updates [updates]
+  (do
+    (doall
+     (map
+      (fn [[[section uuid path] value]]
+        (api/update-metadata section uuid path value))
+      updates))
+    []))
+
 (defn add-update [updates path value]
   (conj (vec (filter #(not= (first %) path) updates)) [path value]))
 
-(def metadata-root [:metadata :jingles])
+(defn flush! []
+  (swap! updates apply-updates))
+
 
 (defn load []
   (go (let [resp (<! (http/get "sessions"))]
@@ -33,6 +47,7 @@
     (goto)))
 
 (defn logout []
+  (flush!)
   (.remove goog.net.cookies "token")
   (clear-state!))
 
@@ -78,22 +93,11 @@
       (update-state! [:config] #(dissoc % (first path))))))
 
 
-(defn apply-updates [updates]
-  (do
-    (doall
-     (map
-      (fn [[[section uuid path] value]]
-        (api/update-metadata section uuid path value))
-      updates))
-    []))
-
-(defn flush! []
-  (swap! updates apply-updates))
-
-(js/setInterval flush! 10000)
+(defn print [] (pr (get-in @app-state [:config])))
 
 (if-let [token (.get goog.net.cookies "token")]
   (do (set-state! :token token)
       (load)))
 
-(defn print [] (pr (get-in @app-state [:config])))
+(js/setInterval flush! 10000)
+

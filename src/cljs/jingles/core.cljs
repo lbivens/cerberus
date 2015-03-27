@@ -46,12 +46,12 @@
                               expires-in (e "expires_in")]
                           (conf/login token expires-in))))))]
     (r/well
-     {:style {:max-width 400
-              :margin "300px auto 10px"}}
+     {:id "login-box"}
      (d/form
       nil
       (i/input {:type "text" :placeholder "Login" :id "login"})
-      (i/input {:type "password" :placeholder "Password" :id "password"})
+      (i/input {:type "password" :placeholder "Password" :id "password"
+                :on-key-up #(if (= (.-keyCode  %) 13) (login))})
       (b/button {:bs-style "primary"
                  :on-click login} "Login")))))
 
@@ -59,6 +59,14 @@
   (if (and (= section (:section app)) (= view (:view app)))
     #js{:className "active"}
     #js{}))
+
+
+(defn menu-items [& items]
+  (doall (map-indexed (fn [idx data]
+                        (if (= :divider data)
+                          (b/menu-item {:divider? true})
+                          (b/menu-item {:key (inc idx) :href (first data)} (second data)))
+                     ) items)))
 
 (defn nav-bar [app]
   (n/navbar
@@ -69,15 +77,17 @@
     (n/nav-item {:key 2 :href "#/datasets"} "Datasets")
     (n/nav-item {:key 3 :href "#/hypervisors"} "Hypervisors")
     (b/dropdown {:key 4 :title "Configuration"}
-                (b/menu-item {:key 1 :href "#/users"} "Users")
-                (b/menu-item {:key 2 :href "#/roles"} "Roles")
-                (b/menu-item {:key 3 :href "#/orgs"} "Organisations")
-                (b/menu-item {:divider? true})
-                (b/menu-item {:key 4 :href "#/packages"} "Packages")
-                (b/menu-item {:key 5 :href "#/networks"} "Networks")
-                (b/menu-item {:key 6 :href "#/ipranges"} "IP Ranges")
-                (b/menu-item {:key 7 :href "#/dtrace"} "DTrace")
-                (b/menu-item {:divider? true})
+                (menu-items
+                 ["#/users" "Users"]
+                 ["#/roles" "Roles" ]
+                 ["#/orgs" "Organisations" ]
+                 :divider
+                 ["#/packages" "Packages"]
+                 :divider
+                 ["#/networks" "Networks"]
+                 ["#/ipranges" "IP Ranges"]
+                 ["#/dtrace" "DTrace"]
+                 :divider)
                 (b/menu-item {:key 8 :href "#/" :on-click #(conf/logout)} "Logout")
                 (b/menu-item {:key 9 :href "#/" :on-click #(conf/clear)} "Logout & Reset UI")
                 ))))

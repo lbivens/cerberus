@@ -73,7 +73,8 @@
     (conf/write! [:add :state] "maximised")))
 
 (defn add-btn [app]
-  (let [state (conf/get [:add :state])]
+  (let [state (conf/get [:add :state])
+        addable (boolean (add-title (name  (:section app))))]
     (g/row
      {:id "add-ctrl"}
      (g/col
@@ -83,19 +84,16 @@
        "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(do (conf/write! [:add :state] "minimised")
                                                                    (conf/flush!))})
        "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/write! [:add :state] "maximised")})
-       :else (if (add-title (name  (:section app)))
+       :else (if addable
                (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click #(init-add app)}))))
      (g/col
       {:xs 1 :xs-offset 4 :style {:text-align "right"}}
-      (if (and state (not (conf/get [:stash])))
+      (if (and addable state (not (conf/get [:stash])))
         (r/glyphicon {:glyph "cloud-upload" :id "add-stash-btn" :on-click
                       #(let [add (conf/get [:add])]
                          (conf/delete! :add)
                          (conf/write! [:stash] add)
                          (init-add app))}))))))
-
-
-
 
 (defn add-body [app]
   (d/div

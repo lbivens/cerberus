@@ -1,5 +1,5 @@
 (ns jingles.config
-  (:refer-clojure :exclude [flush get])
+  (:refer-clojure :exclude [get])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [jingles.http :as http]
             [jingles.api :as api]
@@ -63,7 +63,7 @@
       updates))
     []))
 
-(defn flush []
+(defn flush! []
   (swap! updates apply-updates))
 
-(js/setInterval flush 10000)
+(js/setInterval flush! 10000)

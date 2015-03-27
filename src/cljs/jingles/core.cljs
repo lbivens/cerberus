@@ -76,7 +76,6 @@
     #js{:className "active"}
     #js{}))
 
-
 (def addable?
   #{:vms :users :roles :orgs :packages :networks :ipranges :dtrace})
 
@@ -97,7 +96,6 @@
                 (b/menu-item {:key 5 :href "#/networks"} "Networks")
                 (b/menu-item {:key 6 :href "#/ipranges"} "IP Ranges")
                 (b/menu-item {:key 6 :href "#/dtrace"} "Dtrace")))))
-
 
 (defn main-view [app]
   (g/grid
@@ -120,7 +118,6 @@
       :orgs        (orgs/render app)
       :else        (goto "/vms"))))))
 
-
 (defn add-btn [app]
   (g/row
    {:id "add-btn"}
@@ -130,7 +127,8 @@
    (g/col {:xs 2 :xs-offset 5 :style {:text-align " center"}}
           (match
            (conf/get [:add :state] "none")
-           "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(conf/write! [:add :state] "minimised")})
+           "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(do (conf/write! [:add :state] "minimised")
+                                                                       (conf/flush!))})
            "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/write! [:add :state] "maximised")})
            :else (if (addable? (:section app))
                    (r/glyphicon {:glyph "plus" :class "createicon" :on-click
@@ -138,7 +136,6 @@
                                    (do
                                      (conf/write! [:add :section] (name (:section app)))
                                      (conf/write! [:add :state] "maximised")))}))))))
-
 
 (defn submit-add [app]
   (if (conf/get [:add :valid] false)

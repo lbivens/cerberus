@@ -14,7 +14,7 @@
 
 (def config {:fields {:name {:id :name :title "Name" :key '(:config :alias) :order 0}
                       :cpu {:id :cpu :title "CPU" :key '(:config :cpu_cap) :order 0}
-                      :uuid {:id :uuid :title "UUID" :key :uuid :order 1 :class "uuid"}
+                      :uuid {:id :uuid :title "UUID" :key :uuid :order 1 :class "uuid" :no-quick-filter true}
                       :state {:id :state :title "State" :key :state}
                       :dataset {:id :dataset :title "Dataset"
                                 :key (partial api/get-sub-element :datasets :dataset

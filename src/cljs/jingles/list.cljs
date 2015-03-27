@@ -44,7 +44,7 @@
      :list (do-paginate elements size page)}))
 
 (defn do-sort [config list state]
-  (let [sort (conf/get-config [(:root config) :sort])
+  (let [sort (conf/get [(:root config) :sort])
         fields (:fields config)
         elements (:elements state)
         field (keyword (:field sort))]
@@ -57,7 +57,7 @@
       list)))
 
 (defn apply-filter [config state]
-  (let [filter-str (conf/get-config [(:root config) :filter])
+  (let [filter-str (conf/get [(:root config) :filter])
         fields (filter #(not= (:filter %) false) (vals (:fields config)))
         fields (map #(partial get-filter-field %) fields)
         list (:list state)]
@@ -67,7 +67,7 @@
         (filter #(jmatch/run match (get-in state [:elements %])) list)))))
 
 (defn sort-and-paginate [config state]
-  (if-let [sort (conf/get-config [(:root config) :sort])]
+  (if-let [sort (conf/get [(:root config) :sort])]
     (paginate (do-sort config (apply-filter config state) state) state)
     (paginate (apply-filter config state) state)))
 
@@ -83,9 +83,9 @@
   (let [id (:id field)
         order (keyword (:order sort))]
     (if (= id (keyword (:field sort)))
-      (d/td (d/a {:onClick #(conf/set-config! [root :sort :order] (flip-order order))
+      (d/td (d/a {:onClick #(conf/write! [root :sort :order] (flip-order order))
                   :className (order-class order)} (:title field) " " (order-str order)))
-      (d/td (d/a {:onClick #(conf/set-config! [root :sort] {:field id :order :asc})} (:title field))))))
+      (d/td (d/a {:onClick #(conf/write! [root :sort] {:field id :order :asc})} (:title field))))))
 
 (defn tbl-headers [root sort fields]
   (d/thead
@@ -123,9 +123,9 @@
     (sort-by #(get-in all-fields [% :order]) used-fields)))
 
 (defn filter-field [root text]
-  (let [cur (conf/get-config [root :filter] "")
+  (let [cur (conf/get [root :filter] "")
         cur (if (empty? cur) cur (str cur " "))]
-    (make-event #(conf/set-config! [root :filter]  (str  cur text)))))
+    (make-event #(conf/write! [root :filter]  (str  cur text)))))
 
 (defn cell-opt [opts opt field]
   (if-let [style (opt field)]
@@ -139,13 +139,13 @@
 
 (defn tbl [config state]
   (let [root (:root config)
-        fields (expand-fields config (used-fields (conf/get-config [root :fields])))
+        fields (expand-fields config (used-fields (conf/get [root :fields])))
         elements (sort-and-paginate config state)]
     (d/div
      nil
      (table
       {:striped? false :bordered? true :condensed? true :hover? true :responsive? true}
-      (tbl-headers root (conf/get-config [root :sort]) fields)
+      (tbl-headers root (conf/get [root :sort]) fields)
       (d/tbody
        (map
         (fn [e] (d/tr
@@ -172,10 +172,10 @@
 
 (defn view [config app]
   (let [root (:root config)
-        fields (conf/get-config [root :fields] (jingles.utils/initial-state config))
+        fields (conf/get [root :fields] (jingles.utils/initial-state config))
         title (:title config)
         state (root app)
-        filter (conf/get-config [root :filter])]
+        filter (conf/get [root :filter])]
     (d/div
      {:class "listview"}
      (d/h1
@@ -185,13 +185,13 @@
        {:class "filterbar pull-right"}
        (i/input
         {:type "text" :id "filter" :value filter
-         :on-change #(conf/set-config! [root :filter] (val-by-id "filter"))})
+         :on-change #(conf/write! [root :filter] (val-by-id "filter"))})
        (b/dropdown
         {:title (r/glyphicon {:glyph "align-justify"})}
         (map-indexed
          (fn [idx field]
            (let [id (:id field)
-                 toggle-fn (make-event #(conf/update-config! [root :fields id :show] not))]
+                 toggle-fn (make-event #(conf/update! [root :fields id :show] not))]
              (b/menu-item
               {:key idx :on-click toggle-fn}
               (i/input

@@ -104,7 +104,6 @@ Field = Sym ':' Cmp? Val
 
 (defn parse [config filter-str]
   (let [q (simplify-query  (parser filter-str))]
-    (pr q)
     (map #(% config) q)))
 
 (defn run [filters element]

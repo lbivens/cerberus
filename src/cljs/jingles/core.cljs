@@ -129,30 +129,30 @@
    ;; glyphicon-plus
    (g/col {:xs 2 :xs-offset 5 :style {:text-align " center"}}
           (match
-           (conf/get-config [:add :state] "none")
-           "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(conf/set-config! [:add :state] "minimised")})
-           "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/set-config! [:add :state] "maximised")})
+           (conf/get [:add :state] "none")
+           "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(conf/write! [:add :state] "minimised")})
+           "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/write! [:add :state] "maximised")})
            :else (if (addable? (:section app))
                    (r/glyphicon {:glyph "plus" :class "createicon" :on-click
                                  (fn []
                                    (do
-                                     (conf/set-config! [:add :section] (name (:section app)))
-                                     (conf/set-config! [:add :state] "maximised")))}))))))
+                                     (conf/write! [:add :section] (name (:section app)))
+                                     (conf/write! [:add :state] "maximised")))}))))))
 
 
 (defn submit-add [app]
-  (if (conf/get-config [:add :valid] false)
-    (let [section (conf/get-config [:add :section])
-          data (conf/get-config [:add :data])]
+  (if (conf/get [:add :valid] false)
+    (let [section (conf/get [:add :section])
+          data (conf/get [:add :data])]
       (go
         (let [resp (<! (http/post section {} {:json-params data}))]
           (if (:success resp)
             (do
               (pr "success" resp)
               (goto (str "/" section "/" (:uuid (:body resp))))
-              (conf/delete-config! :add))
+              (conf/delete! :add))
             (pr "success" resp)))))
-    (pr "invalid "(conf/get-config [:add :data]))))
+    (pr "invalid "(conf/get [:add :data]))))
 
 (def add-renderer
   {"vms"      vms-create/render
@@ -176,14 +176,14 @@
 (defn add-body [app]
   (g/row
    {:id "add-body"}
-   (if (= (conf/get-config [:add :state]) "maximised")
-    (if-let [section (conf/get-config [:add :section] "vms")]
+   (if (= (conf/get [:add :state]) "maximised")
+    (if-let [section (conf/get [:add :section] "vms")]
       (if-let [create-view (add-renderer section)]
         (g/col
          {:md 12 :style {:text-align "center"}}
          (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
                (add-title section)
-               (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(conf/delete-config! :add)})
+               (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(conf/delete! :add)})
                (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add app)}))
          (create-view app)))))))
 
@@ -199,7 +199,7 @@
      (om/component
       (if (:token app)
         (d/div
-         {:class (if (= (conf/get-config [:add :state] "none") "maximised") "add-open" "add-closed")}
+         {:class (if (= (conf/get [:add :state] "none") "maximised") "add-open" "add-closed")}
          (nav-bar app)
          (main-view app)
          (add-view app))

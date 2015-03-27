@@ -14,7 +14,7 @@
     :integer #(not= % js/nan)))
 
 (defn validate-data [spec]
-  (let [data (conf/get-config [:add :data])
+  (let [data (conf/get [:add :data])
         results (map
                  (fn [{validator :validator key :key data-type :data-type
                        :or {data-type :string}}]
@@ -23,8 +23,8 @@
                          val (get-in data path)]
                      (validator val))) spec)
         result (every? identity results)]
-    (if (not= (conf/get-config [:add :valid]) result)
-      (conf/set-config! [:add :valid] result))))
+    (if (not= (conf/get [:add :valid]) result)
+      (conf/write! [:add :valid] result))))
 
 
 (defn to-dt [data-type val]
@@ -40,7 +40,7 @@
                    :or {data-type :string}}]
   (let [path (concat [:add :data] (if (vector? key) key [key]))
         validator (or validator (default-validator data-type))
-        val (conf/get-config path "")]
+        val (conf/get path "")]
     (i/input {:type type :label label
               :label-classname "col-xs-1"
               :wrapper-classname "col-xs-11"
@@ -49,7 +49,7 @@
               :bs-style (if (validator val) "success" "error")
               :on-change #(do
                             (if key
-                              (conf/set-config! path (to-dt data-type (val-by-id id))))
+                              (conf/write! path (to-dt data-type (val-by-id id))))
                             (validate-data spec))
               :value (from-dt data-type val)})))
 

@@ -1,4 +1,5 @@
 (ns jingles.config
+  (:refer-clojure :exclude [flush get])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [jingles.http :as http]
             [jingles.api :as api]
@@ -23,34 +24,33 @@
             (set-state! :user uuid)
             conf)))))
 
-(defn set-config! [path value]
+(defn write! [path value]
   (do
     (if-let [uuid (:user @app-state)]
       (swap! updates add-update [:users uuid (vec (concat [:jingles] path))] value)
-      ;(api/update-metadata :users uuid (vec (concat [:jingles] path)) value)
       )
     (set-state! (vec (concat [:config] path)) value)
     value))
 
-(defn get-config
+(defn get
   ([path default]
      (let [v (get-in @app-state (concat [:config] path):no-value-set)]
        (if (= v :no-value-set)
          (do
-           (set-config! path default)
+           (write! path default)
            default)
          v)))
   ([path]
      (get-in @app-state (concat [:config] path))))
 
-(defn update-config! [path update-fn]
-  (set-config! path (update-fn (get-config path))))
+(defn update! [path update-fn]
+  (write! path (update-fn (get path))))
 
-(defn delete-config! [path]
+(defn delete! [path]
   (if (and (vector? path) (> (count path) 1))
     (let [key (last path)
           path (butlast path)]
-      (update-config! path #(dissoc % key)))
+      (update! path #(dissoc % key)))
     (update-state! [:config] #(dissoc % path))))
 
 
@@ -63,5 +63,7 @@
       updates))
     []))
 
-(js/setInterval
- (fn [] (swap! updates apply-updates)) 10000)
+(defn flush []
+  (swap! updates apply-updates))
+
+(js/setInterval flush 10000)

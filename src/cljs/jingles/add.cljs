@@ -8,7 +8,7 @@
    ;[om-bootstrap.button :as b]
    [om-bootstrap.grid :as g]
 
-   [jingles.http :as http]
+   [jingles.api :as api]
    [jingles.config :as conf]
    [jingles.utils :refer [goto]]
    [jingles.packages.create :as packages]
@@ -49,11 +49,7 @@
 
 
 (defn submit-default [section data]
-  (go
-    (let [resp (<! (http/post section {} {:json-params data}))]
-      (if (:success resp)
-        (goto (str "/" section "/" (:uuid (:body resp))))
-        (pr "success" resp)))))
+  (api/post (keyword section) data))
 
 (defn submit-add [app]
   (if (conf/get [:add :valid] false)

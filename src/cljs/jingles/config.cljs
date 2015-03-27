@@ -43,7 +43,7 @@
       (logout))))
 
 (defn write! [path value]
-  (do
+  (let [path (if (vector? path) path [path])]
     (if-let [uuid (:user @app-state)]
       (swap! updates add-update [:users uuid (vec (concat [:jingles] path))] value))
     (set-state! (vec (concat [:config] path)) value)
@@ -51,14 +51,16 @@
 
 (defn get
   ([path default]
-     (let [v (get-in @app-state (concat [:config] path):no-value-set)]
+   (let [path (if (vector? path) path [path])
+         v (get-in @app-state (concat [:config] path) :no-value-set)]
        (if (= v :no-value-set)
          (do
            (write! path default)
            default)
          v)))
   ([path]
-     (get-in @app-state (concat [:config] path))))
+   (let [path (if (vector? path) path [path])]
+     (get-in @app-state (concat [:config] path)))))
 
 (defn update! [path update-fn]
   (write! path (update-fn (get path))))

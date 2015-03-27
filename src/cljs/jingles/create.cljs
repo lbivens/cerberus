@@ -7,7 +7,6 @@
    [jingles.http :as http]
    [jingles.utils :refer [make-event val-by-id str->int]]))
 
-
 (defn default-validator [data-type]
   (condp = data-type
     :string #(not (empty? %))

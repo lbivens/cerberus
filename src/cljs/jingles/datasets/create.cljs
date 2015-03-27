@@ -7,7 +7,7 @@
    [jingles.config :as conf]
    [jingles.state :refer [app-state set-state! update-state!]]
    [jingles.create :as create]
-   [jingles.datasets.api :as api]))
+   [jingles.datasets.api :as api :refer [root]]))
 
 
 (defn submit [section app]
@@ -26,7 +26,8 @@
 
 (defn render [app]
   (let [datasets (:remote-datasets app)
-        known (get-in app [:config :add :data] #{})]
+        installed? (get-in app [root :elements])
+        known? (get-in app [:config :add :data] #{})]
     (if (empty? datasets)
       (go
         (let [resp (<! (http/get "http://datasets.at/images" {:with-credentials? false :headers {"Accept" "application/json"}}))]
@@ -40,9 +41,9 @@
       (d/td "Version"))
      (d/tbody
       (map
-       (fn [e]
+       (fn [{uuid :uuid :as e}]
          (d/tr
-          {:on-click #(conf/update! [:add] (partial toggle-dataset (:uuid e)))
-           :class (if (known (:uuid e)) "selected" "not-selected")}
+          {:on-click #(conf/update! [:add] (partial toggle-dataset uuid))
+           :class  (if (installed? uuid) "installed" (if (known? uuid) "selected" "not-selected"))}
           (d/td (:name e))
           (d/td (:version e)))) datasets)))))

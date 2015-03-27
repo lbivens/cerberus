@@ -51,32 +51,49 @@
 (defn submit-default [section data]
   (api/post (keyword section) data))
 
+(defn clear-add []
+  (do
+    (conf/delete! :add)
+    (if-let [stash (conf/get :stash)]
+      (do 
+        (conf/write! :add stash)
+        (conf/write! [:add :state] "maximised")
+        (conf/delete! :stash)))))
+
 (defn submit-add [app]
   (if (conf/get [:add :valid] false)
     (let [section (conf/get [:add :section])
           submit-fn (get-in add-submit [(name section)] submit-default)]
       (if (submit-fn section (conf/get [:add :data]))
-        (conf/delete! :add)))
+        (clear-add)))
     (pr "invalid " (conf/get [:add :data]))))
 
+(defn init-add [app]
+  (do
+    (conf/write! [:add :section] (name (:section app)))
+    (conf/write! [:add :state] "maximised")))
+
 (defn add-btn [app]
-  (g/row
-   {:id "add-ctrl"}
-   ;; menu-up
-   ;; menu-down
-   ;; glyphicon-plus
-   (g/col {:xs 2 :xs-offset 5 :style {:text-align " center"}}
-          (match
-           (conf/get [:add :state] "none")
-           "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(do (conf/write! [:add :state] "minimised")
-                                                                       (conf/flush!))})
-           "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/write! [:add :state] "maximised")})
-           :else (if (add-title (name  (:section app)))
-                   (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click
-                                 (fn []
-                                   (do
-                                     (conf/write! [:add :section] (name (:section app)))
-                                     (conf/write! [:add :state] "maximised")))}))))))
+  (let [state (conf/get [:add :state])]
+    (g/row
+     {:id "add-ctrl"}
+     (g/col
+      {:xs 2 :xs-offset 5 :style {:text-align "center"}}
+      (match
+       state
+       "maximised" (r/glyphicon {:glyph "menu-down" :on-click #(do (conf/write! [:add :state] "minimised")
+                                                                   (conf/flush!))})
+       "minimised" (r/glyphicon {:glyph "menu-up" :on-click #(conf/write! [:add :state] "maximised")})
+       :else (if (add-title (name  (:section app)))
+               (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click #(init-add app)}))))
+     (g/col
+      {:xs 1 :xs-offset 4 :style {:text-align "right"}}
+      (if (and state (not (conf/get [:stash])))
+        (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click
+                      #(let [add (conf/get [:add])]
+                         (conf/delete! :add)
+                         (conf/write! [:stash] add)
+                         (init-add app))}))))))
 
 
 
@@ -91,7 +108,7 @@
            {:md 12 :style {:text-align "center"}}
            (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
                  (add-title section)
-                 (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(conf/delete! :add)})
+                 (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add)})
                  (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add app)})))))))
    (g/row
     {:id "add-body" :style {:max-height "300px"

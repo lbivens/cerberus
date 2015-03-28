@@ -7,8 +7,14 @@
 
 (enable-console-print!)
 
+
+(defn mk-url [url]
+  (if (vector? url)
+    (clojure.string/join "/" (map #(if (keyword? %) (name %) (str %)) url))
+    url))
 (defn api [url]
-  (str "/api/0.2.0/" url))
+
+  (str "/api/0.2.0/" (mk-url url)))
 
 (defn default-headers []
   {"Accept" "application/json"})

@@ -27,7 +27,7 @@
             [jingles.config :as conf]
             [jingles.add :as add]
 
-            [jingles.utils :refer [goto val-by-id by-id a]]
+            [jingles.utils :refer [goto val-by-id by-id a menu-items]]
             [jingles.state :refer [app-state set-state!]]))
 
 (enable-console-print!)
@@ -61,13 +61,6 @@
     #js{}))
 
 
-(defn menu-items [& items]
-  (doall (map-indexed (fn [idx data]
-                        (if (= :divider data)
-                          (b/menu-item {:divider? true})
-                          (b/menu-item {:key (inc idx) :href (first data)} (second data)))
-                     ) items)))
-
 (defn nav-bar [app]
   (n/navbar
    {:brand (d/a {:href (str "#/")} "FiFo")}
@@ -78,19 +71,18 @@
     (n/nav-item {:key 3 :href "#/hypervisors"} "Hypervisors")
     (b/dropdown {:key 4 :title "Configuration"}
                 (menu-items
-                 ["#/users" "Users"]
-                 ["#/roles" "Roles" ]
-                 ["#/orgs" "Organisations" ]
+                 ["Users" "#/users"]
+                 ["Roles"  "#/roles"]
+                 ["Organisations"  "#/orgs"]
                  :divider
-                 ["#/packages" "Packages"]
+                 ["Packages" "#/packages"]
                  :divider
-                 ["#/networks" "Networks"]
-                 ["#/ipranges" "IP Ranges"]
-                 ["#/dtrace" "DTrace"]
-                 :divider)
-                (b/menu-item {:key 8 :href "#/" :on-click #(conf/logout)} "Logout")
-                (b/menu-item {:key 9 :href "#/" :on-click #(conf/clear)} "Logout & Reset UI")
-                ))))
+                 ["Networks" "#/networks"]
+                 ["IP Ranges" "#/ipranges"]
+                 ["DTrace" "#/dtrace"]
+                 :divider
+                 ["Logout" #(conf/logout)]
+                 ["Logout & Reset UI" #(conf/clear)])))))
 
 (defn main-view [app]
   (g/grid

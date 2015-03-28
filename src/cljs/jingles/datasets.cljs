@@ -1,18 +1,17 @@
 (ns jingles.datasets
   (:refer-clojure :exclude [get list])
-  (:require [jingles.api :as api]
-            [jingles.list :as jlist]
-            [jingles.datasets.api :refer [root]]
+  (:require [jingles.list :as jlist]
+            [jingles.datasets.api :refer [root] :as api]
+            [jingles.fields :refer [mk-config]]
             [om-bootstrap.random :as r]
             [jingles.utils :refer [initial-state]]
             [jingles.state :refer [set-state!]]))
 
+(defn actions [{uuid :uuid}]
+  [["Delete" #(api/delete uuid)]])
 
-(def config {:fields {:name    {:id :name :title "Name" :key :name}
-                      :version {:id :version :title "Version" :key :version}
-                      :uuid    {:id :uuid :title "UUID" :key :uuid}}
-             :root root
-             :title "Datasets"})
+(def config (mk-config root "Datasets" actions
+                        :version {:title "Version" :key :version :type :string}))
 
 (set-state! [root :fields] (initial-state config))
 

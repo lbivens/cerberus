@@ -50,48 +50,43 @@
 
 (def syntax
   "
-S =  (Rule ' '+)* Rule
-Rule = Val | Field
-Val = Sym | Str | Number
-Sym = #'[a-zA-Z][a-zA-Z0-9.-]*'
-Number = #'[0-9]+'
-Str = '\"' #'([^\"]|\\.)+' '\"'
-Cmp = '>' | '<' | '=' | '~' | '>=' | '<='
-Field = Sym ':' Cmp? Val
+<s> =  (rule ' '+)* rule
+<rule> = val | field
+<val> = str | num
+num = #'[0-9]+'
+<sym> = #'[a-zA-Z][a-zA-Z0-9.-]*'
+str = <'\"'> #'([^\"]|\\.)+' <'\"'> | sym
+<cmp> = '>' | '<' | '=' | '~' | '>=' | '<='
+field = sym <':'> cmp? val
 ")
 
+
+(def cmp-fn
+  {"~" re-match
+   "=" eq-match
+   ">" gt-match
+   "<" lt-match
+   ">=" gte-match
+   "<=" lte-match
+   })
+(defn val-fn [v]
+  (match
+   v
+   [:str field-match] field-match
+   [:num field-match] (str->int field-match)))
 
 (defn simplify-query-element [q]
   (match
    q
-   [:Rule [:Val [:Sym filter-str]]] (partial all (re-match filter-str))
-   [:Rule [:Val [:Str "\"" filter-str "\""]]] (partial all  (re-match filter-str))
+   [:str filter-str] (partial all (re-match filter-str))
+   [:num filter-str] (partial all (re-match filter-str))
    ;; Sym Comp
-   [:Rule [:Field [:Sym field-name] ":" [:Val [:Sym field-match]]]] (partial field field-name (re-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "~"] [:Val [:Sym field-match]]]] (partial field field-name (re-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "="] [:Val [:Sym field-match]]]] (partial field field-name (eq-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp ">"] [:Val [:Sym field-match]]]] (partial field field-name (gt-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "<"] [:Val [:Sym field-match]]]] (partial field field-name (lt-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp ">="] [:Val [:Sym field-match]]]] (partial field field-name (gte-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "<="] [:Val [:Sym field-match]]]] (partial field field-name (lte-match field-match))
-
-   ;; Str Comp
-   [:Rule [:Field [:Sym field-name] ":" [:Val [:Str field-match]]]] (partial field field-name (re-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "~"] [:Val [:Str field-match]]]] (partial field field-name (re-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "="] [:Val [:Str field-match]]]] (partial field field-name (eq-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp ">"] [:Val [:Str field-match]]]] (partial field field-name (gt-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "<"] [:Val [:Str field-match]]]] (partial field field-name (lt-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp ">="] [:Val [:Str field-match]]]] (partial field field-name (gte-match field-match))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "<="] [:Val [:Str field-match]]]] (partial field field-name (lte-match field-match))
-   ;; Integer comparison
-   [:Rule [:Field [:Sym field-name] ":" [:Val [:Number field-match]]]] (partial field field-name (eq-match (str->int field-match)))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "="] [:Val [:Number field-match]]]] (partial field field-name (eq-match (str->int field-match)))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "<"] [:Val [:Number field-match]]]] (partial field field-name (lt-match (str->int field-match)))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp ">"] [:Val [:Number field-match]]]] (partial field field-name (gt-match (str->int field-match)))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp "<="] [:Val [:Number field-match]]]] (partial field field-name (lte-match (str->int field-match)))
-   [:Rule [:Field [:Sym field-name] ":" [:Cmp ">="] [:Val [:Number field-match]]]] (partial field field-name (gte-match (str->int field-match)))
-   :else (pr q))
-  ;;[:Rule [:Field [:Sym field] ":" & field-rule]] (simplify-field-query field-rule)
+   [:field field-name [:str field-match]] (partial field field-name (re-match field-match))
+   [:field field-name [:num field-match]] (partial field field-name (eq-match (str->int field-match)))
+   [:field field-name "~" [:num field-match]] (partial field field-name (re-match field-match))
+   [:field field-name cmp val] (partial field field-name ((cmp-fn cmp) (val-fn val)))
+   :else (pr "unknown:" q))
+  ;;[:Rule [:Field [:str field] & field-rule]] (simplify-field-query field-rule)
   ;;[]
   )
 

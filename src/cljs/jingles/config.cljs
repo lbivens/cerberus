@@ -4,7 +4,7 @@
   (:require [jingles.http :as http]
             [jingles.api :as api]
             [goog.net.cookies]
-            [jingles.utils :refer [goto]]
+            [jingles.utils :refer [goto path-vec]]
             [jingles.state :refer [clear-state! app-state set-state! delete-state! update-state!]]))
 
 (enable-console-print!)
@@ -82,15 +82,11 @@
 
 (defn delete! [path]
   (let [uuid (:user @app-state)
-        path (if (vector? path) path [path])]
-    (api/delete-metadata :users uuid (concat [:jingles] path))
-    (if (> (count path) 1)
-      (let [key (last path)
-            path (butlast path)]
-        (api/delete-metadata :users uuid path)
-        (set-state! (vec (concat [:config] path))
-                    (dissoc (get path) key)))
-      (update-state! [:config] #(dissoc % (first path))))))
+        full-path (path-vec path)
+        key (last full-path)
+        path (butlast full-path)]
+    (api/delete-metadata :users uuid (concat [:jingles] full-path))
+    (update-state! (concat [:config] path) dissoc key)))
 
 
 (defn print [] (pr (get-in @app-state [:config])))
@@ -100,4 +96,3 @@
       (load)))
 
 (js/setInterval flush! 10000)
-

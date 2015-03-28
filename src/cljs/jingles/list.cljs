@@ -9,7 +9,7 @@
             [om-bootstrap.input :as i]
             [jingles.match :as jmatch]
             [jingles.config :as conf]
-            [jingles.utils :refer [goto val-by-id make-event value-by-key]]
+            [jingles.utils :refer [goto val-by-id make-event value-by-key menu-items]]
             [jingles.state :refer [set-state! update-state!]]))
 
 (defn show-field [field element]
@@ -85,10 +85,6 @@
                   :className (order-class order)} (:title field) " " (order-str order)))
       (d/td (d/a {:onClick #(conf/write! [root :sort] {:field id :order :asc})} (:title field))))))
 
-(defn tbl-headers [root sort fields]
-  (d/thead
-   (d/tr
-    (map (partial tbl-header root sort) fields))))
 
 (defn page-click-fn [root page]
   (make-event #(set-state! [root :page] page)))
@@ -135,15 +131,23 @@
       (cell-opt :style field)
       (cell-opt :class field)))
 
+(defn tbl-headers [root sort fields actions]
+  (d/thead
+   (d/tr
+    (map (partial tbl-header root sort) fields)
+    (if actions
+      (d/td {:class "actions"})))))
+
 (defn tbl [config state]
-  (let [root (:root config)
+  (let [actions (:actions config)
+        root (:root config)
         fields (expand-fields config (used-fields (conf/get [root :fields])))
         elements (sort-and-paginate config state)]
     (d/div
      nil
      (table
       {:striped? false :bordered? true :condensed? true :hover? true :responsive? true}
-      (tbl-headers root (conf/get [root :sort]) fields)
+      (tbl-headers root (conf/get [root :sort]) fields actions)
       (d/tbody
        (map
         (fn [e] (d/tr
@@ -158,7 +162,12 @@
                               (r/glyphicon {:glyph "pushpin"
                                             :class "filterby"
                                             :on-click (filter-field root (str (name (:id field)) ":" txt))}) " " txt))))
-                  fields)))
+                  fields)
+                 (if actions (d/td {:class "actions"}
+                                   (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                                                :on-click (make-event identity)}
+                                               (apply menu-items (actions e)))))
+                 ))
         (:list elements))))
      (pagination root elements))))
 
@@ -199,3 +208,4 @@
                 :checked (get-in fields [id :show])}))))
          (vals (:fields config))))))
      (tbl config state))))
+

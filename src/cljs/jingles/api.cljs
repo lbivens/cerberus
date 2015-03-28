@@ -4,7 +4,7 @@
   (:require [jingles.http :as http]
             [clojure.string :refer [join]]
             [jingles.utils :refer [goto value-by-key]]
-            [jingles.state :refer [app-state set-state!]]))
+            [jingles.state :refer [app-state set-state! delete-state!]]))
 
 
 (defn check-login []
@@ -87,6 +87,15 @@
   (let [key (last path)
         path (butlast path)]
     (request-and-get http/put root uuid (concat [:metadata] path) (hash-map key value))))
+
+
+(defn delete [root uuid]
+  (go
+    (let [req (<! (http/delete [root uuid]))]
+      (if (:success req)
+        (delete-state! [root :elements uuid])
+        (pr req)
+        ))))
 
 (defn delete-metadata [root uuid path]
   (request-and-get http/delete root uuid (concat [:metadata] path)))

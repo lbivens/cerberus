@@ -14,3 +14,5 @@
 (def list (partial api/list root list-fields))
 
 (def get (partial api/get root))
+
+(def delete (partial api/delete root))

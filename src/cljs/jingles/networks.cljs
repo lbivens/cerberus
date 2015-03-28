@@ -1,16 +1,17 @@
 (ns jingles.networks
   (:refer-clojure :exclude [get list])
-  (:require [jingles.api :as api]
-            [jingles.list :as jlist]
-            [jingles.networks.api :refer [root]]
-            [om-bootstrap.random :as r]
-            [jingles.utils :refer [initial-state]]
-            [jingles.state :refer [set-state!]]))
+  (:require
+   [jingles.list :as jlist]
+   [jingles.networks.api :refer [root] :as api]
+   [om-bootstrap.random :as r]
+   [jingles.utils :refer [initial-state]]
+   [jingles.state :refer [set-state!]]
+   [jingles.fields :refer [mk-config]]))
 
-(def config {:fields {:name {:id :name :title "Name" :key :name}
-                      :uuid {:id :uuid :title "UUID" :key :uuid}}
-             :root root
-             :title "Networks"})
+(defn actions [{uuid :uuid}]
+  [["Delete" #(api/delete uuid)]])
+
+(def config (mk-config root "Networks" actions))
 
 (set-state! [root :fields] (initial-state config))
 

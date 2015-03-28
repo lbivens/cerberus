@@ -5,7 +5,7 @@
 
 (def default-fields
   {:uuid {:title "UUID" :key :uuid :type :uuid :order -1}
-   :name {:title "Name" :key :name :type :string :order -2}})
+   })
 
 (defn apply-defaults
   ([fields]
@@ -28,4 +28,3 @@
 
 ;:actions
 ;{:style {:width "20px"}}
-

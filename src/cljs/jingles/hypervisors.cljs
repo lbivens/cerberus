@@ -1,17 +1,18 @@
 (ns jingles.hypervisors
   (:refer-clojure :exclude [get list])
-  (:require [jingles.api :as api]
-            [jingles.list :as jlist]
-            [jingles.hypervisors.api :refer [root]]
-            [om-bootstrap.random :as r]
-            [jingles.utils :refer [initial-state]]
-            [jingles.state :refer [set-state!]]))
+  (:require
+   [jingles.list :as jlist]
+   [jingles.hypervisors.api :refer [root] :as api]
+   [om-bootstrap.random :as r]
+   [jingles.fields :refer [mk-config]]
+   [jingles.utils :refer [initial-state]]
+   [jingles.state :refer [set-state!]]))
 
+(defn actions [{uuid :uuid}]
+  [["Delete" #(api/delete uuid)]])
 
-(def config {:fields {:name {:id :name :title "Name" :key :alias}
-                      :uuid {:id :uuid :title "UUID" :key :uuid}}
-             :root root
-             :title "Hypervisors"})
+(def config (mk-config root "Hypervisors" actions
+                       :name {:title "Name" :key :alias :type :string :order -2}))
 
 (set-state! [root :fields] (initial-state config))
 

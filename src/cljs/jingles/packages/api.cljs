@@ -11,3 +11,5 @@
 (defn list [] (api/list root))
 
 (def get (partial api/get root))
+
+(def delete (partial api/delete root))

@@ -12,8 +12,11 @@
             [jingles.utils :refer [goto val-by-id make-event value-by-key menu-items]]
             [jingles.state :refer [set-state! update-state!]]))
 
-(defn show-field [field element]
-  (value-by-key (:key field) element))
+(defn show-field [{key :key formater :formater :as field} element]
+  (let [txt (value-by-key key element)]
+    (if txt
+      (formater txt)
+      txt)))
 
 (defn get-filter-field [field element]
   (if-let [key (:filter-key field)]

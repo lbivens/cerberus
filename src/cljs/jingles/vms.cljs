@@ -29,12 +29,13 @@
 
 (def config (mk-config
              root "Machines" actions
-             :cpu {:id :cpu :title "CPU" :key '(:config :cpu_cap) :type :percent}
-             :state {:id :state :title "State" :key :state :type :string}
-             :dataset {:id :dataset :title "Dataset" :type :string
+             :name {:title "Name" :key '(:config :alias) :order -10}
+             :cpu {:title "CPU" :key '(:config :cpu_cap) :type :percent}
+             :state {:title "State" :key :state :type :string}
+             :dataset {:title "Dataset" :type :string
                        :key (partial api/get-sub-element :datasets :dataset
                                      #(str (:name %) "-" (:version %)))}
-             :package {:id :package :title "Package" :type :string
+             :package {:title "Package" :type :string
                        :key (partial api/get-sub-element :packages :package [:name])}))
 
 (set-state! [root :fields] (initial-state config))

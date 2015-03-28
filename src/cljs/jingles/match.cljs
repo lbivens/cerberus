@@ -52,7 +52,14 @@
   "
 <s> =  (rule ' '+)* rule
 <rule> = val | field
-<val> = str | num
+<val> = str | num | size
+size = num | b | kb | mb | gb | tb | pb
+b = #'[0-9]+' <('B' | 'b')>
+kb = #'[0-9]+' <('KB' | 'kb')>
+mb = #'[0-9]+' <('MB' | 'mb')>
+gb = #'[0-9]+' <('GB' | 'gb')>
+tb = #'[0-9]+' <('TB' | 'tb')>
+pb = #'[0-9]+' <('PB' | 'pb')>
 num = #'[0-9]+'
 <sym> = #'[a-zA-Z][a-zA-Z0-9.-]*'
 str = <'\"'> #'([^\"]|\\.)+' <'\"'> | sym

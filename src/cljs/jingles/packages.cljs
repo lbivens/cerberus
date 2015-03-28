@@ -11,7 +11,10 @@
 (defn actions [{uuid :uuid}]
   [["Delete" #(api/delete uuid)]])
 
-(def config (mk-config root "Packages" actions))
+(def config (mk-config root "Packages" actions
+                       :cpu_cap {:title "CPU" :key :cpu_cap :type :percent}
+                       :quota {:title "Quota" :key :quota :type [:bytes :gb]}
+                       :ram {:title "RAM" :key :ram :type [:bytes :mb]}))
 
 (set-state! [root :fields] (initial-state config))
 

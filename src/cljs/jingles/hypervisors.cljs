@@ -12,7 +12,7 @@
   [["Delete" #(api/delete uuid)]])
 
 (def config (mk-config root "Hypervisors" actions
-                       :name {:title "Name" :key :alias :type :string :order -2}))
+                       :name {:title "Name" :key :alias :order -20}))
 
 (set-state! [root :fields] (initial-state config))
 

@@ -23,7 +23,7 @@ once you've loaded the page, so the browser can connect to Weasel.
 
 When you see the line `Successfully compiled "resources/public/app.js"
 in 21.36 seconds.`, you're ready to go. Browse to
-`http://localhost:10555` and enjoy.
+`http://localhost:8888` and enjoy.
 
 **Attention: It is not longer needed to run `lein figwheel`
   separately. This is now taken care of behind the scenes**

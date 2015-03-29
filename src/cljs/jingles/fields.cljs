@@ -6,7 +6,6 @@
 (def all-defaults
   {:formater str :type :string})
 
-
 (defn fmt-percent [p]
   (str p "%"))
 
@@ -26,6 +25,13 @@
    :mb :gb
    :gb :tb
    :tb :pb})
+
+(def prev-byte-type
+  {:bk :b
+   :mb :kb
+   :gb :mb
+   :tb :gb
+   :pb :bt})
 
 (defn fmt-bytes [type size]
   (if (and (> size 1024) (next-byte-type type))

@@ -25,7 +25,6 @@
     (if (not= (conf/get [:add :valid]) result)
       (conf/write! [:add :valid] result))))
 
-
 (defn to-dt [data-type val]
   (condp = data-type
     :integer (str->int val)

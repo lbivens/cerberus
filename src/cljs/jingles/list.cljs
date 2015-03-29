@@ -27,7 +27,6 @@
   (let [fields (:fields config)]
     (map (fn [field] (fields field)) selected)))
 
-
 (defn do-paginate [elements size page]
   (let [page (dec page)] ; we need to decrease page by one so we start with page 1 not 0
     (take size (drop (* page size) elements))))
@@ -74,6 +73,7 @@
 
 (def flip-order {:asc :desc
                  :desc :asc})
+
 (def order-class {:asc "asc"
                   :desc "desc"})
 
@@ -87,7 +87,6 @@
       (d/td (d/a {:onClick #(conf/write! [root :sort :order] (flip-order order))
                   :className (order-class order)} (:title field) " " (order-str order)))
       (d/td (d/a {:onClick #(conf/write! [root :sort] {:field id :order :asc})} (:title field))))))
-
 
 (defn page-click-fn [root page]
   (make-event #(set-state! [root :page] page)))
@@ -141,6 +140,26 @@
     (if actions
       (d/td {:class "actions"})))))
 
+(defn list-row [root e field]
+  (let [txt (show-field field e)]
+    (if (or (= txt "") (= (:filter field) false) (= (:no-quick-filter field) true))
+      (d/td (cell-attrs field)
+            txt)
+      (d/td (cell-attrs field)
+            (r/glyphicon {:glyph "pushpin"
+                          :class "filterby"
+                          :on-click (filter-field root (str (name (:id field)) ":" txt))}) " " txt))))
+
+(defn list-body [root actions fields e]
+  (d/tr
+   {:on-click #(goto (str "/" (name root) "/" (:uuid e)))}
+   (map (partial list-row root e) fields)
+   (if actions
+     (d/td {:class "actions"}
+           (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                        :on-click (make-event identity)}
+                       (apply menu-items (actions e)))))))
+
 (defn tbl [config state]
   (let [actions (:actions config)
         root (:root config)
@@ -153,27 +172,9 @@
       (tbl-headers root (conf/get [root :sort]) fields actions)
       (d/tbody
        (map
-        (fn [e] (d/tr
-                 {:on-click #(goto (str "/" (name root) "/" (:uuid e)))}
-                 (map
-                  (fn [field]
-                    (let [txt (show-field field e)]
-                      (if (or (= txt "") (= (:filter field) false) (= (:no-quick-filter field) true))
-                        (d/td (cell-attrs field)
-                              txt)
-                        (d/td (cell-attrs field)
-                              (r/glyphicon {:glyph "pushpin"
-                                            :class "filterby"
-                                            :on-click (filter-field root (str (name (:id field)) ":" txt))}) " " txt))))
-                  fields)
-                 (if actions (d/td {:class "actions"}
-                                   (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
-                                                :on-click (make-event identity)}
-                                               (apply menu-items (actions e)))))
-                 ))
+        (partial list-body root actions fields)
         (:list elements))))
      (pagination root elements))))
-
 
 (defn toggle-field [field aset]
   (if (contains? aset field)
@@ -211,4 +212,3 @@
                 :checked (get-in fields [id :show])}))))
          (vals (:fields config))))))
      (tbl config state))))
-

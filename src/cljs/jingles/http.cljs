@@ -7,13 +7,12 @@
 
 (enable-console-print!)
 
-
 (defn mk-url [url]
   (if (vector? url)
     (clojure.string/join "/" (map #(if (keyword? %) (name %) (str %)) url))
     url))
-(defn api [url]
 
+(defn api [url]
   (str "/api/0.2.0/" (mk-url url)))
 
 (defn default-headers []
@@ -22,9 +21,8 @@
 (defn add-headers [req hdrs]
   (assoc req :headers hdrs :oauth-token (:token @app-state)))
 
-
 (defn do-req [req-fn url hdrs req]
-     (let [hdrs (merge hdrs (default-headers))]
+  (let [hdrs (merge hdrs (default-headers))]
     (req-fn (api url) (add-headers req hdrs))))
 
 (defn get

@@ -51,13 +51,12 @@
   (api/post (keyword section) data))
 
 (defn clear-add []
-  (do
-    (conf/delete! :add)
-    (if-let [stash (conf/get :stash)]
-      (do
-        (conf/write! :add stash)
-        (conf/write! [:add :state] "maximised")
-        (conf/delete! :stash)))))
+  (conf/delete! :add)
+  (if-let [stash (conf/get :stash)]
+    (do
+      (conf/write! :add stash)
+      (conf/write! [:add :state] "maximised")
+      (conf/delete! :stash))))
 
 (defn submit-add [app]
   (if (conf/get [:add :valid] false)
@@ -68,9 +67,8 @@
     (pr "invalid " (conf/get [:add :data]))))
 
 (defn init-add [app]
-  (do
-    (conf/write! [:add :section] (name (:section app)))
-    (conf/write! [:add :state] "maximised")))
+  (conf/write! [:add :section] (name (:section app)))
+  (conf/write! [:add :state] "maximised"))
 
 (defn add-btn [app]
   (let [state (conf/get [:add :state])

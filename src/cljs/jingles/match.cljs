@@ -10,7 +10,6 @@
     (value-by-key key element)
     (value-by-key (:key field) element)))
 
-
 (defn re-match [filter-str]
   (let [re  (re-pattern filter-str)]
     #(re-find re (if (string? %) % (str %)))))
@@ -47,7 +46,6 @@
         (pr field-key (config field-key))
         (constantly true)))))
 
-
 (def syntax
   "
 <s> =  (rule ' '+)* rule
@@ -67,15 +65,14 @@ str = <'\"'> #'([^\"]|\\.)+' <'\"'> | sym
 field = sym <':'> cmp? val
 ")
 
-
 (def cmp-fn
   {"~" re-match
    "=" eq-match
    ">" gt-match
    "<" lt-match
    ">=" gte-match
-   "<=" lte-match
-   })
+   "<=" lte-match})
+
 (defn val-fn [v]
   (match
    v
@@ -92,15 +89,11 @@ field = sym <':'> cmp? val
    [:field field-name [:num field-match]] (partial field field-name (eq-match (str->int field-match)))
    [:field field-name "~" [:num field-match]] (partial field field-name (re-match field-match))
    [:field field-name cmp val] (partial field field-name ((cmp-fn cmp) (val-fn val)))
-   :else (pr "unknown:" q))
-  ;;[:Rule [:Field [:str field] & field-rule]] (simplify-field-query field-rule)
-  ;;[]
-  )
+   :else (pr "unknown:" q)))
 
 (defn simplify-query [q]
   ()
   (filter boolean (map simplify-query-element q)))
-
 
 (def parser (insta/parser syntax))
 

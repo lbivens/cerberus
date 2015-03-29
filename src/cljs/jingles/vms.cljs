@@ -13,7 +13,6 @@
    [jingles.fields :refer [mk-config]]
    [jingles.state :refer [set-state!]]))
 
-
 (defn actions [e]
   (let [locked (get-in e [:metadata :jingles :locked] false)
         set-lock (partial api/update-metadata root (:uuid e) [:jingles :locked])]

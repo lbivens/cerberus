@@ -22,8 +22,6 @@
 
 (enable-console-print!)
 
-
-
 (secretary/set-config! :prefix "#")
 
 (defroute "/" {:as params}
@@ -127,7 +125,6 @@
   (orgs/get (:uuid params))
   (set-state! [:orgs :selected] (:uuid params))
   (set-view! :orgs :show))
-
 
 (let [h (History.)]
   (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))

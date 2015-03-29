@@ -11,9 +11,8 @@
 
 
 (defn submit [section app]
-  (do
-    (doall
-     (map api/import (conf/get [:add :data])))))
+  (doall
+   (map api/import (conf/get [:add :data]))))
 
 (defn toggle-dataset [e {datasets :data valid :valid
                          :or {datasets #{} valid false} :as add}]

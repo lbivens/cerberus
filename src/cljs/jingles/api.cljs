@@ -4,8 +4,7 @@
   (:require [jingles.http :as http]
             [clojure.string :refer [join]]
             [jingles.utils :refer [goto value-by-key]]
-            [jingles.state :refer [app-state set-state! delete-state!]]))
-
+            [jingles.state :refer [app-state path-vec set-state! delete-state!]]))
 
 (defn check-login []
   (do
@@ -49,9 +48,8 @@
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
 
-
-
 (defn post [root data]
+  (pr root data)
   (go
     (let [resp (<! (http/post (name root) {} {:json-params data}))]
       (if (:success resp)

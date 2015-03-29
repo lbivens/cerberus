@@ -6,7 +6,6 @@
 (def token (atom))
 
 ;; For some reason vectors are note seq's
-
 (defn vec-or-seq? [e]
   (or (vector? e) (seq? e)))
 

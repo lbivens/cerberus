@@ -1,12 +1,12 @@
 (ns jingles.packages
   (:refer-clojure :exclude [get list])
   (:require
-            [jingles.list :as jlist]
-            [jingles.packages.api :refer [root] :as api]
-            [om-bootstrap.random :as r]
-            [jingles.utils :refer [initial-state]]
-            [jingles.state :refer [set-state!]]
-            [jingles.fields :refer [mk-config]]))
+   [jingles.list :as jlist]
+   [jingles.packages.api :refer [root] :as api]
+   [om-bootstrap.random :as r]
+   [jingles.utils :refer [initial-state]]
+   [jingles.state :refer [set-state!]]
+   [jingles.fields :refer [mk-config]]))
 
 (defn actions [{uuid :uuid}]
   [["Delete" #(api/delete uuid)]])

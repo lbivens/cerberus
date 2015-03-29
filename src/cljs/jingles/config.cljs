@@ -13,22 +13,19 @@
 
 (def metadata-root [:metadata :jingles])
 
-
 (defn apply-updates [updates]
-  (do
-    (doall
-     (map
-      (fn [[[section uuid path] value]]
-        (api/update-metadata section uuid path value))
-      updates))
-    []))
+  (doall
+   (map
+    (fn [[[section uuid path] value]]
+      (api/update-metadata section uuid path value))
+    updates))
+  [])
 
 (defn add-update [updates path value]
   (conj (vec (filter #(not= (first %) path) updates)) [path value]))
 
 (defn flush! []
   (swap! updates apply-updates))
-
 
 (defn load []
   (go (let [resp (<! (http/get "sessions"))]
@@ -51,22 +48,22 @@
   (.remove goog.net.cookies "token")
   (clear-state!))
 
-
 (defn clear []
   (go
-    (let [req (<! (http/delete (str "users/" (:user @app-state) "/metadata/jingles")))]
+    (let [_ (pr (:user @app-state))
+          req (<! (http/delete (str "users/" (:user @app-state) "/metadata/jingles")))]
       (logout))))
 
 (defn write! [path value]
-  (let [path (if (vector? path) path [path])]
+  (let [path (path-vec path)]
     (if-let [uuid (:user @app-state)]
-      (swap! updates add-update [:users uuid (vec (concat [:jingles] path))] value))
+      (swap! updates add-update [:users uuid (concat [:jingles] path)] value))
     (set-state! (vec (concat [:config] path)) value)
     value))
 
 (defn get
   ([path default]
-   (let [path (if (vector? path) path [path])
+   (let [path (path-vec path)
          v (get-in @app-state (concat [:config] path) :no-value-set)]
        (if (= v :no-value-set)
          (do
@@ -88,11 +85,13 @@
     (api/delete-metadata :users uuid (concat [:jingles] full-path))
     (update-state! (concat [:config] path) dissoc key)))
 
-
 (defn print [] (pr (get-in @app-state [:config])))
 
+(defn user [] (get-in @app-state [:user]))
+
 (if-let [token (.get goog.net.cookies "token")]
-  (do (set-state! :token token)
-      (load)))
+  (do
+    (set-state! :token token)
+    (load)))
 
 (js/setInterval flush! 10000)

@@ -5,6 +5,7 @@
    [jingles.vms.api :refer [root]]
    [om-bootstrap.button :as b]
    [om-bootstrap.random :as r]
+   [jingles.vms.api :as vms]
    [jingles.api :as api]
    [jingles.http :as http]
    [jingles.list :as jlist]
@@ -14,17 +15,18 @@
    [jingles.state :refer [set-state!]]))
 
 (defn actions [e]
-  (let [locked (get-in e [:metadata :jingles :locked] false)
-        set-lock (partial api/update-metadata root (:uuid e) [:jingles :locked])]
+  (let [uuid (:uuid e)
+        locked (get-in e [:metadata :jingles :locked] false)
+        set-lock (partial vms/update-metadata uuid [:jingles :locked])]
     [(if locked
        ["Unlock" #(set-lock false)]
        ["Lock" #(set-lock true)])
      :divider
      (if (= (:state e) "running")
-       ["Stop" {:class (if locked "disabled")} pr]
-       ["Start" {:class (if locked "disabled")} pr])
+       ["Stop" {:class (if locked "disabled")} #(vms/stop uuid)]
+       ["Start" {:class (if locked "disabled")} #(vms/start uuid)])
      (if (= (:state e) "running")
-       ["Restart" {:class (if locked "disabled")} pr])]))
+       ["Reboot" {:class (if locked "disabled")} #(vms/reboot uuid)])]))
 
 (def config (mk-config
              root "Machines" actions

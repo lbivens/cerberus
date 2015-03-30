@@ -71,7 +71,7 @@
            default)
          v)))
   ([path]
-   (let [path (if (vector? path) path [path])]
+   (let [path (path-vec path)]
      (get-in @app-state (concat [:config] path)))))
 
 (defn update! [path update-fn]

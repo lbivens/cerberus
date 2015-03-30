@@ -48,11 +48,22 @@
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
 
-(defn post [root data]
+(defn post [root path data]
   (pr root data)
   (go
-    (let [resp (<! (http/post (name root) {} {:json-params data}))]
+    (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))]
       (if (:success resp)
+        (let [body (:body resp)
+              uuid (:uuid body)]
+          (set-state! [root :elements uuid] body))))))
+
+
+(defn put [root path data]
+  (pr root data)
+  (go
+    (let [resp (<! (http/put (concat [root] path) {} {:json-params data}))]
+      (pr resp)
+      #_(if (:success resp)
         (let [body (:body resp)
               uuid (:uuid body)]
           (set-state! [root :elements uuid] body))))))

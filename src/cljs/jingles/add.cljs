@@ -48,7 +48,7 @@
 
 
 (defn submit-default [section data]
-  (api/post (keyword section) data))
+  (api/post (keyword section) []  data))
 
 (defn clear-add []
   (conf/delete! :add)

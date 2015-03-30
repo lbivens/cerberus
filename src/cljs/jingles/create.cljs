@@ -10,20 +10,14 @@
 (defn default-validator [data-type]
   (condp = data-type
     :string #(not (empty? %))
-    :integer #(not= % js/nan)))
+    :integer integer?))
 
-(defn validate-data [spec]
-  (let [data (conf/get [:add :data])
-        results (map
-                 (fn [{validator :validator key :key data-type :data-type
-                       :or {data-type :string}}]
-                   (let [path (if (vector? key) key [key])
-                         validator (or validator (default-validator data-type))
-                         val (get-in data path)]
-                     (validator val))) spec)
-        result (every? identity results)]
-    (if (not= (conf/get [:add :valid]) result)
-      (conf/write! [:add :valid] result))))
+(defn mk-validator [{validator :validator data-type :data-type
+                     optional :optional
+                     :or {data-type :string}}]
+  (let [validator (or validator (default-validator data-type))]
+    #(or (and optional (empty? %)) (validator %))))
+
 
 (defn to-dt [data-type val]
   (condp = data-type
@@ -34,27 +28,49 @@
   (condp = data-type
     val))
 
+(defn validate-data [spec]
+  (let [data (conf/get [:add :data])
+        results (map
+                 (fn [{key :key
+                       :or {data-type :string} :as field}]
+                   (let [path (if (vector? key) key [key])
+                         val (get-in data path)
+                         validator (mk-validator field)]
+                     (validator val))) spec)
+        result (every? identity results)]
+    (if (not= (conf/get [:add :valid]) result)
+      (conf/write! [:add :valid] result))))
+
+
 (defn input [spec {id :id key :key validator :validator label :label type :type data-type :data-type
-                   :or {data-type :string}}]
-  (let [path (concat [:add :data] (if (vector? key) key [key]))
-        validator (or validator (default-validator data-type))
-        val (conf/get path "")]
+                   unit :unit
+                   :or {data-type :string type :input} :as field}]
+  (let [data-path (concat [:add :data] (if (vector? key) key [key]))
+        view-path (concat [:add :view] (if (vector? key) key [key]))
+        validator (mk-validator field)
+        val (conf/get view-path "")
+        data-val (conf/get data-path)]
+    (pr val data-path data-val (validator data-val))
     (i/input {:type type :label label
               :label-classname "col-xs-1"
               :wrapper-classname "col-xs-11"
               :id id
+              :addon-after unit
               :has-feedback? true
-              :bs-style (if (validator val) "success" "error")
-              :on-change #(do
+              :bs-style (if (validator data-val) "success" "error")
+              :on-change #(let [v (val-by-id id)
+                                dv (to-dt data-type v)]
+                            (pr v dv)
+                            (conf/write! view-path v)
                             (if key
-                              (conf/write! path (to-dt data-type (val-by-id id))))
+                              (conf/write! data-path dv))
                             (validate-data spec))
               :value (from-dt data-type val)})))
 
 (defn render [app & spec]
   (d/form {:class "form-horizontal"}
           (map
-           (fn [{type :type :as data}]
+           (fn [{type :type :as data :or {type :input}}]
              (condp = type
                :input    (input spec (assoc data :type "text"))
                :password (input spec (assoc data :type "password")))) spec)))

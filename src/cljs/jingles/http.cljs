@@ -3,17 +3,16 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs-http.client]
             [cljs-http.core]
+            [jingles.utils :refer [path-vec]]
             [jingles.state :refer [app-state set-state!]]))
 
 (enable-console-print!)
 
 (defn mk-url [url]
-  (if (vector? url)
-    (clojure.string/join "/" (map #(if (keyword? %) (name %) (str %)) url))
-    url))
+  (clojure.string/join "/" (map #(if (keyword? %) (name %) (str %)) url)))
 
 (defn api [url]
-  (str "/api/0.2.0/" (mk-url url)))
+  (str "/api/0.2.0/" (mk-url (path-vec url))))
 
 (defn default-headers []
   {"Accept" "application/json"})

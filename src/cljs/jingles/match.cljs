@@ -50,7 +50,7 @@
 <rule> = val | field
 <val> = str | num | size
 field = sym <':'> cmp? val
-size = num | b | kb | mb | gb | tb | pb
+size = b | kb | mb | gb | tb | pb
 b = #'[0-9]+' <('B' | 'b')>
 kb = #'[0-9]+' <('KB' | 'kb')>
 mb = #'[0-9]+' <('MB' | 'mb')>

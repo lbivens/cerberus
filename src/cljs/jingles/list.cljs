@@ -159,11 +159,10 @@
    {:on-click #(goto (str "/" (name root) "/" (:uuid e)))}
    (map (partial list-row root e) fields)
    (if actions
-     (d/td
+     (d/td {:class "actions"}
       (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
                    :on-click (make-event identity)}
-                  (apply menu-items (actions e)) (d/td {:class "actions"}
-                                                       ))))))
+                  (apply menu-items (actions e)))))))
 
 (defn list-panel [root name-field actions fields e]
   (p/panel {:class "list-panel"

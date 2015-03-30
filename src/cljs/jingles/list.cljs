@@ -12,6 +12,10 @@
             [jingles.utils :refer [goto val-by-id make-event value-by-key menu-items]]
             [jingles.state :refer [set-state! update-state!]]))
 
+(def large "hidden-xs hidden-ms")
+
+(def small "visible-xs-block visible-ms-block")
+
 (defn show-field [{key :key formater :formater :as field} element]
   (let [txt (value-by-key key element)]
     (if txt
@@ -150,7 +154,7 @@
                           :class "filterby"
                           :on-click (filter-field root (str (name (:id field)) ":" txt))}) " " txt))))
 
-(defn list-body [root actions fields e]
+(defn tbl-body [root actions fields e]
   (d/tr
    {:on-click #(goto (str "/" (name root) "/" (:uuid e)))}
    (map (partial list-row root e) fields)
@@ -160,43 +164,38 @@
                         :on-click (make-event identity)}
                        (apply menu-items (actions e)))))))
 
-(defn tbl [config state]
-  (let [actions (:actions config)
-        root (:root config)
-        fields (expand-fields config (used-fields (conf/get [root :fields])))
-        elements (sort-and-paginate config state)]
-    (d/div
-     {:class "hidden-xs hidden-ms"}
-     (table
-      { :bordered? true :condensed? true :hover? true}
-      (tbl-headers root (conf/get [root :sort]) fields actions)
-      (d/tbody
-       (map
-        (partial list-body root actions fields)
-        (:list elements))))
-     (pagination root elements))))
 
-(defn well [config state]
+
+(defn well-body [name-field actions fields e]
+  (p/panel {:header [(show-field name-field e)
+                     (if actions
+                       (d/div {:class "pull-right"}
+                              (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                                           :on-click (make-event identity)}
+                                          (apply menu-items (actions e)))))]}
+           (map
+            (fn [field]
+              [(:title field) ":" (show-field field e) (d/br)])
+            fields)))
+
+(defn tbl [elements  config state root actions fields]
   (d/div
-   {:class "visible-xs-block visible-ms-block"}
-   (let [actions (:actions config)
-         root (:root config)
-         name-field (get-in config [:fields :name])
-         fields (expand-fields config (used-fields (conf/get [root :fields])))
-         elements (sort-and-paginate config state)]
+   {:class large}
+   (table
+    {:bordered? true :condensed? true :hover? true}
+    (tbl-headers root (conf/get [root :sort]) fields actions)
+    (d/tbody
      (map
-      (fn [e]
-        (p/panel {:header [(show-field name-field e)
-                           (if actions
-                             (d/div {:class "pull-right"}
-                                    (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
-                                                 :on-click (make-event identity)}
-                                                (apply menu-items (actions e)))))]}
-                 (map
-                  (fn [field]
-                    [(:title field) ":" (show-field field e) (d/br)])
-                  fields)))
-      ;(partial list-body root actions fields)
+      (partial tbl-body root actions fields)
+      (:list elements))))
+   (pagination root elements)))
+
+(defn well [elements config state root actions fields]
+  (d/div
+   {:class small}
+   (let [name-field (get-in config [:fields :name])]
+     (map
+      (partial well-body name-field actions fields)
       (:list elements)))))
 
 (defn toggle-field [field aset]
@@ -228,17 +227,20 @@
         fields (conf/get [root :fields] (jingles.utils/initial-state config))
         title (:title config)
         state (root app)
-        filter (conf/get [root :filter])]
+        filter (conf/get [root :filter])
+        actions (:actions config)
+        display-fields (expand-fields config (used-fields (conf/get [root :fields])))
+        elements (sort-and-paginate config state)]
     (d/div
      {:class "listview"}
      (d/h1
       {}
       title
       (d/div
-       {:class "filterbar pull-right hidden-xs hidden-ms"}
+       {:class (str  "filterbar pull-right " large)}
        (search-field root filter fields config)))
      (d/div
-      {:class "filterbar visible-xs-block visible-ms-block"}
+      {:class (str  "filterbar " small)}
        (search-field root filter fields config))
-     (tbl config state)
-     (well config state))))
+     (tbl elements config state root actions display-fields)
+     (well elements config state root actions display-fields))))

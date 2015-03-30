@@ -93,5 +93,3 @@
   (do
     (set-state! :token token)
     (load)))
-
-(js/setInterval flush! 10000)

@@ -13,6 +13,7 @@
    [om-bootstrap.grid :as g]
    [om-bootstrap.input :as i]
    [om-bootstrap.nav :as n]
+   [om-bootstrap.progress-bar :as pb]
    [jingles.routing]
    [jingles.http :as http]
 
@@ -29,6 +30,7 @@
    [jingles.config :as conf]
    [jingles.add :as add]
 
+   [jingles.timers]
    [jingles.utils :refer [goto val-by-id by-id a menu-items]]
    [jingles.state :refer [app-state set-state!]]))
 
@@ -85,7 +87,16 @@
                  ["DTrace" "#/dtrace"]
                  :divider
                  ["Logout" #(conf/logout)]
-                 ["Logout & Reset UI" #(conf/clear)])))))
+                 ["Logout & Reset UI" #(conf/clear)]))
+    (n/nav-item {:key 5 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
+                (pb/progress-bar {:min 0
+                                  :max (get-in app [:cloud :metrics :total-memory] 0)
+                                  :now (get-in app [:cloud :metrics :provisioned-memory] 0) :label "RAM"}))
+    (n/nav-item {:key 6 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
+                (pb/progress-bar {:min 0
+                                  :max (get-in app [:cloud :metrics :disk-size] 0)
+                                  :now (get-in app [:cloud :metrics :disk-used] 0) :label "Disk"})))
+   ))
 
 (defn main-view [app]
   (g/grid
@@ -121,3 +132,5 @@
             (login app)))))
    app-state
    {:target (by-id "app")}))
+
+

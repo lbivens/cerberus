@@ -42,15 +42,14 @@
         (if-let [v (get-filter-field f e)]
           (match-fn v)
           false))
-      (do
-        (pr field-key (config field-key))
-        (constantly true)))))
+      (constantly true))))
 
 (def syntax
   "
 <s> =  (rule ' '+)* rule
 <rule> = val | field
 <val> = str | num | size
+field = sym <':'> cmp? val
 size = num | b | kb | mb | gb | tb | pb
 b = #'[0-9]+' <('B' | 'b')>
 kb = #'[0-9]+' <('KB' | 'kb')>
@@ -59,10 +58,9 @@ gb = #'[0-9]+' <('GB' | 'gb')>
 tb = #'[0-9]+' <('TB' | 'tb')>
 pb = #'[0-9]+' <('PB' | 'pb')>
 num = #'[0-9]+'
-<sym> = #'[a-zA-Z][a-zA-Z0-9.-]*'
 str = <'\"'> #'([^\"]|\\.)+' <'\"'> | sym
+<sym> = #'[a-zA-Z][a-zA-Z0-9._-]*'
 <cmp> = '>' | '<' | '=' | '~' | '>=' | '<='
-field = sym <':'> cmp? val
 ")
 
 (def cmp-fn
@@ -92,13 +90,13 @@ field = sym <':'> cmp? val
    :else (pr "unknown:" q)))
 
 (defn simplify-query [q]
-  ()
   (filter boolean (map simplify-query-element q)))
 
 (def parser (insta/parser syntax))
 
 (defn parse [config filter-str]
-  (let [q (simplify-query  (parser filter-str))]
+  (let [s (parser filter-str)
+        q (simplify-query s)]
     (map #(% config) q)))
 
 (defn run [filters element]

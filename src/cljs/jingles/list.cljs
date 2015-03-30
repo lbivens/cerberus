@@ -9,7 +9,7 @@
             [om-bootstrap.input :as i]
             [jingles.match :as jmatch]
             [jingles.config :as conf]
-            [jingles.utils :refer [goto val-by-id make-event value-by-key menu-items]]
+            [jingles.utils :refer [goto val-by-id make-event value-by-key menu-items by-id]]
             [jingles.state :refer [set-state! update-state!]]))
 
 (def large "hidden-xs hidden-ms")
@@ -159,15 +159,14 @@
    {:on-click #(goto (str "/" (name root) "/" (:uuid e)))}
    (map (partial list-row root e) fields)
    (if actions
-     (d/td {:class "actions"}
-           (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
-                        :on-click (make-event identity)}
-                       (apply menu-items (actions e)))))))
+     (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                  :on-click (make-event identity)}
+                 (apply menu-items (actions e)) (d/td {:class "actions"}
+                                                      )))))
 
-
-
-(defn well-body [name-field actions fields e]
-  (p/panel {:header [(show-field name-field e)
+(defn list-panel [root name-field actions fields e]
+  (p/panel {:class "list-panel"
+            :header [(show-field name-field e)
                      (if actions
                        (d/div {:class "pull-right"}
                               (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
@@ -175,12 +174,20 @@
                                           (apply menu-items (actions e)))))]}
            (map
             (fn [field]
-              [(:title field) ":" (show-field field e) (d/br)])
+              (let [txt (show-field field e)]
+                (d/div
+                 (r/glyphicon {:glyph "pushpin"
+                               :class "filterby"
+                               :on-click (filter-field root (str (name (:id field)) ":" txt))})
+                 (d/span {:class "field-label"} (:title field) ":")
+                 (d/span {:class "value"} txt))))
             fields)))
 
+
+;window.getComputedStyle
 (defn tbl [elements  config state root actions fields]
   (d/div
-   {:class large}
+   {:class large :id "list-tbl"}
    (table
     {:bordered? true :condensed? true :hover? true}
     (tbl-headers root (conf/get [root :sort]) fields actions)
@@ -195,7 +202,7 @@
    {:class small}
    (let [name-field (get-in config [:fields :name])]
      (map
-      (partial well-body name-field actions fields)
+      (partial list-panel root name-field actions fields)
       (:list elements)))))
 
 (defn toggle-field [field aset]
@@ -203,24 +210,25 @@
     (disj aset field)
     (conj aset field)))
 
-(defn search-field [root filter fields config]
-  [(i/input
-    {:type "text" :id "filter" :value filter
-     :on-change #(conf/write! [root :filter] (val-by-id "filter"))})
-   (b/dropdown
-    {:title (r/glyphicon {:glyph "align-justify"})}
-    (map-indexed
-     (fn [idx field]
-       (let [id (:id field)
-             toggle-fn (make-event #(conf/update! [root :fields id :show] not))]
-         (b/menu-item
-          {:key idx :on-click toggle-fn}
-          (i/input
-           {:type "checkbox"
-            :label (:title field)
-            :on-click toggle-fn
-            :checked (get-in fields [id :show])}))))
-     (vals fields)))])
+(defn search-field [suffix root filter fields config]
+  (let [field-id (str "filter-" suffix)]
+    [(i/input
+      {:type "text" :id field-id :value filter
+       :on-change #(conf/write! [root :filter] (val-by-id field-id))})
+     (b/dropdown
+      {:title (r/glyphicon {:glyph "align-justify"})}
+      (map-indexed
+       (fn [idx field]
+         (let [id (:id field)
+               toggle-fn (make-event #(conf/update! [root :fields id :show] not))]
+           (b/menu-item
+            {:key idx :on-click toggle-fn}
+            (i/input
+             {:type "checkbox"
+              :label (:title field)
+              :on-click toggle-fn
+              :checked (get-in fields [id :show])}))))
+       (vals fields)))]))
 
 (defn view [config app]
   (let [root (:root config)
@@ -238,9 +246,9 @@
       title
       (d/div
        {:class (str  "filterbar pull-right " large)}
-       (search-field root filter fields config)))
+       (search-field "list" root filter fields config)))
      (d/div
       {:class (str  "filterbar " small)}
-       (search-field root filter fields config))
+       (search-field "panel" root filter fields config))
      (tbl elements config state root actions display-fields)
      (well elements config state root actions display-fields))))

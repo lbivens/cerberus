@@ -166,7 +166,7 @@
         fields (expand-fields config (used-fields (conf/get [root :fields])))
         elements (sort-and-paginate config state)]
     (d/div
-     nil
+     {:class "hidden-xs"}
      (table
       {:striped? false :bordered? true :condensed? true :hover? true :responsive? true}
       (tbl-headers root (conf/get [root :sort]) fields actions)
@@ -176,10 +176,54 @@
         (:list elements))))
      (pagination root elements))))
 
+(defn well [config state]
+  (d/div
+   {:class "visible-xs-block"}
+   (let [actions (:actions config)
+         root (:root config)
+         name-field (get-in config [:fields :name])
+         fields (expand-fields config (used-fields (conf/get [root :fields])))
+         elements (sort-and-paginate config state)]
+     (pr name-field)
+     (map
+      (fn [e]
+        (p/panel {:header [(show-field name-field e)
+                           (if actions
+                             (d/div {:class "pull-right"}
+                                    (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                                                 :on-click (make-event identity)}
+                                                (apply menu-items (actions e)))))]}
+                 (map
+                  (fn [field]
+                    [(:title field) ":" (show-field field e) (d/br)])
+                  fields)))
+      ;(partial list-body root actions fields)
+      (:list elements)))))
+
 (defn toggle-field [field aset]
   (if (contains? aset field)
     (disj aset field)
     (conj aset field)))
+
+
+(defn search-field [root filter fields config]
+  [(i/input
+    {:type "text" :id "filter" :value filter
+     :on-change #(conf/write! [root :filter] (val-by-id "filter"))})
+   (b/dropdown
+    {:title (r/glyphicon {:glyph "align-justify"})}
+    (map-indexed
+     (fn [idx field]
+       (let [id (:id field)
+             toggle-fn (make-event #(conf/update! [root :fields id :show] not))]
+         (b/menu-item
+          {:key idx :on-click toggle-fn}
+          (i/input
+           {:type "checkbox"
+            :label (:title field)
+            :on-click toggle-fn
+            :checked (get-in fields [id :show])}))))
+     (vals fields)))])
 
 (defn view [config app]
   (let [root (:root config)
@@ -193,22 +237,10 @@
       {}
       title
       (d/div
-       {:class "filterbar pull-right"}
-       (i/input
-        {:type "text" :id "filter" :value filter
-         :on-change #(conf/write! [root :filter] (val-by-id "filter"))})
-       (b/dropdown
-        {:title (r/glyphicon {:glyph "align-justify"})}
-        (map-indexed
-         (fn [idx field]
-           (let [id (:id field)
-                 toggle-fn (make-event #(conf/update! [root :fields id :show] not))]
-             (b/menu-item
-              {:key idx :on-click toggle-fn}
-              (i/input
-               {:type "checkbox"
-                :label (:title field)
-                :on-click toggle-fn
-                :checked (get-in fields [id :show])}))))
-         (vals (:fields config))))))
-     (tbl config state))))
+       {:class "filterbar pull-right hidden-xs"}
+       (search-field root filter fields config)))
+     (d/div
+      {:class "filterbar visible-xs-block"}
+       (search-field root filter fields config))
+     (tbl config state)
+     (well config state))))

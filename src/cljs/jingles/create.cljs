@@ -43,14 +43,13 @@
 
 
 (defn input [spec {id :id key :key validator :validator label :label type :type data-type :data-type
-                   unit :unit
+                   unit :unit options :options optional :optional
                    :or {data-type :string type :input} :as field}]
   (let [data-path (concat [:add :data] (if (vector? key) key [key]))
         view-path (concat [:add :view] (if (vector? key) key [key]))
         validator (mk-validator field)
         val (conf/get view-path "")
         data-val (conf/get data-path)]
-    (pr val data-path data-val (validator data-val))
     (i/input {:type type :label label
               :label-classname "col-xs-1"
               :wrapper-classname "col-xs-11"
@@ -60,17 +59,26 @@
               :bs-style (if (validator data-val) "success" "error")
               :on-change #(let [v (val-by-id id)
                                 dv (to-dt data-type v)]
-                            (pr v dv)
                             (conf/write! view-path v)
                             (if key
                               (conf/write! data-path dv))
                             (validate-data spec))
-              :value (from-dt data-type val)})))
+              :value (from-dt data-type val)}
+             (map (fn [opt]
+                    (if (string? opt)
+                      (d/option {:value opt} opt)
+                      (d/option {:value (second opt)} (first opt))))
+                  (if (and options optional)
+                    (concat [["None" nil]] options)
+                    options)))))
+
 
 (defn render [app & spec]
   (d/form {:class "form-horizontal"}
           (map
            (fn [{type :type :as data :or {type :input}}]
              (condp = type
+               :select   (input spec (assoc data :type "select"))
                :input    (input spec (assoc data :type "text"))
-               :password (input spec (assoc data :type "password")))) spec)))
+               :password (input spec (assoc data :type "password"))))
+           spec)))

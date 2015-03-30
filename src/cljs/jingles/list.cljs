@@ -166,9 +166,9 @@
         fields (expand-fields config (used-fields (conf/get [root :fields])))
         elements (sort-and-paginate config state)]
     (d/div
-     {:class "hidden-xs"}
+     {:class "hidden-xs hidden-ms"}
      (table
-      {:striped? false :bordered? true :condensed? true :hover? true :responsive? true}
+      { :bordered? true :condensed? true :hover? true}
       (tbl-headers root (conf/get [root :sort]) fields actions)
       (d/tbody
        (map
@@ -178,13 +178,12 @@
 
 (defn well [config state]
   (d/div
-   {:class "visible-xs-block"}
+   {:class "visible-xs-block visible-ms-block"}
    (let [actions (:actions config)
          root (:root config)
          name-field (get-in config [:fields :name])
          fields (expand-fields config (used-fields (conf/get [root :fields])))
          elements (sort-and-paginate config state)]
-     (pr name-field)
      (map
       (fn [e]
         (p/panel {:header [(show-field name-field e)
@@ -204,7 +203,6 @@
   (if (contains? aset field)
     (disj aset field)
     (conj aset field)))
-
 
 (defn search-field [root filter fields config]
   [(i/input
@@ -237,10 +235,10 @@
       {}
       title
       (d/div
-       {:class "filterbar pull-right hidden-xs"}
+       {:class "filterbar pull-right hidden-xs hidden-ms"}
        (search-field root filter fields config)))
      (d/div
-      {:class "filterbar visible-xs-block"}
+      {:class "filterbar visible-xs-block visible-ms-block"}
        (search-field root filter fields config))
      (tbl config state)
      (well config state))))

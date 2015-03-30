@@ -159,10 +159,11 @@
    {:on-click #(goto (str "/" (name root) "/" (:uuid e)))}
    (map (partial list-row root e) fields)
    (if actions
-     (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
-                  :on-click (make-event identity)}
-                 (apply menu-items (actions e)) (d/td {:class "actions"}
-                                                      )))))
+     (d/td
+      (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                   :on-click (make-event identity)}
+                  (apply menu-items (actions e)) (d/td {:class "actions"}
+                                                       ))))))
 
 (defn list-panel [root name-field actions fields e]
   (p/panel {:class "list-panel"
@@ -183,8 +184,6 @@
                  (d/span {:class "value"} txt))))
             fields)))
 
-
-;window.getComputedStyle
 (defn tbl [elements  config state root actions fields]
   (d/div
    {:class large :id "list-tbl"}
@@ -249,6 +248,6 @@
        (search-field "list" root filter fields config)))
      (d/div
       {:class (str  "filterbar " small)}
-       (search-field "panel" root filter fields config))
+      (search-field "panel" root filter fields config))
      (tbl elements config state root actions display-fields)
      (well elements config state root actions display-fields))))

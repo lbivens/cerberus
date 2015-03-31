@@ -19,4 +19,4 @@
 (def delete (partial api/delete root))
 
 (defn import [uuid]
-  (api/post root {"url" (str server "/" uuid)}))
+  (api/post root [] {"url" (str server "/" uuid)}))

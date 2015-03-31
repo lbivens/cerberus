@@ -9,6 +9,7 @@
             [jingles.http :as http]
             [jingles.api :as api]
             [jingles.vms.api :refer [root]]
+            [jingles.packages.api :as packages]
             [jingles.state :refer [set-state!]]
             [jingles.fields :refer [fmt-bytes fmt-percent]]))
 
@@ -141,7 +142,7 @@
         package (get-in app [:packages :elements current-package])
         cmp-pkg (get-in app [:tmp :pkg] {})
         cmp-vals (partial cmp-vals package cmp-pkg)]
-    (jingles.packages.api/list)
+    (packages/list)
     (r/well
      {}
      (grid-row

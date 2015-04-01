@@ -36,7 +36,7 @@
      (= network (bit-and network netmask)))))
 
 (defn valid-ip [ip]
-  (and (re-matches ip-re ip)
+  (and (re-matches ip-re (str ip))
        (valid-network)))
 
 (defn render [app]

@@ -1,4 +1,5 @@
 (ns jingles.create
+  (:refer-clojure :exclude [print])
   (:require
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.input :as i]
@@ -28,6 +29,8 @@
   (condp = data-type
     val))
 
+
+
 (defn validate-data [spec]
   (let [data (conf/get [:add :data])
         results (map
@@ -36,11 +39,13 @@
                    (let [path (if (vector? key) key [key])
                          val (get-in data path)
                          validator (mk-validator field)]
-                     (validator val))) spec)
-        result (every? identity results)]
+                     (validator val))) spec)]
+    (every? identity results)))
+
+(defn validate-data! [spec]
+  (let [result (validate-data spec)]
     (if (not= (conf/get [:add :valid]) result)
       (conf/write! [:add :valid] result))))
-
 
 (defn input [spec {id :id key :key validator :validator label :label type :type data-type :data-type
                    unit :unit options :options optional :optional
@@ -62,7 +67,7 @@
                             (conf/write! view-path v)
                             (if key
                               (conf/write! data-path dv))
-                            (validate-data spec))
+                            (validate-data! spec))
               :value (from-dt data-type val)}
              (map (fn [opt]
                     (if (string? opt)
@@ -82,3 +87,6 @@
                :input    (input spec (assoc data :type "text"))
                :password (input spec (assoc data :type "password"))))
            spec)))
+
+(defn print []
+  (.log js/console (clj->js (conf/get [:add :data]))))

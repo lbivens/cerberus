@@ -211,7 +211,7 @@
                (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
                             :on-click (make-event identity)}
                            (apply menu-items (actions data)))))))))
-(defn tbl [data owner {:keys [config state root actions fields]}]
+(defn tbl [data owner {:keys [config state root actions fields] parent :owner}]
   (reify
     om/IDisplayName
     (display-name [_]
@@ -219,14 +219,14 @@
     om/IRenderState
     (render-state [_ _]
       (if (not (:sort data))
-        (om/transact! data :sort (constantly {})))
+        (om/update! data :sort {}))
       (d/div
        {:class large :id "list-tbl"}
        (table
         {:bordered? true :condensed? true :hover? true}
         (om/build tbl-headers (:sort data) {:opts {:fields  fields :actions actions}})
         (d/tbody
-         (om/build-all tbl-row (:list data) {:opts {:fields fields :root  root :actions actions}})))
+         (om/build-all tbl-row (get-in data [:rendered :list]) {:opts {:fields fields :root root :actions actions}})))
        (pagination root data)))))
 
 (defn toggle-field [field aset]
@@ -265,7 +265,8 @@
       "listc")
     om/IInitState
     (init-state [_]
-      {:filter ""})
+      {:filter ""
+       :order {}})
     om/IRenderState
     (render-state [_ _]
       (let [root (:root config)
@@ -275,8 +276,7 @@
             filter (om/get-state owner :filter)
             _ (pr "filter:" filter)
             display-fields (expand-fields config (used-fields fields))
-            elements (sort-and-paginate config filter data)
-            rendered (:rendered data)
+            elements (time (sort-and-paginate config filter data))
             _ (pr filter " ->" (count (:list elements)))]
         (om/update! data :rendered elements)
         (d/div
@@ -290,5 +290,5 @@
          (d/div
           {:class (str  "filterbar " small)}
           (search-field "panel" owner fields config))
-         (om/build tbl (:rendered data) {:opts {:config config :root root :actions actions :fields display-fields}})
+         (om/build tbl data {:opts {:config config :root root :actions actions :fields display-fields :owner owner}})
          #_(well elements config data root actions display-fields))))))

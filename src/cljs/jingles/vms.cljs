@@ -49,12 +49,10 @@
       "vmlistc")
     om/IWillMount
     (will-mount [_]
-      (vms/list data)
-      (om/transact! data [root :filter] (constantly ""))
-      (om/transact! data [root :filted] (constantly []))
-      (om/transact! data [root :sort] (constantly {}))
-      (pr "mouuuuuuunt")
-      )
+      (om/update! data [root :filter] "")
+      (om/update! data [root :filted] [])
+      (om/update! data [root :sort] {})
+      (vms/list data))
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)

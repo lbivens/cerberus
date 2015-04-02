@@ -19,7 +19,7 @@
 
 (defn show-field [{key :key formater :formater :as field} element]
   (let [txt (value-by-key key element)]
-    (if txt
+    (if (and formater txt)
       (formater txt)
       txt)))
 
@@ -51,7 +51,7 @@
      :page page
      :size size
      :last last
-     :list (do-paginate elements size page)}))
+     :list (doall (do-paginate elements size page))}))
 
 (defn do-sort [config list state]
   (let [sort (:sort state)
@@ -59,9 +59,9 @@
         field (keyword (:field sort))]
     (if-let [key (or (:sort-key (fields field)) (:key (fields field)))]
       (let [sorted (sort-by (partial value-by-key key) list)]
-        (if (= (keyword (:order sort)) :desc)
-          (reverse sorted)
-          sorted))
+        (doall (if (= (keyword (:order sort)) :desc)
+                 (reverse sorted)
+                 sorted)))
       list)))
 
 (defn apply-filter [config filter-str state]
@@ -70,7 +70,7 @@
       (let [fields (filter #(not= (:filter %) false) (vals (:fields config)))
             fields (map #(partial get-filter-field %) fields)
             match (jmatch/parse config filter-str)]
-        (filter #(jmatch/run match %) list))
+        (doall (filter #(jmatch/run match %) list)))
       list)))
 
 (defn sort-and-paginate [config filter state]
@@ -124,11 +124,6 @@
     (assoc opts opt style)
     opts))
 
-(defn cell-attrs [field]
-  (-> {}
-      (cell-opt :style field)
-      (cell-opt :class field)))
-
 #_(defn list-panel [root name-field actions fields e]
   (p/panel {:class "list-panel"
             :header [(show-field name-field e)
@@ -159,23 +154,15 @@
       (partial list-panel root name-field actions fields)
       (:list elements)))))
 
-(defn list-cell [root e field]
-  (let [txt (show-field field e)]
-    (if (or (= txt "") (= (:filter field) false) (= (:no-quick-filter field) true))
-      (d/td (cell-attrs field)
-            txt)
-      (d/td (cell-attrs field)
-            (r/glyphicon {:glyph "pushpin"
-                          :class "filterby"
-                          :on-click (filter-field root (str (name (:id field)) ":" txt))}) " " txt))))
+
 
 (defn tbl-header [data owner {:keys [field]}]
   (reify
     om/IDisplayName
     (display-name [_]
       "tblheadercellc")
-    om/IRenderState
-    (render-state [_ _]
+    om/IRender
+    (render [_]
       (let [id (:id field)
             order (get-in data [:order] :asc)]
         (if (= id (get-in data [:field]))
@@ -188,46 +175,60 @@
     om/IDisplayName
     (display-name [_]
       "tblheaderc")
-    om/IRenderState
-    (render-state [_ _]
+    om/IRender
+    (render [_]
       (d/thead
        (d/tr
         (map #(om/build tbl-header data {:opts {:field %}}) fields)
         (if actions
           (d/td {:class "actions"})))))))
 
+(defn cell-attrs [e]
+  (-> {}
+      (cell-opt :style e)
+      (cell-opt :class e)))
+
+(defn tbl-cell [root {txt :text quick-filter :quick-filter :as e}]
+  (if quick-filter
+    (d/td (cell-attrs e)
+          (r/glyphicon {:glyph "pushpin"
+                        :class "filterby"
+                        :on-click (filter-field root (str (name (:id e)) ":" txt))}) " " txt)
+    (d/td (cell-attrs e)
+          txt)))
+
 (defn tbl-row [data owner {:keys [root actions fields]}]
   (reify
     om/IDisplayName
     (display-name [_]
       "tblrowc")
-    om/IRenderState
-    (render-state [_ _ ]
+    om/IRender
+    (render [_]
       (d/tr
        {:on-click #(goto (str "/" (name root) "/" (:uuid data)))}
-       (map (partial list-cell root data) fields)
+       (map (partial tbl-cell root) data)
        (if actions
          (d/td {:class "actions"}
                (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
                             :on-click (make-event identity)}
                            (apply menu-items (actions data)))))))))
-(defn tbl [data owner {:keys [config state root actions fields] parent :owner}]
-  (reify
-    om/IDisplayName
-    (display-name [_]
-      "tblc")
-    om/IRenderState
-    (render-state [_ _]
-      (if (not (:sort data))
-        (om/update! data :sort {}))
-      (d/div
-       {:class large :id "list-tbl"}
-       (table
-        {:bordered? true :condensed? true :hover? true}
-        (om/build tbl-headers (:sort data) {:opts {:fields  fields :actions actions}})
-        (d/tbody
-         (om/build-all tbl-row (get-in data [:rendered :list]) {:opts {:fields fields :root root :actions actions}})))
-       (pagination root data)))))
+(defn tbl [data elements {:keys [config state root actions fields] parent :owner}]
+  (if (not (:sort data))
+    (om/update! data :sort {}))
+  (d/div
+   {:class large :id "list-tbl"}
+   (table
+    {:bordered? true :condensed? true :hover? true}
+    (om/build tbl-headers (:sort data) {:opts {:fields  fields :actions actions}})
+    (d/tbody
+     (map 
+      #(om/build tbl-row (:row %)
+                 {:react-key (:uuid %)
+                  :opts {:fields fields :root root :actions actions}})
+      (get-in elements [:rendered]))
+     #_(om/build-all tbl-row (get-in data [:rendered :rendered]) {:react-key :uuid :fn :row
+                                                                  :opts {:fields fields :root root :actions actions}})))
+   (pagination root data)))
 
 (defn toggle-field [field aset]
   (if (contains? aset field)
@@ -258,6 +259,22 @@
   (let [used-fields (filter #(get-in all-fields [% :show]) (keys all-fields))]
     (sort-by #(get-in all-fields [% :order]) used-fields)))
 
+(defn pre-render-field [e field]
+  (let [txt (show-field field e)]
+    {:quick-filter (not (or (= txt "") (= (:filter field) false) (= (:no-quick-filter field) true)))
+     :filter-text (get-filter-field field e)
+     :text txt
+     :id (:id field)
+     :class (:class field)
+     :style (:style field)}))
+
+(defn pre-render-element [e fields]
+  {:uuid (:uuid e)
+   :row (map (partial pre-render-field e) fields)})
+
+(defn pre-render [elements fields]
+  (assoc elements :rendered  (map #(pre-render-element % fields) (:list elements))))
+
 (defn view [data owner {:keys [config on-mount]}]
   (reify
     om/IDisplayName
@@ -274,11 +291,8 @@
             actions (:actions config)
             fields (get-in data [:fields] (jingles.utils/initial-state config))
             filter (om/get-state owner :filter)
-            _ (pr "filter:" filter)
             display-fields (expand-fields config (used-fields fields))
-            elements (time (sort-and-paginate config filter data))
-            _ (pr filter " ->" (count (:list elements)))]
-        (om/update! data :rendered elements)
+            elements (pre-render (sort-and-paginate config filter data) display-fields)]
         (d/div
          {:class "listview"}
          (d/h1
@@ -290,5 +304,5 @@
          (d/div
           {:class (str  "filterbar " small)}
           (search-field "panel" owner fields config))
-         (om/build tbl data {:opts {:config config :root root :actions actions :fields display-fields :owner owner}})
+         (tbl data elements {:config config :root root :actions actions :fields display-fields :owner owner})
          #_(well elements config data root actions display-fields))))))

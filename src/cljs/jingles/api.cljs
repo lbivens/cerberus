@@ -41,7 +41,7 @@
   ([data root list-fields]
      (go
        (let [resp (<! (full-list (name root) list-fields))
-             elements (js->clj (:body resp))
+             elements (map-indexed #(assoc %2 :react-key (* 100 %2)) (js->clj (:body resp)))
              elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
          (if (= 401 (:status resp))
            (check-login)

@@ -1,15 +1,16 @@
 (ns jingles.networks
   (:refer-clojure :exclude [get list])
   (:require
-   [jingles.list :as jlist]
-   [jingles.networks.api :refer [root] :as api]
+   [om.core :as om :include-macros true]
    [om-bootstrap.random :as r]
+   [jingles.list :as jlist]
+   [jingles.networks.api :refer [root] :as networks]
    [jingles.utils :refer [initial-state]]
    [jingles.state :refer [set-state!]]
    [jingles.fields :refer [mk-config]]))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(api/delete uuid)]])
+  [["Delete" #(networks/delete uuid)]])
 
 (def config (mk-config root "Networks" actions))
 
@@ -22,7 +23,20 @@
      {}
      (pr-str element))))
 
-(defn render [app]
-  (condp = (:view app)
-    :list (jlist/view config app)
-    :show (show-view app)))
+
+(defn render [data owner opts]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "networkviewc")
+    om/IWillMount
+    (will-mount [_]
+      (om/update! data [root :filter] "")
+      (om/update! data [root :filted] [])
+      (om/update! data [root :sort] {})
+      (networks/list data))
+    om/IRenderState
+    (render-state [_ _]
+      (condp = (:view data)
+        :list (om/build jlist/view data {:opts {:config config}})
+        :show (show-view data)))))

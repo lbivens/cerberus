@@ -1,15 +1,16 @@
 (ns jingles.packages
   (:refer-clojure :exclude [get list])
   (:require
-   [jingles.list :as jlist]
-   [jingles.packages.api :refer [root] :as api]
+   [om.core :as om :include-macros true]
    [om-bootstrap.random :as r]
+   [jingles.list :as jlist]
+   [jingles.packages.api :refer [root] :as packages]
    [jingles.utils :refer [initial-state]]
    [jingles.state :refer [set-state!]]
    [jingles.fields :refer [mk-config]]))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(api/delete uuid)]])
+  [["Delete" #(packages/delete uuid)]])
 
 (def config (mk-config root "Packages" actions
                        :cpu_cap {:title "CPU" :key :cpu_cap :type :percent}
@@ -25,7 +26,19 @@
      {}
      (pr-str element))))
 
-(defn render [app]
-  (condp = (:view app)
-    :list (jlist/view config app)
-    :show (show-view app)))
+(defn render [data owner opts]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "datasetviewc")
+    om/IWillMount
+    (will-mount [_]
+      (om/update! data [root :filter] "")
+      (om/update! data [root :filted] [])
+      (om/update! data [root :sort] {})
+      (packages/list data))
+    om/IRenderState
+    (render-state [_ _]
+      (condp = (:view data)
+        :list (om/build jlist/view data {:opts {:config config}})
+        :show (show-view data)))))

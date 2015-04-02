@@ -31,13 +31,12 @@
       "hypervisrolistc")
     om/IWillMount
     (will-mount [_]
-      (hypervisors/list data)
-      (om/transact! data [root :filter] (constantly ""))
-      (om/transact! data [root :filted] (constantly []))
-      (om/transact! data [root :fields] (jingles.utils/initial-state config))
-      (pr "mouuuunt!"))
+      (om/update! data [root :filter] "")
+      (om/update! data [root :filted] [])
+      (om/update! data [root :sort] {})
+      (hypervisors/list data))
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        :list (om/build jlist/view (root data) {:opts {:config config}})
+        :list (om/build jlist/view data {:opts {:config config}})
         :show (show-view data)))))

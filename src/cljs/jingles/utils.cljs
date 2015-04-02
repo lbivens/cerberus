@@ -69,7 +69,7 @@
    (fn [idx data]
      (match
       data
-      :divider (b/menu-item {:divider? true})
+      :divider (b/menu-item {:key (inc idx) :divider? true})
       [title target] (if (fn? target)
                        (b/menu-item {:key (inc idx) :on-click (make-event target)} title)
                        (b/menu-item {:key (inc idx) :href target} title))

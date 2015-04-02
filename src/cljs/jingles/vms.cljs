@@ -59,5 +59,5 @@
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        :list (om/build jlist/view (:vms data) {:opts {:config config}})
+        :list (om/build jlist/view data {:opts {:config config}})
         :show (view/render data)))))

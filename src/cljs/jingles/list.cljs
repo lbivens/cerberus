@@ -289,10 +289,11 @@
       (let [root (:root config)
             title (:title config)
             actions (:actions config)
-            fields (get-in data [:fields] (jingles.utils/initial-state config))
+            section (get-in data [root])
+            fields (get-in data [root :fields] (jingles.utils/initial-state config))
             filter (om/get-state owner :filter)
             display-fields (expand-fields config (used-fields fields))
-            elements (pre-render (sort-and-paginate config filter data) display-fields)]
+            elements (pre-render (sort-and-paginate config filter section) display-fields)]
         (d/div
          {:class "listview"}
          (d/h1
@@ -304,5 +305,5 @@
          (d/div
           {:class (str  "filterbar " small)}
           (search-field "panel" owner fields config))
-         (tbl data elements {:config config :root root :actions actions :fields display-fields :owner owner})
+         (tbl section elements {:config config :root root :actions actions :fields display-fields :owner owner})
          #_(well elements config data root actions display-fields))))))

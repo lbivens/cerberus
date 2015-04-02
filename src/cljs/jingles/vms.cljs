@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+   [om.core :as om :include-macros true]
    [jingles.vms.api :refer [root]]
    [om-bootstrap.button :as b]
    [om-bootstrap.random :as r]
@@ -41,7 +42,21 @@
 
 (set-state! [root :fields] (initial-state config))
 
-(defn render [app]
-  (condp = (:view app)
-    :list (jlist/view config app)
-    :show (view/render app)))
+(defn render [data owner opts]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "vmlistc")
+    om/IWillMount
+    (will-mount [_]
+      (vms/list data)
+      (om/transact! data [root :filter] (constantly ""))
+      (om/transact! data [root :filted] (constantly []))
+      (om/transact! data [root :sort] (constantly {}))
+      (pr "mouuuuuuunt")
+      )
+    om/IRenderState
+    (render-state [_ _]
+      (condp = (:view data)
+        :list (om/build jlist/view (:vms data) {:opts {:config config}})
+        :show (view/render data)))))

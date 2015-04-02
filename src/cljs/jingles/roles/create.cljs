@@ -1,8 +1,15 @@
 (ns jingles.roles.create
   (:require
+   [om.core :as om :include-macros true]
    [jingles.create :as create]))
 
 (defn render [app]
-  (create/render
-   app
-   {:type :input :label "Name" :id "role-name" :key :name :validator #(not (empty? %))}))
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "addrolec")
+    om/IRenderState
+    (render-state [_ _]
+      (create/render
+       app
+       {:type :input :label "Name" :id "role-name" :key :name}))))

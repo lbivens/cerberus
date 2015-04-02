@@ -1,23 +1,23 @@
 (ns jingles.create
   (:refer-clojure :exclude [print])
   (:require
+   [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.input :as i]
    [jingles.api :as api]
-   [jingles.config :as conf]
    [jingles.http :as http]
    [jingles.utils :refer [make-event val-by-id str->int]]))
 
 (defn default-validator [data-type]
   (condp = data-type
-    :string #(not (empty? %))
-    :integer integer?))
+    :string #(not (empty? %2))
+    :integer #(integer? %2)))
 
 (defn mk-validator [{validator :validator data-type :data-type
-                     optional :optional
-                     :or {data-type :string}}]
+                          optional :optional
+                          :or {data-type :string}}]
   (let [validator (or validator (default-validator data-type))]
-    #(or (and optional (empty? %)) (validator %))))
+    #(or (and optional (empty? %2)) (validator %1 %2))))
 
 
 (defn to-dt [data-type val]
@@ -31,30 +31,31 @@
 
 
 
-(defn validate-data [spec]
-  (let [data (conf/get [:add :data])
-        results (map
+(defn validate-data [data spec]
+  (let [results (map
                  (fn [{key :key
                        :or {data-type :string} :as field}]
                    (let [path (if (vector? key) key [key])
+                         path (concat [:data] path)
                          val (get-in data path)
                          validator (mk-validator field)]
-                     (validator val))) spec)]
+                     (validator data val))) spec)]
+
     (every? identity results)))
 
-(defn validate-data! [spec]
-  (let [result (validate-data spec)]
-    (if (not= (conf/get [:add :valid]) result)
-      (conf/write! [:add :valid] result))))
+(defn validate-data! [data spec]
+  (let [result (validate-data data spec)]
+    (if (not= (:valid data) result)
+      (om/transact! data [:valid] (constantly result)))))
 
-(defn input [spec {id :id key :key validator :validator label :label type :type data-type :data-type
+(defn input [data spec {id :id key :key validator :validator label :label type :type data-type :data-type
                    unit :unit options :options optional :optional
                    :or {data-type :string type :input} :as field}]
-  (let [data-path (concat [:add :data] (if (vector? key) key [key]))
-        view-path (concat [:add :view] (if (vector? key) key [key]))
+  (let [data-path (concat [:data] (if (vector? key) key [key]))
+        view-path (concat [:view] (if (vector? key) key [key]))
         validator (mk-validator field)
-        val (conf/get view-path "")
-        data-val (conf/get data-path)]
+        val (get-in data view-path "")
+        data-val (get-in data data-path)]
     (i/input {:type type :label label
               :label-classname "col-xs-1"
               :wrapper-classname "col-xs-11"
@@ -64,10 +65,10 @@
               :bs-style (if (validator data-val) "success" "error")
               :on-change #(let [v (val-by-id id)
                                 dv (to-dt data-type v)]
-                            (conf/write! view-path v)
+                            (om/transact! data view-path (constantly v))
                             (if key
-                              (conf/write! data-path dv))
-                            (validate-data! spec))
+                              (om/transact! data data-path (constantly  dv)))
+                            (validate-data! data spec))
               :value (from-dt data-type val)}
              (map (fn [opt]
                     (if (string? opt)
@@ -78,15 +79,12 @@
                     options)))))
 
 
-(defn render [app & spec]
+(defn render [data & spec]
   (d/form {:class "form-horizontal"}
           (map
-           (fn [{type :type :as data :or {type :input}}]
+           (fn [{type :type :as field :or {type :input}}]
              (condp = type
-               :select   (input spec (assoc data :type "select"))
-               :input    (input spec (assoc data :type "text"))
-               :password (input spec (assoc data :type "password"))))
+               :select   (input data spec (assoc field :type "select"))
+               :input    (input data spec (assoc field :type "text"))
+               :password (input data spec (assoc field :type "password"))))
            spec)))
-
-(defn print []
-  (.log js/console (clj->js (conf/get [:add :data]))))

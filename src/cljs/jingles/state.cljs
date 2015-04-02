@@ -37,7 +37,8 @@
 
 (defn set-view! [section view]
   (set-state! :section section)
-  (set-state! :view view))
+  (set-state! :view view)
+  (set-state! [:add :view-section] section))
 
 (defn clear-state! []
   (reset! app-state {}))

@@ -1,10 +1,12 @@
 (ns jingles.api
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [jingles.http :as http]
-            [clojure.string :refer [join]]
-            [jingles.utils :refer [goto value-by-key]]
-            [jingles.state :refer [app-state path-vec set-state! delete-state!]]))
+  (:require
+   [om.core :as om :include-macros true]
+   [jingles.http :as http]
+   [clojure.string :refer [join]]
+   [jingles.utils :refer [goto value-by-key]]
+   [jingles.state :refer [app-state path-vec set-state! delete-state!]]))
 
 (defn check-login []
   (do
@@ -28,28 +30,27 @@
      (http/get path {"x-full-list" "true" "x-full-list-fields" fields})))
 
 (defn list
-  ([root]
+  ([data root]
      (go
        (let [resp (<! (full-list (name root)))
              elements (js->clj (:body resp))
              elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
          (if (= 401 (:status resp))
            (check-login)
-           (set-state! [root :elements] elements)))))
-  ([root list-fields]
+           (om/transact! data [root :elements] (constantly elements))))))
+  ([data root list-fields]
      (go
        (let [resp (<! (full-list (name root) list-fields))
              elements (js->clj (:body resp))
              elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
          (if (= 401 (:status resp))
            (check-login)
-           (set-state! [root :elements] elements))))))
+           (om/transact! data [root :elements] (constantly elements)))))))
 
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
 
 (defn post [root path data]
-  (pr root data)
   (go
     (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))]
       (if (:success resp)
@@ -57,12 +58,9 @@
               uuid (:uuid body)]
           (set-state! [root :elements uuid] body))))))
 
-
 (defn put [root path data]
-  (pr root data)
   (go
     (let [resp (<! (http/put (concat [root] path) {} {:json-params data}))]
-      (pr resp)
       #_(if (:success resp)
         (let [body (:body resp)
               uuid (:uuid body)]
@@ -102,9 +100,7 @@
   (go
     (let [req (<! (http/delete [root uuid]))]
       (if (:success req)
-        (delete-state! [root :elements uuid])
-        (pr req)
-        ))))
+        (delete-state! [root :elements uuid])))))
 
 (defn delete-metadata [root uuid path]
   (request-and-get http/delete root uuid (concat [:metadata] path)))

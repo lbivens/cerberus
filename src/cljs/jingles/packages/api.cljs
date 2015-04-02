@@ -8,7 +8,8 @@
 
 (def root :packages)
 
-(defn list [] (api/list root))
+(defn list [data]
+  (api/list data root))
 
 (def get (partial api/get root))
 

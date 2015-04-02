@@ -1,16 +1,17 @@
 (ns jingles.list
-  (:require [om-tools.dom :as d :include-macros true]
-            [om-bootstrap.table :refer [table]]
-            [om-bootstrap.panel :as p]
-            [om-bootstrap.grid :as g]
-            [om-bootstrap.random :as r]
-            [om-bootstrap.pagination :as pg]
-            [om-bootstrap.button :as b]
-            [om-bootstrap.input :as i]
-            [jingles.match :as jmatch]
-            [jingles.config :as conf]
-            [jingles.utils :refer [goto val-by-id make-event value-by-key menu-items by-id]]
-            [jingles.state :refer [set-state! update-state!]]))
+  (:require
+   [om.core :as om :include-macros true]
+   [om-tools.dom :as d :include-macros true]
+   [om-bootstrap.table :refer [table]]
+   [om-bootstrap.panel :as p]
+   [om-bootstrap.grid :as g]
+   [om-bootstrap.random :as r]
+   [om-bootstrap.pagination :as pg]
+   [om-bootstrap.button :as b]
+   [om-bootstrap.input :as i]
+   [jingles.match :as jmatch]
+   [jingles.utils :refer [goto val-by-id make-event value-by-key menu-items by-id]]
+   [jingles.state :refer [set-state! update-state!]]))
 
 (def large "hidden-xs hidden-ms")
 
@@ -31,9 +32,12 @@
   (let [fields (:fields config)]
     (map (fn [field] (fields field)) selected)))
 
+(defn paginator [size page]
+  (comp (take size) (drop (* page size))))
+
 (defn do-paginate [elements size page]
   (let [page (dec page)] ; we need to decrease page by one so we start with page 1 not 0
-    (take size (drop (* page size) elements))))
+    (eduction (paginator size page) elements)))
 
 (defn paginate [elements state]
   (let [length (count elements)
@@ -50,7 +54,7 @@
      :list (do-paginate elements size page)}))
 
 (defn do-sort [config list state]
-  (let [sort (conf/get [(:root config) :sort])
+  (let [sort (:sort state)
         fields (:fields config)
         field (keyword (:field sort))]
     (if-let [key (or (:sort-key (fields field)) (:key (fields field)))]
@@ -60,20 +64,19 @@
           sorted))
       list)))
 
-(defn apply-filter [config state]
-  (let [filter-str (conf/get [(:root config) :filter])
-        fields (filter #(not= (:filter %) false) (vals (:fields config)))
-        fields (map #(partial get-filter-field %) fields)
-        list (vals (:elements state))]
-    (if (empty? filter-str)
-      list
-      (let [match (jmatch/parse config filter-str)]
-        (filter #(jmatch/run match %) list)))))
+(defn apply-filter [config filter-str state]
+  (let [list (vals (:elements state))]
+    (if (and filter-str (not (empty? filter-str)))
+      (let [fields (filter #(not= (:filter %) false) (vals (:fields config)))
+            fields (map #(partial get-filter-field %) fields)
+            match (jmatch/parse config filter-str)]
+        (filter #(jmatch/run match %) list))
+      list)))
 
-(defn sort-and-paginate [config state]
-  (if-let [sort (conf/get [(:root config) :sort])]
-    (paginate (do-sort config (apply-filter config state) state) state)
-    (paginate (apply-filter config state) state)))
+(defn sort-and-paginate [config filter state]
+  (if-let [sort (:sort state)]
+    (paginate (do-sort config (apply-filter config filter state) state) state)
+    (paginate (apply-filter config filter state) state)))
 
 (def flip-order {:asc :desc
                  :desc :asc})
@@ -83,14 +86,6 @@
 
 (def order-str {:asc (r/glyphicon {:glyph "chevron-up"})
                 :desc (r/glyphicon {:glyph "chevron-down"})})
-
-(defn tbl-header [root sort field]
-  (let [id (:id field)
-        order (keyword (:order sort))]
-    (if (= id (keyword (:field sort)))
-      (d/td (d/a {:onClick #(conf/write! [root :sort :order] (flip-order order))
-                  :className (order-class order)} (:title field) " " (order-str order)))
-      (d/td (d/a {:onClick #(conf/write! [root :sort] {:field id :order :asc})} (:title field))))))
 
 (defn page-click-fn [root page]
   (make-event #(set-state! [root :page] page)))
@@ -118,14 +113,11 @@
            (pg/next {:on-click (page-click-fn root current) :disabled? true})
            (pg/next {:on-click (page-click-fn root (inc current))}))])))))
 
-(defn used-fields [all-fields]
-  (let [used-fields (filter #(get-in all-fields [% :show]) (keys all-fields))]
-    (sort-by #(get-in all-fields [% :order]) used-fields)))
-
 (defn filter-field [root text]
-  (let [cur (conf/get [root :filter] "")
+  #_(let [cur (conf/get [root :filter] "")
         cur (if (empty? cur) cur (str cur " "))]
-    (make-event #(conf/write! [root :filter]  (str  cur text)))))
+      (make-event #(conf/write! [root :filter]  (str  cur text))))
+  (make-event identity))
 
 (defn cell-opt [opts opt field]
   (if-let [style (opt field)]
@@ -137,34 +129,7 @@
       (cell-opt :style field)
       (cell-opt :class field)))
 
-(defn tbl-headers [root sort fields actions]
-  (d/thead
-   (d/tr
-    (map (partial tbl-header root sort) fields)
-    (if actions
-      (d/td {:class "actions"})))))
-
-(defn list-row [root e field]
-  (let [txt (show-field field e)]
-    (if (or (= txt "") (= (:filter field) false) (= (:no-quick-filter field) true))
-      (d/td (cell-attrs field)
-            txt)
-      (d/td (cell-attrs field)
-            (r/glyphicon {:glyph "pushpin"
-                          :class "filterby"
-                          :on-click (filter-field root (str (name (:id field)) ":" txt))}) " " txt))))
-
-(defn tbl-body [root actions fields e]
-  (d/tr
-   {:on-click #(goto (str "/" (name root) "/" (:uuid e)))}
-   (map (partial list-row root e) fields)
-   (if actions
-     (d/td {:class "actions"}
-      (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
-                   :on-click (make-event identity)}
-                  (apply menu-items (actions e)))))))
-
-(defn list-panel [root name-field actions fields e]
+#_(defn list-panel [root name-field actions fields e]
   (p/panel {:class "list-panel"
             :header [(show-field name-field e)
                      (if actions
@@ -183,19 +148,10 @@
                  (d/span {:class "value"} txt))))
             fields)))
 
-(defn tbl [elements  config state root actions fields]
-  (d/div
-   {:class large :id "list-tbl"}
-   (table
-    {:bordered? true :condensed? true :hover? true}
-    (tbl-headers root (conf/get [root :sort]) fields actions)
-    (d/tbody
-     (map
-      (partial tbl-body root actions fields)
-      (:list elements))))
-   (pagination root elements)))
 
-(defn well [elements config state root actions fields]
+
+
+#_(defn well [elements config state root actions fields]
   (d/div
    {:class small}
    (let [name-field (get-in config [:fields :name])]
@@ -203,22 +159,92 @@
       (partial list-panel root name-field actions fields)
       (:list elements)))))
 
+(defn list-cell [root e field]
+  (let [txt (show-field field e)]
+    (if (or (= txt "") (= (:filter field) false) (= (:no-quick-filter field) true))
+      (d/td (cell-attrs field)
+            txt)
+      (d/td (cell-attrs field)
+            (r/glyphicon {:glyph "pushpin"
+                          :class "filterby"
+                          :on-click (filter-field root (str (name (:id field)) ":" txt))}) " " txt))))
+
+(defn tbl-header [data owner {:keys [field]}]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "tblheadercellc")
+    om/IRenderState
+    (render-state [_ _]
+      (let [id (:id field)
+            order (get-in data [:order] :asc)]
+        (if (= id (get-in data [:field]))
+          (d/td (d/a {:onClick #(om/transact! data :order (fn [_] (flip-order order)))
+                      :className (order-class order)} (:title field) " " (order-str order)))
+          (d/td (d/a {:onClick #(om/transact! data (constantly {:field id :order :asc}))} (:title field))))))))
+
+(defn tbl-headers [data owner {:keys [fields actions]}]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "tblheaderc")
+    om/IRenderState
+    (render-state [_ _]
+      (d/thead
+       (d/tr
+        (map #(om/build tbl-header data {:opts {:field %}}) fields)
+        (if actions
+          (d/td {:class "actions"})))))))
+
+(defn tbl-row [data owner {:keys [root actions fields]}]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "tblrowc")
+    om/IRenderState
+    (render-state [_ _ ]
+      (d/tr
+       {:on-click #(goto (str "/" (name root) "/" (:uuid data)))}
+       (map (partial list-cell root data) fields)
+       (if actions
+         (d/td {:class "actions"}
+               (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                            :on-click (make-event identity)}
+                           (apply menu-items (actions data)))))))))
+(defn tbl [data owner {:keys [config state root actions fields]}]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "tblc")
+    om/IRenderState
+    (render-state [_ _]
+      (if (not (:sort data))
+        (om/transact! data :sort (constantly {})))
+      (d/div
+       {:class large :id "list-tbl"}
+       (table
+        {:bordered? true :condensed? true :hover? true}
+        (om/build tbl-headers (:sort data) {:opts {:fields  fields :actions actions}})
+        (d/tbody
+         (om/build-all tbl-row (:list data) {:opts {:fields fields :root  root :actions actions}})))
+       (pagination root data)))))
+
 (defn toggle-field [field aset]
   (if (contains? aset field)
     (disj aset field)
     (conj aset field)))
 
-(defn search-field [suffix root filter fields config]
+(defn search-field [suffix owner fields config]
   (let [field-id (str "filter-" suffix)]
     [(i/input
-      {:type "text" :id field-id :value filter
-       :on-change #(conf/write! [root :filter] (val-by-id field-id))})
+      {:type "text" :id field-id :value (om/get-state owner :filter)
+       :on-change (fn [] (om/set-state! owner :filter (val-by-id field-id)))})
      (b/dropdown
       {:title (r/glyphicon {:glyph "align-justify"})}
       (map-indexed
        (fn [idx field]
          (let [id (:id field)
-               toggle-fn (make-event #(conf/update! [root :fields id :show] not))]
+               toggle-fn (make-event #(om/transact! owner [:fields id :show] not))]
            (b/menu-item
             {:key idx :on-click toggle-fn}
             (i/input
@@ -228,25 +254,41 @@
               :checked (get-in fields [id :show])}))))
        (vals fields)))]))
 
-(defn view [config app]
-  (let [root (:root config)
-        fields (conf/get [root :fields] (jingles.utils/initial-state config))
-        title (:title config)
-        state (root app)
-        filter (conf/get [root :filter])
-        actions (:actions config)
-        display-fields (expand-fields config (used-fields (conf/get [root :fields])))
-        elements (sort-and-paginate config state)]
-    (d/div
-     {:class "listview"}
-     (d/h1
-      {}
-      title
-      (d/div
-       {:class (str  "filterbar pull-right " large)}
-       (search-field "list" root filter fields config)))
-     (d/div
-      {:class (str  "filterbar " small)}
-      (search-field "panel" root filter fields config))
-     (tbl elements config state root actions display-fields)
-     (well elements config state root actions display-fields))))
+(defn used-fields [all-fields]
+  (let [used-fields (filter #(get-in all-fields [% :show]) (keys all-fields))]
+    (sort-by #(get-in all-fields [% :order]) used-fields)))
+
+(defn view [data owner {:keys [config on-mount]}]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "listc")
+    om/IInitState
+    (init-state [_]
+      {:filter ""})
+    om/IRenderState
+    (render-state [_ _]
+      (let [root (:root config)
+            title (:title config)
+            actions (:actions config)
+            fields (get-in data [:fields] (jingles.utils/initial-state config))
+            filter (om/get-state owner :filter)
+            _ (pr "filter:" filter)
+            display-fields (expand-fields config (used-fields fields))
+            elements (sort-and-paginate config filter data)
+            rendered (:rendered data)
+            _ (pr filter " ->" (count (:list elements)))]
+        (om/update! data :rendered elements)
+        (d/div
+         {:class "listview"}
+         (d/h1
+          {}
+          title
+          (d/div
+           {:class (str  "filterbar pull-right " large)}
+           (search-field "list" owner fields config)))
+         (d/div
+          {:class (str  "filterbar " small)}
+          (search-field "panel" owner fields config))
+         (om/build tbl (:rendered data) {:opts {:config config :root root :actions actions :fields display-fields}})
+         #_(well elements config data root actions display-fields))))))

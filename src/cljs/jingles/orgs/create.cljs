@@ -1,8 +1,15 @@
 (ns jingles.orgs.create
   (:require
+   [om.core :as om :include-macros true]
    [jingles.create :as create]))
 
-(defn render [app]
-  (create/render
-   app
-   {:type :input :label "Name" :id "org-name" :key :name :validator #(not (empty? %))}))
+(defn render [data]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "addorgc")
+    om/IRenderState
+    (render-state [_ _]
+      (create/render
+       data
+       {:type :input :label "Name" :id "org-name" :key :name :validator #(not (empty? %2))}))))

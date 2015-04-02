@@ -66,57 +66,57 @@
     {:className "active"}
     {}))
 
-(defn nav-bar [app]
-  (n/navbar
-   {:brand (d/a {:href (str "#/")} "FiFo")}
-   (n/nav
-    {:collapsible? true}
-    (n/nav-item {:key 1 :href "#/vms"} "Machines")
-    (n/nav-item {:key 2 :href "#/datasets"} "Datasets")
-    (n/nav-item {:key 3 :href "#/hypervisors"} "Hypervisors")
-    (b/dropdown {:key 4 :title "Configuration"}
-                (menu-items
-                 ["Users" "#/users"]
-                 ["Roles"  "#/roles"]
-                 ["Organisations"  "#/orgs"]
-                 :divider
-                 ["Packages" "#/packages"]
-                 :divider
-                 ["Networks" "#/networks"]
-                 ["IP Ranges" "#/ipranges"]
-                 ["DTrace" "#/dtrace"]
-                 :divider
-                 ["Logout" #(conf/logout)]
-                 ["Logout & Reset UI" #(conf/clear)]))
-    (n/nav-item {:key 5 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
-                (pb/progress-bar {:min 0
-                                  :max (get-in app [:cloud :metrics :total-memory] 0)
-                                  :now (get-in app [:cloud :metrics :provisioned-memory] 0) :label "RAM"}))
-    (n/nav-item {:key 6 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
-                (pb/progress-bar {:min 0
-                                  :max (get-in app [:cloud :metrics :disk-size] 0)
-                                  :now (get-in app [:cloud :metrics :disk-used] 0) :label "Disk"})))
-   ))
+(defn nav-bar [data owner opts]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "navbarc")
+    om/IRenderState
+    (render-state [_ _]
+      (n/navbar
+       {:brand (d/a {:href (str "#/")} "FiFo")}
+       (n/nav
+        {:collapsible? true}
+        (n/nav-item {:key 1 :href "#/vms"} "Machines")
+        (n/nav-item {:key 2 :href "#/datasets"} "Datasets")
+        (n/nav-item {:key 3 :href "#/hypervisors"} "Hypervisors")
+        (b/dropdown {:key 4 :title "Configuration"}
+                    (menu-items
+                     ["Users" "#/users"]
+                     ["Roles"  "#/roles"]
+                     ["Organisations"  "#/orgs"]
+                     :divider
+                     ["Packages" "#/packages"]
+                     :divider
+                     ["Networks" "#/networks"]
+                     ["IP Ranges" "#/ipranges"]
+                     ["DTrace" "#/dtrace"]
+                     :divider
+                     ["Logout" #(conf/logout)]
+                     ["Logout & Reset UI" #(conf/clear)]))
+        (n/nav-item {:key 5 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
+                    (pb/progress-bar {:min 0
+                                      :max (get-in data [:total-memory] 0)
+                                      :now (get-in data [:provisioned-memory] 0) :label "RAM"}))
+        (n/nav-item {:key 6 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
+                    (pb/progress-bar {:min 0
+                                      :max (get-in data [:disk-size] 0)
+                                      :now (get-in data [:disk-used] 0) :label "Disk"})))
+       ))))
 
-(defn main-view [app]
-  (g/grid
-   nil
-   (g/row
-    nil
-    (g/col
-     {:xs 18 :md 12}
-     (condp = (:section app)
-       :vms         (vms/render app)
-       :datasets    (datasets/render app)
-       :hypervisors (hypervisors/render app)
-       :networks    (networks/render app)
-       :packages    (packages/render app)
-       :ipranges    (ipranges/render app)
-       :dtrace      (dtrace/render app)
-       :users       (users/render app)
-       :roles       (roles/render app)
-       :orgs        (orgs/render app)
-       (goto "/vms"))))))
+(defn main-view [data]
+  (condp = (:section data)
+    :vms         (om/build vms/render data)
+    :datasets    (datasets/render data)
+    :hypervisors (om/build hypervisors/render data)
+    :networks    (networks/render data)
+    :packages    (packages/render data)
+    :ipranges    (ipranges/render data)
+    :dtrace      (dtrace/render data)
+    :users       (users/render data)
+    :roles       (roles/render data)
+    :orgs        (orgs/render data)
+    (goto "/vms")))
 
 (defn main []
   (om/root
@@ -124,13 +124,17 @@
      (om/component
       (if (:token app)
         (d/div
-         {:class (str "app " (if (= (conf/get [:add :state]) "maximised") "add-open" "add-closed"))}
-         (nav-bar app)
-         (main-view app)
-         (add/render app))
+         {:class (str "app " (if (get-in app [:add :maximized])  "add-open" "add-closed"))}
+         (om/build nav-bar (get-in app [:cloud :metrics]))
+         (g/grid
+          {}
+          (g/row
+           {}
+           (g/col
+            {:xs 18 :md 12}
+            (main-view app))))
+         (om/build add/render (get-in app [:add])))
         (do (goto)
             (login app)))))
    app-state
    {:target (by-id "app")}))
-
-

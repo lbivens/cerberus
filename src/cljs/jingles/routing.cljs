@@ -28,7 +28,6 @@
   (set-view! :home :home))
 
 (defroute "/vms" {:as params}
-  (vms/list)
   (set-view! :vms :list))
 
 (defroute "/vms/:uuid" {:as params}
@@ -46,7 +45,6 @@
     (set-view! :vms :show)))
 
 (defroute "/datasets" {:as params}
-  (datasets/list)
   (set-view! :datasets :list))
 
 (defroute "/datasets/:uuid" {:as params}
@@ -55,7 +53,6 @@
   (set-view! :datasets :show))
 
 (defroute "/hypervisors" {:as params}
-  (hypervisors/list)
   (set-view! :hypervisors :list))
 
 (defroute "/hypervisors/:uuid" {:as params}
@@ -64,7 +61,6 @@
   (set-view! :hypervisors :show))
 
 (defroute "/packages" {:as params}
-  (packages/list)
   (set-view! :packages :list))
 
 (defroute "/packages/:uuid" {:as params}
@@ -73,7 +69,6 @@
   (set-view! :packages :show))
 
 (defroute "/networks" {:as params}
-  (networks/list)
   (set-view! :networks :list))
 
 (defroute "/networks/:uuid" {:as params}
@@ -82,7 +77,6 @@
   (set-view! :networks :show))
 
 (defroute "/ipranges" {:as params}
-  (ipranges/list)
   (set-view! :ipranges :list))
 
 (defroute "/ipranges/:uuid" {:as params}
@@ -91,7 +85,6 @@
   (set-view! :ipranges :show))
 
 (defroute "/dtrace" {:as params}
-  (dtrace/list)
   (set-view! :dtrace :list))
 
 (defroute "/dtrace/:uuid" {:as params}
@@ -100,7 +93,6 @@
   (set-view! :dtrace :show))
 
 (defroute "/users" {:as params}
-  (users/list)
   (set-view! :users :list))
 
 (defroute "/users/:uuid" {:as params}
@@ -109,7 +101,6 @@
   (set-view! :users :show))
 
 (defroute "/roles" {:as params}
-  (roles/list)
   (set-view! :roles :list))
 
 (defroute "/roles/:uuid" {:as params}
@@ -118,7 +109,6 @@
   (set-view! :roles :show))
 
 (defroute "/orgs" {:as params}
-  (orgs/list)
   (set-view! :orgs :list))
 
 (defroute "/orgs/:uuid" {:as params}

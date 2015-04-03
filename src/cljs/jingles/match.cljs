@@ -31,7 +31,7 @@
             (or (= (:filter field) false) (match-fn (:filter-text field)))) element)))
 
 (defn field [field-name match-fn]
-  (let [field-key (keyword field)]
+  (let [field-key (keyword field-name)]
     (fn [element]
       (if-let [[field] (filter #(= field-key (:id %)) element)]
         (match-fn (:filter-text field))

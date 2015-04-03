@@ -82,16 +82,16 @@
       (cell-opt :style e)
       (cell-opt :class e)))
 
-(defn tbl-cell [root {txt :text quick-filter :quick-filter :as e}]
+(defn tbl-cell [set-filter {txt :text quick-filter :quick-filter :as e }]
   (if quick-filter
     (d/td (cell-attrs e)
           (r/glyphicon {:glyph "pushpin"
                         :class "filterby"
-                        :on-click (filter-field root (str (name (:id e)) ":" txt))}) " " txt)
+                        :on-click #(set-filter (str (name (:id e)) ":" txt))}) " " txt)
     (d/td (cell-attrs e)
           txt)))
 
-(defn tbl-row [data owner {:keys [root actions fields]}]
+(defn tbl-row [data owner {:keys [root actions fields set-filter]}]
   (reify
     om/IDisplayName
     (display-name [_]
@@ -102,22 +102,22 @@
             data (:row data)]
         (d/tr
          {:on-click #(goto (str "/" (name root) "/" (:uuid data)))  :style style}
-         (map (partial tbl-cell root) data)
+         (map (partial tbl-cell set-filter) data)
          (if actions
            (d/td {:class "actions"}
                  (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
                               :on-click (make-event identity)}
                              (apply menu-items (actions data))))))))))
 
-(defn render [data elements {:keys [config state root actions fields] parent :owner}]
+(defn render [data elements {:keys [root actions fields set-filter]}]
   (if (not (:sort data))
     (om/update! data :sort {}))
   (d/div
    {:class large :id "list-tbl"}
-   (let [opts {:fields fields :root root :actions actions}]
+   (let [opts {:fields fields :root root :actions actions :set-filter set-filter}]
      (table
       {:bordered? true :condensed? true :hover? true}
-      (om/build tbl-headers (:sort data) {:opts {:fields fields :actions actions}})
+      (om/build tbl-headers (:sort data) {:opts opts})
       (d/tbody
        (om/build-all tbl-row elements {:key :uuid :opts opts}))))
    #_(pagination root data)))

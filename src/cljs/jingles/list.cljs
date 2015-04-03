@@ -10,8 +10,7 @@
    [jingles.list.table :as table]
    [jingles.list.well :as well]
    [jingles.list.utils :refer [show-field get-filter-field expand-fields large small]]
-   [jingles.utils :refer [val-by-id make-event value-by-key]]
-   ))
+   [jingles.utils :refer [val-by-id make-event value-by-key]]))
 
 (defn do-sort [list fields sort]
   (let [field (:field sort)]
@@ -87,6 +86,13 @@
        (do-sort elements (:fields config) sort)
        elements))))
 
+(defn mk-filter-field [owner]
+  (fn [text]
+    (let [current (om/get-state owner :filter)]
+      (if (empty? current)
+        (om/set-state! owner :filter text)
+        (om/set-state! owner :filter (str current " " text))))))
+
 (defn view [data owner {:keys [config on-mount]}]
   (reify
     om/IDisplayName
@@ -105,7 +111,8 @@
             fields (get-in data [root :fields] (jingles.utils/initial-state config))
             filter (om/get-state owner :filter)
             display-fields (expand-fields config (used-fields fields))
-            all-fields (pre-render (vals  (:elements section)) display-fields filter config (:sort section))]
+            all-fields (pre-render (vals (:elements section)) display-fields filter config (:sort section))
+            set-filter (mk-filter-field owner)]
         (d/div
          {:class "listview"}
          (d/h1
@@ -117,7 +124,7 @@
            (col-selector owner fields)))
          (d/div
           {:class (str  "filterbar " small)}
-          (search-field "list" owner config)
+          (search-field "well" owner config)
           (col-selector owner fields))
-         (table/render section all-fields {:config config :root root :actions actions :fields display-fields :owner owner})
-         (well/well section all-fields {:config config :root root :actions actions :fields display-fields :owner owner}))))))
+         (table/render section all-fields {:root root :actions actions :fields display-fields :set-filter set-filter})
+         (well/well section all-fields {:root root :actions actions :set-filter set-filter}))))))

@@ -23,10 +23,3 @@
 (defn expand-fields [config selected]
   (let [fields (:fields config)]
     (map (fn [field] (fields field)) selected)))
-
-
-(defn filter-field [root text]
-  #_(let [cur (conf/get [root :filter] "")
-        cur (if (empty? cur) cur (str cur " "))]
-      (make-event #(conf/write! [root :filter]  (str  cur text))))
-  (make-event identity))

@@ -9,12 +9,12 @@
    [om-bootstrap.button :as b]
    [om-bootstrap.input :as i]
    [jingles.match :as jmatch]
-   [jingles.list.utils :refer [show-field get-filter-field expand-fields filter-field large small]]
+   [jingles.list.utils :refer [show-field get-filter-field expand-fields large small]]
    [jingles.utils :refer [goto val-by-id make-event value-by-key menu-items by-id]]
    [jingles.state :refer [set-state! update-state!]]))
 
 
-(defn list-panel [data owner {:keys [root actions]}]
+(defn list-panel [data owner {:keys [root actions set-filter]}]
   (reify
     om/IDisplayName
     (display-name [_]
@@ -22,6 +22,7 @@
     om/IRender
     (render [_]
       (p/panel {:class "list-panel"
+                :style (if (:show data) {} {:display :none})
                 :header [(:name data)
                          (if actions
                            (d/div {:class "pull-right"}
@@ -31,14 +32,14 @@
                (map
                 (fn [field]
                   (d/div
-                   #_(r/glyphicon {:glyph "pushpin"
+                   (r/glyphicon {:glyph "pushpin"
                                    :class "filterby"
-                                   :on-click (filter-field root (str (name (:id field)) ":" txt))})
+                                   :on-click #(set-filter (str (name (:id field)) ":" (:text field)))})
                    (d/span {:class "field-label"} (:title field) ":")
                    (d/span {:class "value"} (:text field))))
                 (:row data))))))
 
-(defn well [data elements {:keys [config state root actions fields] parent :owner}]
+(defn well [data elements {:keys [root actions set-filter]}]
   (d/div
    {:class small}
-   (om/build-all list-panel elements {:key :uuid :opts {:root root :actions actions}})))
+   (om/build-all list-panel elements {:key :uuid :opts {:root root :actions actions :set-filter set-filter}})))

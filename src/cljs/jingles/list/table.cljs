@@ -98,28 +98,26 @@
       "tblrowc")
     om/IRender
     (render [_]
-      (d/tr
-       {:on-click #(goto (str "/" (name root) "/" (:uuid data)))}
-       (map (partial tbl-cell root) data)
-       (if actions
-         (d/td {:class "actions"}
-               (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
-                            :on-click (make-event identity)}
-                           (apply menu-items (actions data)))))))))
+      (let [style (if (:show data) {} {:display :none})
+            data (:row data)]
+        (d/tr
+         {:on-click #(goto (str "/" (name root) "/" (:uuid data)))  :style style}
+         (map (partial tbl-cell root) data)
+         (if actions
+           (d/td {:class "actions"}
+                 (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                              :on-click (make-event identity)}
+                             (apply menu-items (actions data))))))))))
+
 (defn render [data elements {:keys [config state root actions fields] parent :owner}]
   (if (not (:sort data))
     (om/update! data :sort {}))
   (d/div
    {:class large :id "list-tbl"}
-   (table
-    {:bordered? true :condensed? true :hover? true}
-    (om/build tbl-headers (:sort data) {:opts {:fields  fields :actions actions}})
-    (d/tbody
-     (map
-      #(om/build tbl-row (:row %)
-                 {:react-key (:uuid %)
-                  :opts {:fields fields :root root :actions actions}})
-      (get-in elements [:rendered]))
-     #_(om/build-all tbl-row (get-in data [:rendered :rendered]) {:react-key :uuid :fn :row
-                                                                  :opts {:fields fields :root root :actions actions}})))
-   (pagination root data)))
+   (let [opts {:fields fields :root root :actions actions}]
+     (table
+      {:bordered? true :condensed? true :hover? true}
+      (om/build tbl-headers (:sort data) {:opts {:fields fields :actions actions}})
+      (d/tbody
+       (om/build-all tbl-row elements {:key :uuid :opts opts}))))
+   #_(pagination root data)))

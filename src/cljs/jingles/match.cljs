@@ -5,10 +5,6 @@
    [instaparse.core :as insta]
    [jingles.utils :refer [value-by-key str->int]]))
 
-(defn get-filter-field [field element]
-  (if-let [key (:filter-key field)]
-    (value-by-key key element)
-    (value-by-key (:key field) element)))
 
 (defn re-match [filter-str]
   (let [re  (re-pattern filter-str)]
@@ -29,20 +25,17 @@
 (defn lte-match [filter-str]
   #(<= % filter-str))
 
-(defn all [match-fn config]
-  (let [fields (filter #(not= (:filter %) false) (vals (:fields config)))
-        fields (map #(partial get-filter-field %) fields)]
-    (fn [e]
-      (some match-fn (map #(% e) fields)))))
+(defn all [match-fn]
+  (fn [element]
+    (some (fn [field]
+            (or (= (:filter field) false) (match-fn (:filter-text field)))) element)))
 
-(defn field [field-name match-fn config]
-  (let [field-key (keyword field-name)]
-    (if-let [f (get-in config [:fields  field-key])]
-      (fn [e]
-        (if-let [v (get-filter-field f e)]
-          (match-fn v)
-          false))
-      (constantly true))))
+(defn field [field-name match-fn]
+  (let [field-key (keyword field)]
+    (fn [element]
+      (if-let [[field] (filter #(= field-key (:id %)) element)]
+        (match-fn (:filter-text field))
+        false))))
 
 (def syntax
   "
@@ -80,13 +73,13 @@ str = <'\"'> #'([^\"]|\\.)+' <'\"'> | sym
 (defn simplify-query-element [q]
   (match
    q
-   [:str filter-str] (partial all (re-match filter-str))
-   [:num filter-str] (partial all (re-match filter-str))
+   [:str filter-str] (all (re-match filter-str))
+   [:num filter-str] (all (re-match filter-str))
    ;; Sym Comp
-   [:field field-name [:str field-match]] (partial field field-name (re-match field-match))
-   [:field field-name [:num field-match]] (partial field field-name (eq-match (str->int field-match)))
-   [:field field-name "~" [:num field-match]] (partial field field-name (re-match field-match))
-   [:field field-name cmp val] (partial field field-name ((cmp-fn cmp) (val-fn val)))
+   [:field field-name [:str field-match]]     (field field-name (re-match field-match))
+   [:field field-name [:num field-match]]     (field field-name (eq-match (str->int field-match)))
+   [:field field-name "~" [:num field-match]] (field field-name (re-match field-match))
+   [:field field-name cmp val]                (field field-name ((cmp-fn cmp) (val-fn val)))
    :else (pr "unknown:" q)))
 
 (defn simplify-query [q]
@@ -94,10 +87,9 @@ str = <'\"'> #'([^\"]|\\.)+' <'\"'> | sym
 
 (def parser (insta/parser syntax))
 
-(defn parse [config filter-str]
-  (let [s (parser filter-str)
-        q (simplify-query s)]
-    (map #(% config) q)))
+(defn parse [filter-str]
+  (let [s (parser filter-str)]
+    (simplify-query s)))
 
 (defn run [filters element]
   (every? #(% element) filters))

@@ -1,17 +1,8 @@
 (ns jingles.list.utils
   (:require
    [om.core :as om :include-macros true]
-   [om-tools.dom :as d :include-macros true]
-   [om-bootstrap.table :refer [table]]
-   [om-bootstrap.panel :as p]
-   [om-bootstrap.grid :as g]
-   [om-bootstrap.random :as r]
-   [om-bootstrap.pagination :as pg]
-   [om-bootstrap.button :as b]
-   [om-bootstrap.input :as i]
    [jingles.match :as jmatch]
-   [jingles.utils :refer [goto val-by-id make-event value-by-key menu-items by-id]]
-   [jingles.state :refer [set-state! update-state!]]))
+   [jingles.utils :refer [make-event value-by-key]]))
 
 
 (def large "hidden-xs hidden-ms")

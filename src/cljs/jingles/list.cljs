@@ -9,29 +9,9 @@
    [jingles.match :as jmatch]
    [jingles.list.table :as table]
    [jingles.list.well :as well]
-   [jingles.list.utils :refer [show-field get-filter-field expand-fields filter-field large small]]
-   [jingles.utils :refer [val-by-id make-event value-by-key]]))
-
-(defn paginator [size page]
-  (comp (take size) (drop (* page size))))
-
-(defn do-paginate [elements size page]
-  (let [page (dec page)] ; we need to decrease page by one so we start with page 1 not 0
-    (eduction (paginator size page) elements)))
-
-(defn paginate [elements state]
-  (let [length (count elements)
-        size (or (:page-size state) 20)
-        page (or (:page state) 1)
-        last (Math/ceil  (/ length size))
-        ;; If we're on a page that is too lage
-        ;; we jump back to the first page
-        page (if (> page last) last page)]
-    {:length length
-     :page page
-     :size size
-     :last last
-     :list (doall (do-paginate elements size page))}))
+   [jingles.list.utils :refer [show-field get-filter-field expand-fields large small]]
+   [jingles.utils :refer [val-by-id make-event value-by-key]]
+   ))
 
 (defn do-sort [list fields sort]
   (let [field (:field sort)]
@@ -42,20 +22,6 @@
                  sorted)))
       list)))
 
-(defn apply-filter [config filter-str state]
-  (let [list (vals (:elements state))]
-    (if (and filter-str (not (empty? filter-str)))
-      (let [fields (filter #(not= (:filter %) false) (vals (:fields config)))
-            fields (map #(partial get-filter-field %) fields)
-            match (jmatch/parse filter-str)]
-        (filter #(jmatch/run match %) list))
-      list)))
-
-(defn sort-and-paginate [config filter state]
-  (if-let [sort (:sort state)]
-    (paginate (do-sort config (apply-filter config filter state) state) state)
-    (paginate (apply-filter config filter state) state)))
-
 (defn toggle-field [field aset]
   (if (contains? aset field)
     (disj aset field)
@@ -65,8 +31,7 @@
   (let [field-id (str "filter-" suffix)]
     (i/input
      {:type "text" :id field-id :value (om/get-state owner :filter)
-      :on-change (fn [] (om/set-state! owner :filter (val-by-id field-id)))})
-    ))
+      :on-change (fn [] (om/set-state! owner :filter (val-by-id field-id)))})))
 
 (defn col-selector [owner fields]
   (b/dropdown

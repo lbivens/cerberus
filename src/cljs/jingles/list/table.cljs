@@ -6,7 +6,7 @@
    [om-bootstrap.random :as r]
    [om-bootstrap.pagination :as pg]
    [om-bootstrap.button :as b]
-   [jingles.list.utils :refer [filter-field large]]
+   [jingles.list.utils :refer [large]]
    [jingles.utils :refer [goto make-event menu-items]]
    [jingles.state :refer [set-state!]]))
 
@@ -99,10 +99,10 @@
     om/IRender
     (render [_]
       (let [style (if (:show data) {} {:display :none})
-            data (:row data)]
+            cells (:row data)]
         (d/tr
          {:on-click #(goto (str "/" (name root) "/" (:uuid data)))  :style style}
-         (map (partial tbl-cell set-filter) data)
+         (map (partial tbl-cell set-filter) cells)
          (if actions
            (d/td {:class "actions"}
                  (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})

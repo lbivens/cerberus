@@ -8,8 +8,6 @@
 
 (def root :ipranges)
 
-(def list-fields
-  "uuid,name")
 
 (defn list [data]
   (api/list data root))

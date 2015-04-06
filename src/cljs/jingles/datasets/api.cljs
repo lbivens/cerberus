@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+   [om.core :as om :include-macros true]
    [jingles.api :as api]
    [jingles.http :as http]
    [jingles.state :refer [set-state!]]))

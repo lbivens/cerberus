@@ -1,16 +1,17 @@
 (ns jingles.users
   (:refer-clojure :exclude [get list])
   (:require
+   [om.core :as om :include-macros true]
    [om-bootstrap.random :as r]
    [jingles.list :as jlist]
    [jingles.fields :refer [mk-config]]
    [jingles.utils :refer [initial-state]]
    [jingles.state :refer [set-state!]]
-   [jingles.users.api :refer [root] :as api]))
+   [jingles.users.api :refer [root] :as users]))
 
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(api/delete uuid)]])
+  [["Delete" #(users/delete uuid)]])
 
 (def config (mk-config root "Users" actions))
 
@@ -23,7 +24,19 @@
      {}
      (pr-str element))))
 
-(defn render [app]
-  (condp = (:view app)
-    :list (jlist/view config app)
-    :show (show-view app)))
+(defn render [data owner opts]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "userviewc")
+    om/IWillMount
+    (will-mount [_]
+      (om/update! data [root :filter] "")
+      (om/update! data [root :filted] [])
+      (om/update! data [root :sort] {})
+      (users/list data))
+    om/IRenderState
+    (render-state [_ _]
+      (condp = (:view data)
+        :list (om/build jlist/view data {:opts {:config config}})
+        :show (show-view data))))) 

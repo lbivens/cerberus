@@ -112,10 +112,10 @@
     :networks    (om/build networks/render data)
     :packages    (om/build packages/render data)
     :ipranges    (om/build ipranges/render data)
-    ;; :dtrace      (dtrace/render data)
-    ;; :users       (users/render data)
-    ;; :roles       (roles/render data)
-    ;; :orgs        (orgs/render data)
+    :dtrace      (om/build dtrace/render data)
+    :users       (om/build users/render data)
+    :roles       (om/build roles/render data)
+    :orgs        (om/build orgs/render data)
     (goto "/vms")))
 
 (defn main []

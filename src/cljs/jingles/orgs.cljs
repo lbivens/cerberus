@@ -1,15 +1,16 @@
 (ns jingles.orgs
   (:refer-clojure :exclude [get list])
   (:require
+   [om.core :as om :include-macros true]
    [jingles.list :as jlist]
-   [jingles.orgs.api :refer [root] :as api]
+   [jingles.orgs.api :refer [root] :as orgs]
    [om-bootstrap.random :as r]
    [jingles.utils :refer [initial-state]]
    [jingles.state :refer [set-state!]]
    [jingles.fields :refer [mk-config]]))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(api/delete uuid)]])
+  [["Delete" #(orgs/delete uuid)]])
 
 (def config (mk-config root "Organisations" actions))
 
@@ -22,7 +23,19 @@
      {}
      (pr-str element))))
 
-(defn render [app]
-  (condp = (:view app)
-    :list (jlist/view config app)
-    :show (show-view app)))
+(defn render [data owner opts]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "orgviewc")
+    om/IWillMount
+    (will-mount [_]
+      (om/update! data [root :filter] "")
+      (om/update! data [root :filted] [])
+      (om/update! data [root :sort] {})
+      (orgs/list data))
+    om/IRenderState
+    (render-state [_ _]
+      (condp = (:view data)
+        :list (om/build jlist/view data {:opts {:config config}})
+        :show (show-view data)))))

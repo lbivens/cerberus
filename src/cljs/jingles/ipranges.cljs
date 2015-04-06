@@ -11,7 +11,7 @@
 
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(api/delete uuid)]])
+  [["Delete" #(ipranges/delete uuid)]])
 
 (def config (mk-config root "IP Ranges" actions))
 

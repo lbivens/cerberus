@@ -23,3 +23,10 @@
 (defn expand-fields [config selected]
   (let [fields (:fields config)]
     (map (fn [field] (fields field)) selected)))
+
+(defn map-with-metadata [map-fn metadata seq]
+  (:acc (reduce
+          (fn [{:keys [metadata acc]} e]
+            (let [[metadata1 e1] (map-fn metadata e)]
+              {:metadata metadata1 :acc (conj acc e1)}))
+          {:metadata metadata :acc []} seq)))

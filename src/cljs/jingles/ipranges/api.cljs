@@ -11,8 +11,8 @@
 (def list-fields
   "uuid,name")
 
-(defn list []
-  (api/list root list-fields))
+(defn list [data]
+  (api/list data root))
 
 (def get (partial api/get root))
 

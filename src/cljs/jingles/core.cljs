@@ -111,7 +111,7 @@
     :hypervisors (om/build hypervisors/render data)
     :networks    (om/build networks/render data)
     :packages    (om/build packages/render data)
-    ;; :ipranges    (ipranges/render data)
+    :ipranges    (om/build ipranges/render data)
     ;; :dtrace      (dtrace/render data)
     ;; :users       (users/render data)
     ;; :roles       (roles/render data)

@@ -17,16 +17,17 @@
 
 (defn actions [e]
   (let [uuid (:uuid e)
-        locked (get-in e [:metadata :jingles :locked] false)
-        set-lock (partial vms/update-metadata uuid [:jingles :locked])]
+        locked (get-in e [:raw :metadata :jingles :locked] false)
+        set-lock (partial vms/update-metadata uuid [:jingles :locked])
+        state (get-in e [:raw :state])]
     [(if locked
        ["Unlock" #(set-lock false)]
        ["Lock" #(set-lock true)])
      :divider
-     (if (= (:state e) "running")
+     (if (= state "running")
        ["Stop" {:class (if locked "disabled")} #(vms/stop uuid)]
        ["Start" {:class (if locked "disabled")} #(vms/start uuid)])
-     (if (= (:state e) "running")
+     (if (= state "running")
        ["Reboot" {:class (if locked "disabled")} #(vms/reboot uuid)])]))
 
 (def config (mk-config
@@ -41,9 +42,6 @@
                        :key (partial api/get-sub-element :packages :package [:name])}))
 
 (set-state! [root :fields] (initial-state config))
-
-
-
 
 (defn render [data owner opts]
   (reify

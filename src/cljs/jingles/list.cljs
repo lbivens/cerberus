@@ -66,6 +66,7 @@
 (defn pre-render-element [fields name-key e]
   {:uuid (:uuid e)
    :name (value-by-key name-key e)
+   :raw e
    :row (mapv (partial pre-render-field e) fields)})
 
 (defn pre-renderer [fields name-key]

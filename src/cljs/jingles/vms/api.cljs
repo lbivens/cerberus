@@ -18,22 +18,22 @@
 (def get (partial api/get root))
 
 (defn start [uuid]
-  (api/post root [uuid :state] {:action :start}))
+  (api/put root [uuid :state] {:action :start}))
 
 (defn stop [uuid & [force]]
-  (api/post root [uuid :state]
+  (api/put root [uuid :state]
            (if force
              {:action :stop :force true}
              {:action :stop})))
 
 
 (defn reboot [uuid & [force]]
-  (api/post root [uuid :state]
+  (api/put root [uuid :state]
            (if force
              {:action :reboot :force true}
              {:action :reboot})))
 
 (defn change-package [uuid package]
-  (api/post root [uuid :package] {:package package}))
+  (api/put root [uuid :package] {:package package}))
 
 (def update-metadata (partial api/update-metadata root))

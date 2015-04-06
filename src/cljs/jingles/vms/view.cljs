@@ -142,7 +142,7 @@
         package (get-in app [:packages :elements current-package])
         cmp-pkg (get-in app [:tmp :pkg] {})
         cmp-vals (partial cmp-vals package cmp-pkg)]
-    (packages/list)
+    (packages/list app)
     (r/well
      {}
      (grid-row

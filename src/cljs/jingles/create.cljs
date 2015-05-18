@@ -45,8 +45,8 @@
 
 (defn validate-data! [data spec]
   (let [result (validate-data data spec)]
-    (if (not= (:valid data) result)
-      (om/transact! data [:valid] (constantly result)))))
+    (pr "valid"  result data)
+    (om/transact! data [:valid] (constantly result))))
 
 (defn input [data spec {id :id key :key validator :validator label :label type :type data-type :data-type
                    unit :unit options :options optional :optional
@@ -55,7 +55,19 @@
         view-path (concat [:view] (if (vector? key) key [key]))
         validator (mk-validator field)
         val (get-in data view-path "")
-        data-val (get-in data data-path)]
+        data-val (get-in data data-path)
+        set-fn #(let [v (val-by-id id)
+                      dv (to-dt data-type v)
+                      data' (assoc-in
+                                   (if key
+                                     (assoc-in data data-path dv)
+                                     data)
+                                   view-path v)]
+                  (pr data-path dv view-path v data)
+                  (om/transact! data view-path (constantly v))
+                  (if key
+                    (om/transact! data data-path (constantly  dv)))
+                  (validate-data! data' spec))]
     (i/input {:type type :label label
               :label-classname "col-xs-1"
               :wrapper-classname "col-xs-11"
@@ -63,12 +75,8 @@
               :addon-after unit
               :has-feedback? true
               :bs-style (if (validator data-val) "success" "error")
-              :on-change #(let [v (val-by-id id)
-                                dv (to-dt data-type v)]
-                            (om/transact! data view-path (constantly v))
-                            (if key
-                              (om/transact! data data-path (constantly  dv)))
-                            (validate-data! data spec))
+              :on-change set-fn
+              :on-blur set-fn
               :value (from-dt data-type val)}
              (map (fn [opt]
                     (if (string? opt)

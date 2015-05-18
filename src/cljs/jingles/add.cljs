@@ -47,9 +47,8 @@
 (def add-submit
   {"datasets" datasets/submit})
 
-
 (defn submit-default [section data]
-  (api/post (keyword section) []  data))
+  (api/post (keyword section) [] data))
 
 (defn clear-add [data]
   (let [section (:view-section data)]
@@ -60,12 +59,13 @@
     (if (get-in data [:content :valid])
       (let [section (:section data)
             submit-fn (get-in add-submit [(name section)] submit-default)]
+        (pr "valid " values)
         (if (submit-fn section values)
           (clear-add data)))
       (pr "invalid " values))))
 
 (defn init-add [data section]
-  (om/transact! data :section  (constantly section))
+  (om/transact! data :section (constantly section))
   (om/transact! data :content (constantly {}))
   (om/transact! data :maximized (constantly true)))
 

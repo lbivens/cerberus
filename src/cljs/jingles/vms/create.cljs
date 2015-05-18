@@ -55,7 +55,7 @@
     (render-state [_ _]
       (let [tab (get-in data [:key] 1)
             mkopts (partial mkopts data)
-            validate-data! #(create/validate-data! data spec)]
+            validate-data! #(create/validate-data! % spec)]
         (if (not (:networks data))
           (networks/list data))
         (if (not (:datasets data))
@@ -93,7 +93,7 @@
                          {:class (if (= (get-in data [:data :dataset]) uuid) "active" "inactive")
                           :on-click (make-event (fn []
                                                   (om/transact! data [:data] #(assoc % :dataset uuid))
-                                                  (validate-data!)))}
+                                                  (validate-data! (assoc-in data [:data :dataset] uuid))))}
                          (d/td name) (d/td version)))
                       (sort-by #(str (:name %) "-" (:version %))
                                (vals (get-in data [:datasets :elements]))))))
@@ -108,7 +108,7 @@
                          {:class (if (= (get-in data [:data :package]) uuid) "active" "")
                           :on-click (make-event (fn []
                                                   (om/transact! data [:data] #(assoc % :package uuid))
-                                                  (validate-data!)))}
+                                                  (validate-data! (assoc-in data [:data :package] uuid))))}
                          (d/td name) (d/td cpu_cap) (d/td ram) (d/td quota)))
                       (sort-by :name (vals (get-in data [:packages :elements]))))))
              ;; This kind of sucks, it tries to get a full row ...
@@ -135,7 +135,7 @@
                                  {:class (if (= (get-in data [:data :config :networks nic]) uuid) "active" "")
                                   :on-click (make-event (fn []
                                                           (om/transact! data [:data :config :networks] #(assoc % nic uuid))
-                                                          (validate-data!)))}
+                                                          (validate-data! (assoc-in data [:data :config :networks nic] uuid))))}
                                  (d/td name)))
                               (sort-by :name (vals (get-in data [:networks :elements]))))))))
                     networks))))

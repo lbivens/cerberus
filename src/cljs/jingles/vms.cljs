@@ -19,6 +19,7 @@
   (let [uuid (:uuid e)
         locked (get-in e [:raw :metadata :jingles :locked] false)
         set-lock (partial vms/update-metadata uuid [:jingles :locked])
+        delete #(vms/delete uuid)
         state (get-in e [:raw :state])]
     [(if locked
        ["Unlock" #(set-lock false)]
@@ -28,7 +29,9 @@
        ["Stop" {:class (if locked "disabled")} #(vms/stop uuid)]
        ["Start" {:class (if locked "disabled")} #(vms/start uuid)])
      (if (= state "running")
-       ["Reboot" {:class (if locked "disabled")} #(vms/reboot uuid)])]))
+       ["Reboot" {:class (if locked "disabled")} #(vms/reboot uuid)])
+     :divider
+     ["Delete" {:class (if locked "disabled")} #(vms/delete uuid)]]))
 
 (def config (mk-config
              root "Machines" actions

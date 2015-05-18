@@ -17,6 +17,9 @@
 
 (def get (partial api/get root))
 
+(defn delete [uuid]
+  (api/delete root uuid))
+
 (defn start [uuid]
   (api/put root [uuid :state] {:action :start}))
 

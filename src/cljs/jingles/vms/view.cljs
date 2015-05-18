@@ -1,17 +1,20 @@
 (ns jingles.vms.view
-  (:require [om-tools.dom :as d :include-macros true]
-            [om-bootstrap.table :refer [table]]
-            [om-bootstrap.panel :as p]
-            [om-bootstrap.grid :as g]
-            [om-bootstrap.random :as r]
-            [om-bootstrap.nav :as n]
-            [jingles.utils :refer [goto grid-row]]
-            [jingles.http :as http]
-            [jingles.api :as api]
-            [jingles.vms.api :refer [root]]
-            [jingles.packages.api :as packages]
-            [jingles.state :refer [set-state!]]
-            [jingles.fields :refer [fmt-bytes fmt-percent]]))
+  (:require
+   [om.core :as om :include-macros true]
+   [om-tools.dom :as d :include-macros true]
+   [om-bootstrap.table :refer [table]]
+   [om-bootstrap.panel :as p]
+   [om-bootstrap.grid :as g]
+   [om-bootstrap.random :as r]
+   [om-bootstrap.nav :as n]
+   [jingles.utils :refer [goto grid-row]]
+   [jingles.http :as http]
+   [jingles.api :as api]
+   [jingles.vms.api :as vms]
+   [jingles.vms.api :refer [root]]
+   [jingles.packages.api :as packages]
+   [jingles.state :refer [set-state!]]
+   [jingles.fields :refer [fmt-bytes fmt-percent]]))
 
 
 (def sub-element (partial api/get-sub-element))
@@ -131,9 +134,9 @@
       (let [val (package val)
             diff (- cmp-vap val)]
         (cond
-         (> diff 0) [val " (+" diff ")"]
-         (< diff 0) [val " (" diff ")"]
-         :else val))
+          (> diff 0) [val " (+" diff ")"]
+          (< diff 0) [val " (" diff ")"]
+          :else val))
       (package val))))
 
 (defn render-package [app element]
@@ -169,9 +172,9 @@
                (map
                 (fn [[uuid {name :name :as pkg}]]
                   (let [cmp #(cond
-                              (> %2 (package %1)) (r/glyphicon {:glyph "chevron-up"})
-                              (< %2 (package %1)) (r/glyphicon {:glyph "chevron-down"})
-                              :else "")
+                               (> %2 (package %1)) (r/glyphicon {:glyph "chevron-up"})
+                               (< %2 (package %1)) (r/glyphicon {:glyph "chevron-down"})
+                               :else "")
                         td (fn [v f] (d/td (f (pkg v)) (cmp v (pkg v))))]
                     (d/tr
                      {:class (if (= uuid current-package) "current" "")
@@ -224,21 +227,46 @@
                "fw-rules"  {:key  8 :fn render-fw-rules  :title "Firewall"}
                "metrics"   {:key  9 :fn render-metrics      :title "Metrics"}
                "metadata"  {:key 10 :fn render-metadata  :title "Metadata"}})
+;; This is really ugly but something is crazy about the reify for OM here
+;; this for will moutnt and will unmoutn are not the same and having timer in
+;; let does not work either so lets "MAKE ALL THE THINGS GLOBAL!"
 
-(defn render [app]
-  (let [uuid (get-in app [root :selected])
-        element (get-in app [root :elements uuid])
-        section (get-in app [root :section])
-        key (get-in sections [section :key] 1)]
-    (d/div
-     {}
-     (apply n/nav {:bs-style "tabs" :active-key key}
-            (map
-             (fn [[section data]]
-               (n/nav-item {:key (:key data)
-                            :href (str "#/vms/" uuid (if (empty? section) "" (str "/" section)))}
-                           (:title data)))
-             (sort-by (fn [[section data]] (:key data)) (seq sections))))
-     (if-let [f (get-in sections [section :fn] )]
-       (f app element)
-       (goto (str "#/vms/" uuid))))))
+(def timer (atom))
+
+(defn stop-timer! []
+  (if @timer
+    (js/clearInterval @timer))
+  (reset! timer nil))
+
+(defn start-timer! [uuid]
+  (stop-timer!)
+  (reset! timer (js/setInterval #(vms/metrics uuid) 1000)))
+(defn render [data owner opts]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "vmview")
+    om/IWillMount
+    (will-mount [_]
+      (start-timer! (get-in data [root :selected])))
+    om/IWillUnmount
+    (will-unmount [_]
+      (stop-timer!))
+    om/IRenderState
+    (render-state [_ _]
+      (let [uuid (get-in data [root :selected])
+            element (get-in data [root :elements uuid])
+            section (get-in data [root :section])
+            key (get-in sections [section :key] 1)]
+        (d/div
+         {}
+         (apply n/nav {:bs-style "tabs" :active-key key}
+                (map
+                 (fn [[section data]]
+                   (n/nav-item {:key (:key data)
+                                :href (str "#/vms/" uuid (if (empty? section) "" (str "/" section)))}
+                               (:title data)))
+                 (sort-by (fn [[section data]] (:key data)) (seq sections))))
+         (if-let [f (get-in sections [section :fn] )]
+           (f data element)
+           (goto (str "#/vms/" uuid))))))))

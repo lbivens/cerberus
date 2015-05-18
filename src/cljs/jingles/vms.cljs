@@ -52,7 +52,7 @@
     (display-name [_]
       "vmlistc")
     om/IWillMount
-    (will-mount [_]
+    (will-mount [this]
       (om/update! data [root :filter] "")
       (om/update! data [root :filted] [])
       (om/update! data [root :sort] {})
@@ -61,4 +61,4 @@
     (render-state [_ _]
       (condp = (:view data)
         :list (om/build jlist/view data {:opts {:config config}})
-        :show (view/render data)))))
+        :show (om/build view/render data {})))))

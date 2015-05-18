@@ -33,6 +33,7 @@
 (defroute "/vms/:uuid" {:as params}
   (let [uuid (:uuid params)]
     (vms/get uuid)
+    (vms/metrics uuid)
     (set-state! [:vms :selected] uuid)
     (set-state! [:vms :section] "")
     (set-view! :vms :show)))

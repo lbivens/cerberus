@@ -17,6 +17,10 @@
 
 (def get (partial api/get root))
 
+(defn metrics [uuid]
+  (api/to-state [:metrics]
+                (http/get [root uuid :metrics])))
+
 (defn delete [uuid]
   (api/delete root uuid))
 

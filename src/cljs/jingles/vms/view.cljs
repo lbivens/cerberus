@@ -204,15 +204,26 @@
    {}
    (pr-str (:metadata element))))
 
-(def sections {""          {:key 1 :fn render-home      :title "General"}
-               "networks"  {:key 2 :fn render-networks  :title "Networks"}
-               "package"   {:key 3 :fn render-package   :title "Package"}
-               "snapshots" {:key 4 :fn render-snapshots :title "Snapshot"}
-               "backups"   {:key 5 :fn render-backups   :title "Backups"}
-               "services"  {:key 6 :fn render-services  :title "Services"}
-               "logs"      {:key 7 :fn render-logs      :title "Logs"}
-               "fw-rules"  {:key 8 :fn render-fw-rules  :title "Firewall"}
-               "metadata"  {:key 9 :fn render-metadata  :title "Metadata"}})
+(defn nice-metrics [metrics]
+  (reduce #(assoc %1 (:n %2) (:v %2)) metrics))
+
+(defn render-metrics [app element]
+  (r/well
+   {}
+   (pr-str (nice-metrics (:metrics app)))))
+
+
+
+(def sections {""          {:key  1 :fn render-home      :title "General"}
+               "networks"  {:key  2 :fn render-networks  :title "Networks"}
+               "package"   {:key  3 :fn render-package   :title "Package"}
+               "snapshots" {:key  4 :fn render-snapshots :title "Snapshot"}
+               "backups"   {:key  5 :fn render-backups   :title "Backups"}
+               "services"  {:key  6 :fn render-services  :title "Services"}
+               "logs"      {:key  7 :fn render-logs      :title "Logs"}
+               "fw-rules"  {:key  8 :fn render-fw-rules  :title "Firewall"}
+               "metrics"   {:key  9 :fn render-metrics      :title "Metrics"}
+               "metadata"  {:key 10 :fn render-metadata  :title "Metadata"}})
 
 (defn render [app]
   (let [uuid (get-in app [root :selected])

@@ -129,20 +129,22 @@
       (map #(g/row nil (map render-network %)) rows)))))
 
 (defn cmp-vals [package cmp-package val]
-  (do
-    (if-let [cmp-vap (cmp-package val)]
-      (let [val (package val)
-            diff (- cmp-vap val)]
-        (cond
-          (> diff 0) [val " (+" diff ")"]
-          (< diff 0) [val " (" diff ")"]
-          :else val))
-      (package val))))
+  (if-let [cmp-vap (cmp-package val)]
+    (let [val (if package (package val) 0)
+          diff (- cmp-vap val)]
+      (cond
+        (> diff 0) [val " (+" diff ")"]
+        (< diff 0) [val " (" diff ")"]
+        :else [val]))
+    [(if package (package val) 0)]))
+
+(defn apply-fmt [fmt v & rest]
+  (concat [(fmt v)] rest))
 
 (defn render-package [app element]
   (let [current-package (:package element)
         packages (get-in app [:packages :elements])
-        package (get-in app [:packages :elements current-package])
+        package (get-in packages [current-package])
         cmp-pkg (get-in app [:tmp :pkg] {})
         cmp-vals (partial cmp-vals package cmp-pkg)]
     (packages/list app)
@@ -152,12 +154,12 @@
       (g/col
        {:md 4}
        (p/panel
-        {:header (:name package)
+        {:header (if package (:name package) "custom")
          :list-group
          (d/ul {:class "list-group"}
-               (group-li "CPU: "    (-> (cmp-vals :cpu_cap) fmt-percent))
-               (group-li "Memory: " (->> (cmp-vals :ram) (fmt-bytes :mb)))
-               (group-li "Quota: "  (->> (cmp-vals :quota) (fmt-bytes :gb))))}))
+               (group-li "CPU: "    (apply apply-fmt fmt-percent (cmp-vals :cpu_cap)))
+               (group-li "Memory: " (apply apply-fmt (partial fmt-bytes :mb) (cmp-vals :ram)))
+               (group-li "Quota: "  (apply apply-fmt (partial fmt-bytes :gb) (cmp-vals :quota))))}))
       (g/col
        {:md 8}
        (table
@@ -171,10 +173,11 @@
                {}
                (map
                 (fn [[uuid {name :name :as pkg}]]
-                  (let [cmp #(cond
-                               (> %2 (package %1)) (r/glyphicon {:glyph "chevron-up"})
-                               (< %2 (package %1)) (r/glyphicon {:glyph "chevron-down"})
-                               :else "")
+                  (let [cmp #(let [v (if package (package %1) 0)]
+                               (cond
+                                 (> %2 v) (r/glyphicon {:glyph "chevron-up"})
+                                 (< %2 v) (r/glyphicon {:glyph "chevron-down"})
+                                 :else ""))
                         td (fn [v f] (d/td (f (pkg v)) (cmp v (pkg v))))]
                     (d/tr
                      {:class (if (= uuid current-package) "current" "")
@@ -225,7 +228,7 @@
                "services"  {:key  6 :fn render-services  :title "Services"}
                "logs"      {:key  7 :fn render-logs      :title "Logs"}
                "fw-rules"  {:key  8 :fn render-fw-rules  :title "Firewall"}
-               "metrics"   {:key  9 :fn render-metrics      :title "Metrics"}
+               "metrics"   {:key  9 :fn render-metrics   :title "Metrics"}
                "metadata"  {:key 10 :fn render-metadata  :title "Metadata"}})
 ;; This is really ugly but something is crazy about the reify for OM here
 ;; this for will moutnt and will unmoutn are not the same and having timer in
@@ -241,6 +244,7 @@
 (defn start-timer! [uuid]
   (stop-timer!)
   (reset! timer (js/setInterval #(vms/metrics uuid) 1000)))
+
 (defn render [data owner opts]
   (reify
     om/IDisplayName

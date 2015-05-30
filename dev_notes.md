@@ -30,7 +30,7 @@ wiggle compression needs to be disabled
 
 
 
-
+snarl-admin init default dev users admin admin
 
 ##Upgrade
 

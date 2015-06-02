@@ -27,6 +27,7 @@
    [jingles.users :as users]
    [jingles.roles :as roles]
    [jingles.orgs :as orgs]
+   [jingles.clients :as clients]
    [jingles.config :as conf]
    [jingles.add :as add]
 
@@ -86,6 +87,8 @@
                      ["Roles"  "#/roles"]
                      ["Organisations"  "#/orgs"]
                      :divider
+                     ["Clients"  "#/orgs"]
+                     :divider
                      ["Packages" "#/packages"]
                      :divider
                      ["Networks" "#/networks"]
@@ -116,6 +119,7 @@
     :users       (om/build users/render data)
     :roles       (om/build roles/render data)
     :orgs        (om/build orgs/render data)
+    :clients     (om/build clients/render data)
     (goto "/vms")))
 
 (defn main []

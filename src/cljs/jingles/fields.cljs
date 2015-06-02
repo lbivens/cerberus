@@ -34,9 +34,11 @@
    :pb :bt})
 
 (defn fmt-bytes [type size]
-  (if (and (> size 1024) (next-byte-type type))
-    (fmt-bytes (next-byte-type type)  (/ size 1024))
-    (str (clojure.string/replace (.toFixed size 2) #"\.?0*$" "") (byte-suffix type))))
+  (if (not size)
+    "UNDEFINED"
+    (if (and (> size 1024) (next-byte-type type))
+      (fmt-bytes (next-byte-type type)  (/ size 1024))
+      (str (clojure.string/replace (.toFixed size 2) #"\.?0*$" "") (byte-suffix type)))))
 
 (defn type-defaults [type]
   (match

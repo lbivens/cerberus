@@ -14,6 +14,7 @@
    [jingles.users.api :as users]
    [jingles.roles.api :as roles]
    [jingles.orgs.api :as orgs]
+   [jingles.clients.api :as clients]
 
    [jingles.config :as config]
    [goog.history.EventType :as EventType]
@@ -116,6 +117,14 @@
   (orgs/get (:uuid params))
   (set-state! [:orgs :selected] (:uuid params))
   (set-view! :orgs :show))
+
+(defroute "/clients" {:as params}
+  (set-view! :clients :list))
+
+(defroute "/clients/:uuid" {:as params}
+  (clients/get (:uuid params))
+  (set-state! [:clients :selected] (:uuid params))
+  (set-view! :clients :show))
 
 (let [h (History.)]
   (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))

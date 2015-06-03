@@ -18,6 +18,7 @@
    [jingles.users.create :as users]
    [jingles.dtrace.create :as dtrace]
    [jingles.orgs.create :as orgs]
+   [jingles.clients.create :as clients]
    [jingles.roles.create :as roles]
    [jingles.datasets.create :as datasets]
    [jingles.vms.create :as vms]))
@@ -27,6 +28,7 @@
    :users    users/render
    :roles    roles/render
    :orgs     orgs/render
+   :clients  clients/render
    :packages packages/render
    :networks networks/render
    :ipranges ipranges/render
@@ -38,6 +40,7 @@
    :users    "Create User"
    :roles    "Create Role"
    :orgs     "Create Organisation"
+   :clients  "Create Client"
    :packages "Create Package"
    :networks "Create Network"
    :ipranges "Create IP-Range"

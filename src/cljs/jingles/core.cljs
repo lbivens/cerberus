@@ -87,7 +87,7 @@
                      ["Roles"  "#/roles"]
                      ["Organisations"  "#/orgs"]
                      :divider
-                     ["Clients"  "#/orgs"]
+                     ["Clients"  "#/clients"]
                      :divider
                      ["Packages" "#/packages"]
                      :divider

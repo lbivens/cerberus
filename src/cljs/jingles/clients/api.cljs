@@ -1,4 +1,4 @@
-(ns jingles.orgs.api
+(ns jingles.clients.api
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
@@ -6,7 +6,7 @@
    [jingles.http :as http]
    [jingles.state :refer [set-state!]]))
 
-(def root :orgs)
+(def root :clients)
 
 (def list-fields
   "name,uuid")

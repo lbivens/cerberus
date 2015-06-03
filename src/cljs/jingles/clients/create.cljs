@@ -1,4 +1,4 @@
-(ns jingles.orgs.create
+(ns jingles.clients.create
   (:require
    [om.core :as om :include-macros true]
    [jingles.create :as create]))
@@ -7,9 +7,10 @@
   (reify
     om/IDisplayName
     (display-name [_]
-      "addorgc")
+      "addclientc")
     om/IRenderState
     (render-state [_ _]
       (create/render
        data
-       {:type :input :label "Name" :id "org-name" :key :name :validator #(not (empty? %2))}))))
+       {:type :input :label "Name" :id "client-name" :key :client}
+       {:type :input :label "Secret" :id "client-pass" :key :secret}))))

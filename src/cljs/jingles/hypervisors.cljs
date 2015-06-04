@@ -5,8 +5,9 @@
    [jingles.list :as jlist]
    [jingles.hypervisors.api :refer [root] :as hypervisors]
    [om-bootstrap.random :as r]
+   [jingles.hypervisors.view :as view]
    [jingles.fields :refer [mk-config]]
-   [jingles.utils :refer [initial-state]]
+   [jingles.utils :refer [initial-state make-event]]
    [jingles.state :refer [set-state!]]))
 
 (defn actions [{uuid :uuid}]
@@ -24,13 +25,15 @@
      {}
      (pr-str element))))
 
+(set-state! [root :fields] (initial-state config))
+
 (defn render [data owner opts]
   (reify 
     om/IDisplayName
     (display-name [_]
       "hypervisrolistc")
     om/IWillMount
-    (will-mount [_]
+    (will-mount [this]
       (om/update! data [root :filter] "")
       (om/update! data [root :filted] [])
       (om/update! data [root :sort] {})
@@ -39,4 +42,4 @@
     (render-state [_ _]
       (condp = (:view data)
         :list (om/build jlist/view data {:opts {:config config}})
-        :show (show-view data)))))
+        :show (om/build view/render data {})))))

@@ -86,3 +86,8 @@
     (vector? e) e
     (seq? e)    (vec e)
     :else [e]))
+
+(defn display [show]
+  (if show
+    #js {}
+    #js {:display "none"}))

@@ -48,7 +48,7 @@
    :datasets "Import Dataset"})
 
 (def add-submit
-  {"datasets" datasets/submit})
+  {:datasets datasets/submit})
 
 (defn submit-default [section data]
   (api/post (keyword section) [] data))
@@ -61,8 +61,8 @@
   (let [values (get-in data [:content :data])]
     (if (get-in data [:content :valid])
       (let [section (:section data)
-            submit-fn (get-in add-submit [(name section)] submit-default)]
-        (pr "valid " values)
+            submit-fn (get-in add-submit [section] submit-default)]
+        (pr (:section data) "valid " values)
         (if (submit-fn section values)
           (clear-add data)))
       (pr "invalid " values))))

@@ -11,8 +11,9 @@
 
 
 (defn submit [section data]
+  (pr section data)
   (doall
-   (map datasets/import (:data data))))
+   (map datasets/import data)))
 
 (defn toggle-dataset [e {datasets :data valid :valid
                          :or {datasets #{} valid false} :as add}]

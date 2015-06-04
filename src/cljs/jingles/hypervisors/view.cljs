@@ -171,9 +171,28 @@
 (defn render-perf [app element] 
   "stub"  
 )
-(defn render-services [app element] 
-  "stub"  
-)
+
+(defn render-services [app element]
+  (let [services (:services element)]
+    (r/well
+     {}
+     (table
+      {:striped? true :bordered? true :condensed? true :hover? true :responsive? true}
+      (d/thead
+       {:striped? false}
+       (d/tr
+        {}
+        (d/td {} "Service")
+        (d/td {} "State")))
+      (d/tbody
+       {}
+       (map
+        (fn [[srv state]]
+          (d/tr
+           (d/td (clojure.string/replace (str srv) #"^:" ""))
+           (d/td state)))
+        services))))))
+
 (defn render-chars [app element] 
   "stub"  
 )

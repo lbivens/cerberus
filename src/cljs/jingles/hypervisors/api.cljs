@@ -4,6 +4,7 @@
   (:require
    [jingles.api :as api]
    [jingles.http :as http]
+   [jingles.utils :refer [initial-state make-event]]
    [jingles.state :refer [set-state!]]))
 
 (def root :hypervisors)
@@ -17,3 +18,6 @@
 (def get (partial api/get root))
 
 (def delete (partial api/delete root))
+
+(defn rename [[uuid name]]
+  (api/put root [uuid :state] {:config {:alias name}}))

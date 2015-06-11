@@ -58,13 +58,24 @@
               uuid (:uuid body)]
           (set-state! [root :elements uuid] body))))))
 
-(defn put [root path data]
-  (go
-    (let [resp (<! (http/put (concat [root] path) {} {:json-params data}))]
-      #_(if (:success resp)
-        (let [body (:body resp)
-              uuid (:uuid body)]
-          (set-state! [root :elements uuid] body))))))
+(defn put 
+  ([root path data]
+    (go
+      (let [resp (<! (http/put (concat [root] path) {} {:json-params data}))]
+        #_(if (:success resp)
+          (let [body (:body resp)
+                uuid (:uuid body)]
+            (set-state! [root :elements uuid] body))))))
+  ([root path data callback args]
+    (go
+      (let [resp (<! (http/put (concat [root] path) {} {:json-params data}))]
+        #_(if (:success resp)
+          (let [body (:body resp)
+                uuid (:uuid body)]
+            (set-state! [root :elements uuid] body)
+            ))
+        (apply callback args)))))
+
 
 (defn get-sub-element [root key path element]
   (let [uuid (element key)]

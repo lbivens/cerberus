@@ -255,12 +255,12 @@
                  :value (:edit-alias-value state)
                  :onChange (fn [e] (om/set-state! owner :edit-alias-value (.. e -target -value)))
                  :onKeyDown #(when (= (.-key %) "Enter")
-                              (hypervisors/rename [uuid (:edit-alias state)])
-                              ;(println "press enter")
-                              )
-                 :onBlur (fn [e]
-                           (when (:edit-alias state)
-                             (println "onblur")))
+                                (hypervisors/rename uuid (:edit-alias-value state))
+                                (om/set-state! owner :edit-alias false))
+                  :onBlur (fn [e]
+                            (when (:edit-alias state)
+                              (hypervisors/rename uuid (:edit-alias-value state))
+                                (om/set-state! owner :edit-alias false)))
                  })
               (d/h6 uuid))
             (g/col

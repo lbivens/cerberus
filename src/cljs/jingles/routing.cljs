@@ -64,11 +64,10 @@
   (set-view! :hypervisors :show))
 
 (defroute "/hypervisors/:uuid/:section" {:as params}
-  (let [uuid (:uuid params)]
-    (hypervisors/get uuid)
-    (set-state! [:hypervisors :selected] uuid)
-    (set-state! [:hypervisors :section] (:section params))
-    (set-view! :hypervisors :show)))
+  (hypervisors/get (:uuid params))
+  (set-state! [:hypervisors :selected] (:uuid params))
+  (set-state! [:hypervisors :section] (:section params))
+  (set-view! :hypervisors :show))
 
 (defroute "/packages" {:as params}
   (set-view! :packages :list))

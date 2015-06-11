@@ -12,7 +12,7 @@
 (defn actions [{uuid :uuid}]
   [["Delete" #(clients/delete uuid)]])
 
-(def config (mk-config root "Clientanisations" actions))
+(def config (mk-config root "Clients" actions))
 
 (set-state! [root :fields] (initial-state config))
 

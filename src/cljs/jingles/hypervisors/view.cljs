@@ -17,7 +17,6 @@
    [jingles.state :refer [set-state!]]
    [jingles.fields :refer [fmt-bytes fmt-percent]]))
 
-(enable-console-print!)
 
 (defn apply-fmt [fmt v & rest]
   (concat [(fmt v)] rest))
@@ -217,7 +216,7 @@
   (reify
     om/IDisplayName
     (display-name [_]
-      "hyperview")
+      "hypervisordetailc")
     om/IWillMount
     (will-mount [_]
       (hypervisors/get (get-in data [root :selected]))
@@ -248,8 +247,7 @@
                 {:style (display (not (:edit-alias state)))
                  :onClick #((om/set-state! owner :edit-alias true)
                             (om/set-state! owner :edit-alias-value (:alias element)))}
-                (:alias element) " "
-                )
+                (:alias element) " ")
               (d/input 
                 {:style (display (:edit-alias state))
                  :value (:edit-alias-value state)
@@ -260,14 +258,12 @@
                   :onBlur (fn [e]
                             (when (:edit-alias state)
                               (hypervisors/rename uuid (:edit-alias-value state))
-                                (om/set-state! owner :edit-alias false)))
-                 })
+                                (om/set-state! owner :edit-alias false)))})
               (d/h6 uuid))
             (g/col
               {:md 3}
               (dom/img #js {:src oslogo
-                            :className "os-logo"})
-              )) 
+                            :className "os-logo"}))) 
           (apply n/nav {:bs-style "tabs" :active-key key}
                 (map
                  (fn [[section data]]
@@ -277,6 +273,4 @@
                  (sort-by (fn [[section data]] (:key data)) (seq sections))))
           (if-let [f (get-in sections [section :fn] )]
            (f data element)
-           (goto (str "/hypervisors/" uuid)))
-           ;(render-home data element)
-        )))))
+           (goto (str "/hypervisors/" uuid))))))))

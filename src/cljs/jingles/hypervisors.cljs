@@ -31,7 +31,7 @@
   (reify 
     om/IDisplayName
     (display-name [_]
-      "hypervisrolistc")
+      "hypervisorlistc")
     om/IWillMount
     (will-mount [this]
       (om/update! data [root :filter] "")

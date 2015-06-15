@@ -216,8 +216,8 @@
          (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
                       :on-click (make-event identity)}
                      (menu-items
-                      ["Roll Back" #(pr "rollback" vm)]
-                      ["Delete" #(vms/delete-snapshot vm uuid)])))))
+                      ["Roll Back" #(vms/restore-snapshot vm uuid)]
+                      ["Delete"    #(vms/delete-snapshot vm uuid)])))))
 
 (defn snapshot-table [vm snapshots]
   (g/col

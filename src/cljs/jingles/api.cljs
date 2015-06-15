@@ -76,8 +76,8 @@
         #_(if (:success resp)
           (let [body (:body resp)
                 uuid (:uuid body)]
-            (set-state! [root :elements uuid] body)
-            (apply callback args)))))))
+            (set-state! [root :elements uuid] body)))
+        (apply callback args)))))
 
 (defn get-sub-element [root key path element]
   (let [uuid (element key)]

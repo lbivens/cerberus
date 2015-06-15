@@ -2,12 +2,13 @@
   (:refer-clojure :exclude [get list])
   (:require
    [om.core :as om :include-macros true]
-   [om-bootstrap.random :as r]
    [jingles.list :as jlist]
+   [jingles.users.api :refer [root] :as users]
+   [om-bootstrap.random :as r]
+   [jingles.users.view :as view]
    [jingles.fields :refer [mk-config]]
    [jingles.utils :refer [initial-state]]
-   [jingles.state :refer [set-state!]]
-   [jingles.users.api :refer [root] :as users]))
+   [jingles.state :refer [set-state!]]))
 
 
 (defn actions [{uuid :uuid}]
@@ -39,4 +40,4 @@
     (render-state [_ _]
       (condp = (:view data)
         :list (om/build jlist/view data {:opts {:config config}})
-        :show (show-view data))))) 
+        :show (om/build view/render data {}))))) 

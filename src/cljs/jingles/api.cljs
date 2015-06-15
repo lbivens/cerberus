@@ -109,11 +109,15 @@
     (request-and-get http/put root uuid (concat [:metadata] path) (hash-map key value))))
 
 
-(defn delete [root uuid]
-  (go
-    (let [req (<! (http/delete [root uuid]))]
-      (if (:success req)
-        (delete-state! [root :elements uuid])))))
+(defn delete
+  ([root [uuid & rest :as path]]
+   (delete root path
+           #(if (:success %)
+              (delete-state! [root :elements uuid]))))
+  ([root path callback]
+   (go
+     (let [resp (<! (http/delete (concat [root] path)))]
+       (callback resp)))))
 
 (defn delete-metadata [root uuid path]
   (request-and-get http/delete root uuid (concat [:metadata] path)))

@@ -16,6 +16,7 @@
    [jingles.vms.api :refer [root]]
    [jingles.packages.api :as packages]
    [jingles.state :refer [set-state!]]
+   [jingles.utils :refer [make-event menu-items]]
    [jingles.fields :refer [fmt-bytes fmt-percent]]))
 
 
@@ -201,9 +202,7 @@
                      (td :cpu_cap fmt-percent)
                      (td :ram     #(fmt-bytes :mb %))
                      (td :quota   #(fmt-bytes :gb %)))))
-                packages)))))
-     )))
-
+                packages))))))))
 
 (defn snapshot-row  [vm [uuid {comment :comment timestamp :timestamp
                                state :state size :size}]]
@@ -213,17 +212,26 @@
    (d/td (str (js/Date. (/ timestamp 1000))))
    (d/td state)
    (d/td (fmt-bytes :b size))
-   (d/td "x")))
+   (d/td {:class "actions no-carret"}
+         (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                      :on-click (make-event identity)}
+                     (menu-items
+                      ["Roll Back" #(pr "rollback" vm)]
+                      ["Delete" #(vms/delete-snapshot vm uuid)])))))
 
 (defn snapshot-table [vm snapshots]
   (g/col
-   {:md 12}
+   {:md 11}
    (table
     {:id "snapshot-table"}
     (d/thead
      {}
-     (map d/td
-          ["UUID" "Comment" "Timestamp" "State" "Size" "Delete"]))
+     (d/td "UUID")
+     (d/td "Comment")
+     (d/td "Timestamp")
+     (d/td "State")
+     (d/td "Size")
+     (d/td {:class "actions"}))
     (apply d/tbody
            {}
            (map

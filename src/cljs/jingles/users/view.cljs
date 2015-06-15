@@ -30,19 +30,14 @@
       (om/set-state! owner value-key newValue)))
 
 
-(defn render-password [data owner state] 
-  (let [uuid (get-in data [root :selected])
-        element (get-in data [root :elements uuid])
-        ]
-  (r/well
-    {}  
-    (d/form {:class "form-horizontal"}
+(defn password-panel [uuid owner state]
+  (p/panel
+    {:header (d/h3 "Change Password")}  
+    (d/form
             
-      (i/input {:type "password" :label "Password"
+      (i/input {:type "password" :label "New Password"
                 :id "changepass1"
-                :label-classname "col-xs-3"
                 :value (:password1-val state)
-                :wrapper-classname "col-xs-9 col-sm-4"
                 :on-change  #(match-validate  
                                    %
                                    (val-by-id  "changepass2") 
@@ -52,9 +47,7 @@
       
       (i/input {:type "password" :label "Confirm"
                 :id "changepass2"
-                :label-classname "col-xs-3"
                 :value (:password2-val state)
-                :wrapper-classname "col-xs-9 col-sm-4"
                 :bs-style (if (or (:password-validate state) 
                                   (blank? (:password2-val state)))
                              nil "error")
@@ -65,15 +58,37 @@
                                    :password2-val
                                     owner)})
 
-        (g/grid {}
-          (g/row 
-            {}
-            (g/col {:xs 11 :sm 6}
-              (b/button {:bs-style "primary" 
+       (b/button {:bs-style "primary" 
                           :className "pull-right"
                           :onClick #(users/changepass uuid (:password1-val state))
                           :disabled? (false? (:password-validate state))} 
-                          "Submit"))))))))
+                          "Change"))))
+
+(defn ssh-keys-panel []
+  (p/panel {:header (d/h3 "SSH Keys")}
+           "stub"))
+
+(defn mfa-panel []
+  (p/panel {:header (d/h3 "Yubi Keys")}
+           "stub"))
+
+
+(defn render-password [data owner state] 
+  (let [uuid (get-in data [root :selected])
+        element (get-in data [root :elements uuid])]
+  (r/well 
+    {}
+    (grid-row 
+      (g/col
+           {:md 4}
+           (password-panel uuid owner state))
+      (g/col
+           {:md 4}
+           (ssh-keys-panel))
+      (g/col
+           {:md 4}
+           (mfa-panel))
+      ))))
 
 (defn render-perms [app owner state] 
   "stub"  
@@ -86,24 +101,15 @@
   "stub"  
 )
 
-(defn render-keys [app owner state] 
-  "stub"  
-)
-
-(defn render-mfa [app owner state] 
-  "stub"  
-)
 
 (defn render-metadata [app owner state] 
   "stub"  
 )
 
-(def sections {""          {:key  1 :fn render-password  :title "General"}
+(def sections {""          {:key  1 :fn render-password  :title "Authentication"}
                "perms"     {:key  2 :fn render-perms     :title "Permissions"}
                "roles"     {:key  3 :fn render-roles     :title "Roles"}
                "orgs"      {:key  4 :fn render-orgs      :title "Orgs"}
-               "keys"      {:key  5 :fn render-keys      :title "SSH Keys"}
-               "mfa"       {:key  6 :fn render-mfa       :title "Yubi Keys"}
                "metadata"  {:key  6 :fn render-metadata  :title "Metadata"}})
 
 (defn render [data owner opts]

@@ -7,7 +7,9 @@
    [om-bootstrap.grid :as g]
    [om-bootstrap.random :as r]
    [om-bootstrap.nav :as n]
-   [jingles.utils :refer [goto grid-row]]
+   [om-bootstrap.input :as i]
+   [om-bootstrap.button :as b]
+   [jingles.utils :refer [goto grid-row val-by-id]]
    [jingles.http :as http]
    [jingles.api :as api]
    [jingles.vms.api :as vms]
@@ -190,10 +192,54 @@
                 packages)))))
      )))
 
+
+(defn snapshot-row  [vm [uuid {comment :comment  timestamp :timestamp
+                               state :state size :size}]]
+  (d/tr
+   (d/td (name uuid))
+   (d/td comment)
+   (d/td (str (js/Date. (/ timestamp 1000))))
+   (d/td state)
+   (d/td (fmt-bytes :b size))
+   (d/td "x")))
+
+(defn snapshot-table [vm snapshots]
+  (g/col
+   {:md 12}
+   (table
+    {:id "snapshot-table"}
+    (d/thead
+     {}
+     (map d/td
+          ["UUID" "Comment" "Timestamp" "State" "Size" "Delete"]))
+    (apply d/tbody
+           {}
+           (map
+            (partial snapshot-row vm)
+            (sort-by (fn [[_ {t :timestamp}]] t) snapshots))))))
+
 (defn render-snapshots [app element]
   (r/well
    {}
-   (pr-str (:snapshots element))))
+   (grid-row
+    (g/col
+     {:md 12}
+     (i/input
+      {:label "New Snapshot"}
+      (grid-row
+       (g/col
+        {:xs 10}
+        (i/input {:type :text
+                  :placeholder "Snapshot Comment"
+                  :id "snapshot-comment"
+                  }))
+       (g/col {:xs 2}
+              (b/button {:bs-style "primary"
+                         :wrapper-classname "col-xs-2"
+                         :on-click (fn [] (pr (:uuid element) (val-by-id "snapshot-comment"))
+                                     (if (not (empty? (val-by-id "snapshot-comment")))
+                                       (vms/snapshot (:uuid element) (val-by-id "snapshot-comment"))))} "Create")))))
+    (snapshot-table (:uuid element) (:snapshots element)))))
 
 (defn render-backups [app element]
   (r/well

@@ -5,7 +5,7 @@
    [jingles.api :as api]
    [jingles.http :as http]
    [jingles.utils :refer [initial-state make-event]]
-   [jingles.state :refer [set-state!]]))
+   [jingles.state :refer [set-state! update-state! app-state]]))
 
 (def root :vms)
 
@@ -39,6 +39,12 @@
            (if force
              {:action :reboot :force true}
              {:action :reboot})))
+
+(defn snapshot [uuid comment]
+  (api/post root [uuid :snapshots]
+            {:comment comment}
+            (fn [snapshot]
+              (update-state! [root :elements uuid :snapshots] assoc (:uuid snapshot) snapshot))))
 
 (defn change-package [uuid package]
   (api/put root [uuid :package] {:package package}))

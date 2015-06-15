@@ -107,6 +107,13 @@
 (defroute "/users/:uuid" {:as params}
   (users/get (:uuid params))
   (set-state! [:users :selected] (:uuid params))
+  (set-state! [:users :section] "")
+  (set-view! :users :show))
+
+(defroute "/users/:uuid/:section" {:as params}
+  (users/get (:uuid params))
+  (set-state! [:users :selected] (:uuid params))
+  (set-state! [:users :section] (:section params))
   (set-view! :users :show))
 
 (defroute "/roles" {:as params}

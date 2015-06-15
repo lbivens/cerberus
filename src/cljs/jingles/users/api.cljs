@@ -18,3 +18,7 @@
 (def get (partial api/get root))
 
 (def delete (partial api/delete root))
+
+(defn changepass [uuid newpass]
+  (api/put root [uuid] {:password newpass})
+  (println "PASSWORD SET. TODO Alert"))

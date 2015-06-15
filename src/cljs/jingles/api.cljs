@@ -52,13 +52,15 @@
 
 (defn post
   ([root path data callback]
-    (go
-      (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))]
-        (if (:success resp)
-          (callback (:body resp))))))
+   (go
+     (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))]
+       (callback resp))))
   ([root path data]
-   (post root path data #(let [uuid (:uuid %)]
-                           (set-state! [root :elements uuid] %)))))
+   (post root path data (fn [resp]
+                          (if (:success resp)
+                            (let [body (:body resp)
+                                  uuid (:uuid body)]
+                              (set-state! [root :elements uuid] body)))))))
 
 (defn put
   ([root path data]

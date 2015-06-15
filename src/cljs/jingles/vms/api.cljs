@@ -43,8 +43,10 @@
 (defn snapshot [uuid comment]
   (api/post root [uuid :snapshots]
             {:comment comment}
-            (fn [snapshot]
-              (update-state! [root :elements uuid :snapshots] assoc (:uuid snapshot) snapshot))))
+            (fn [resp]
+              (if (:success resp)
+                (let [snapshot (:body resp)]
+                  (update-state! [root :elements uuid :snapshots] assoc (:uuid snapshot) snapshot))))))
 
 (defn change-package [uuid package]
   (api/put root [uuid :package] {:package package}))

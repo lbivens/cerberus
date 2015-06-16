@@ -21,3 +21,7 @@
 
 (defn rename [uuid name]
   (api/put root [uuid :config] {:alias name} api/get [root uuid]))
+
+(defn service-action [uuid service action]
+  (api/put root [uuid :services] {:service service :action action}
+           #(get uuid) []))

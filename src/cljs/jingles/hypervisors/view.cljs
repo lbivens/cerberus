@@ -14,6 +14,8 @@
    [jingles.api :as api]
    [jingles.hypervisors.api :as hypervisors]
    [jingles.hypervisors.api :refer [root]]
+   [jingles.services :as services]
+   [jingles.metadata :as metadata]
    [jingles.state :refer [set-state!]]
    [jingles.fields :refer [fmt-bytes fmt-percent]]))
 
@@ -168,44 +170,20 @@
   "stub"  
 )
 
-(defn render-services [app element]
-  (let [services (:services element)]
-    (r/well
-     {}
-     (table
-      {:striped? true :bordered? true :condensed? true :hover? true :responsive? true}
-      (d/thead
-       {:striped? false}
-       (d/tr
-        {}
-        (d/td {} "Service")
-        (d/td {} "State")))
-      (d/tbody
-       {}
-       (map
-        (fn [[srv state]]
-          (d/tr
-           (d/td (clojure.string/replace (str srv) #"^:" ""))
-           (d/td state)))
-        services))))))
-
 (defn render-chars [app element] 
   "stub"  
 )
 (defn render-notes [app element] 
   "stub"  
 )
-(defn render-metadata [app element] 
-  "stub"  
-)
 
 
 (def sections {""          {:key  1 :fn render-home      :title "General"}
                "perf"      {:key  2 :fn render-perf      :title "Performance"}
-               "services"  {:key  3 :fn render-services  :title "Services"}
+               "services"  {:key  3 :fn #(om/build services/render %2   {:opts {:action hypervisors/service-action}})  :title "Services"}
                "chars"     {:key  4 :fn render-chars     :title "Characteraristics"}
                "notes"     {:key  5 :fn render-notes     :title "Notes"}
-               "metadata"  {:key  6 :fn render-metadata  :title "Metadata"}})
+               "metadata"  {:key  6 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
 
 

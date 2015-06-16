@@ -93,19 +93,11 @@
            (mfa-panel))
       ))))
 
-(defn render-perms [app owner state] 
-  "stub"  
-)
 (defn render-roles [app owner state] 
   "stub"  
 )
 
 (defn render-orgs [app owner state] 
-  "stub"  
-)
-
-
-(defn render-metadata [app owner state] 
   "stub"  
 )
 

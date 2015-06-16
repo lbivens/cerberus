@@ -37,8 +37,7 @@
            (d/div {:class "span-value"} chunterversion))
           (d/li {:class "list-group-item"}
            (d/span {:class "span-label"} "Last Boot")
-           (d/div {:class "span-value"}  (.toISOString (js/Date. (* boottime 1000))))))}))
-)
+           (d/div {:class "span-value"}  (.toISOString (js/Date. (* boottime 1000))))))})))
 
 (defn hardware [cpu cores virt_support mainboard manufacturer serial_number]
    (d/div
@@ -63,8 +62,7 @@
           (d/li {:class "list-group-item"}
            (d/div {:class "span-label"} "Virtualisation Support")
            (for  [virt_support_type virt_support]
-             (d/div {:class "span-value"} (str virt_support_type))
-           )))})))
+             (d/div {:class "span-value"} (str virt_support_type)))))})))
 
 (defn memory [total provisioned free reserved l1size l1hit]
  (d/div
@@ -120,8 +118,7 @@
                       "Used: "
                       (apply-fmt (partial fmt-bytes :mb) (:used pool-info))
                       ) ])
-             pools))
-      )})))
+             pools)))})))
 
 
 (defn render-home [app element] 

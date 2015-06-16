@@ -261,14 +261,6 @@
        {}
        (pr-str (:fw_rules data))))))
 
-(defn render-metadata [data owner opts]
-  (reify
-    om/IRenderState
-    (render-state [_ _]
-      (r/well
-       {}
-       (pr-str (:metadata data))))))
-
 (defn nice-metrics [metrics]
   (reduce #(assoc %1 (:n %2) (:v %2)) metrics))
 
@@ -279,7 +271,6 @@
       (r/well
        {}
        (pr-str (nice-metrics (:metrics data)))))))
-
 
 
 (def sections {""          {:key  1 :fn #(om/build render-home %2)      :title "General"}

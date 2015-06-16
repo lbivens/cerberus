@@ -1,4 +1,4 @@
-(ns jingles.rules
+(ns jingles.permissions
   (:require
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
@@ -18,5 +18,6 @@
     (render-state [_ _]
       (r/well
        {}
-       "Rules:"
-       (pr-str (:metadata data))))))
+       "Permissions:"
+       (pr data)
+       (pr-str (:permissions data))))))

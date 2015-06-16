@@ -13,6 +13,9 @@
    [om-bootstrap.input :as i]
    [jingles.utils :refer [goto grid-row display val-by-id]]
    [jingles.http :as http]
+   [jingles.metadata :as metadata]
+   [jingles.permissions :as permissions]
+
    [jingles.users.api :as users]
    [jingles.users.api :refer [root]]
    [jingles.state :refer [set-state!]]
@@ -107,10 +110,10 @@
 )
 
 (def sections {""          {:key  1 :fn render-password  :title "Authentication"}
-               "perms"     {:key  2 :fn render-perms     :title "Permissions"}
+               "perms"     {:key  2 :fn #(om/build permissions/render (get-in %1 [root :elements (get-in %1 [root :selected])]))     :title "Permissions"}
                "roles"     {:key  3 :fn render-roles     :title "Roles"}
                "orgs"      {:key  4 :fn render-orgs      :title "Orgs"}
-               "metadata"  {:key  6 :fn render-metadata  :title "Metadata"}})
+               "metadata"  {:key  6 :fn #(om/build metadata/render (get-in %1 [root :elements (get-in %1 [root :selected])]))  :title "Metadata"}})
 
 (defn render [data owner opts]
   (reify
@@ -130,7 +133,7 @@
         (d/div
          {}
          (d/h1 (:name element) " ")
-         (d/h6 uuid)         
+         (d/h6 uuid)
          (apply n/nav {:bs-style "tabs" :active-key key}
                 (map
                  (fn [[section data]]

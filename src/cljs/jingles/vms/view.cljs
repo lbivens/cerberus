@@ -65,7 +65,9 @@
   (reify
     om/IRenderState
     (render-state [_ _]
-      (let [services (:services data)]
+      (let [services (:services data)
+            uuid (:uuid data)
+            sa (fn [s a] (vms/service-action uuid s a))]
         (r/well
          {}
          (table
@@ -75,15 +77,32 @@
            (d/tr
             {}
             (d/td {} "Service")
-            (d/td {} "State")))
+            (d/td {} "State")
+            (d/td {:class "actions"} "")))
           (d/tbody
            {}
            (map
             (fn [[srv state]]
-              (d/tr
-               (d/td (clojure.string/replace (str srv) #"^:" ""))
-               (d/td state)))
+              (let [s= #(= state %)
+                    s!= #(not= state %)
+                    srv (clojure.string/replace (str srv) #"^:" "")
+                    sa (fn [a] (vms/service-action uuid srv a))]
+                (d/tr
+                 (d/td srv)
+                 (d/td state)
+                 (d/td
+                  {:class "actions no-carret"}
+                  (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                               :on-click (make-event identity)}
+                              (menu-items
+                               ["Enable"   {:class (if (s!= "disabled")     "disabled")} #(sa :enable)]
+                               ["Disable"  {:class (if (s=  "disabled")     "disabled")} #(sa :disable)]
+                               ["Restart"  {:class (if (s!= "online")       "disabled")} #(sa :restart)]
+                               ["Refresh"  {:class (if (s!= "online")       "disabled")} #(sa :refresh)]
+                               ["Clear"    {:class (if (s!= "maintainance") "disabled")} #(sa :clear)]
+                               ))))))
             services))))))))
+
 
 (defn render-logs [data owner opts]
   (reify
@@ -333,7 +352,8 @@
       "vmview")
     om/IWillMount
     (will-mount [_]
-      (start-timer! (get-in data [root :selected])))
+      ;TODO: Make sure to re-enable this!
+      #_(start-timer! (get-in data [root :selected])))
     om/IWillUnmount
     (will-unmount [_]
       (stop-timer!))

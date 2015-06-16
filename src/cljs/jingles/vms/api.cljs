@@ -58,6 +58,10 @@
   (api/put root [uuid :snapshots snapshot] {:action "rollback"}
            #(get uuid) []))
 
+(defn service-action [uuid service action]
+  (api/put root [uuid :services] {:service service :action action}
+           #(get uuid) []))
+
 
 (defn change-package [uuid package]
   (api/put root [uuid :package] {:package package}))

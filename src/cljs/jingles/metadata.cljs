@@ -9,6 +9,22 @@
    [jingles.utils :refer [grid-row]]
    [jingles.utils :refer [make-event menu-items]]))
 
+(defn display-value [path v]
+  (cond
+    (map? v) (d/ul
+              (map
+               (fn [[k v]]
+                 (pr (conj path k))
+                 (d/li
+                  (name k) ": " (display-value (conj path k) v)))
+               v))
+    (number? v) v
+    (string? v) ["\"" (clojure.string/replace v #"\"" "\\\"") "\""]
+    (= true v) "true"
+    (= false v) "false"
+    (empty? v) ""
+    :else [(type v) ": " (str v)]))
+
 (defn render [data owner opts]
   (reify
     om/IDisplayName
@@ -18,5 +34,4 @@
     (render-state [_ _]
       (r/well
        {}
-       "Metadata:"
-       (pr-str (:metadata data))))))
+       (display-value [] (:metadata data))))))

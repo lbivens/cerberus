@@ -19,5 +19,4 @@
       (r/well
        {}
        "Permissions:"
-       (pr data)
        (pr-str (:permissions data))))))

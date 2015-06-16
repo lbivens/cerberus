@@ -14,7 +14,6 @@
     (map? v) (d/ul
               (map
                (fn [[k v]]
-                 (pr (conj path k))
                  (d/li
                   (name k) ": " (display-value (conj path k) v)))
                v))

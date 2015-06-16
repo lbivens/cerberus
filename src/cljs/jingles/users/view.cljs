@@ -15,7 +15,7 @@
    [jingles.http :as http]
    [jingles.metadata :as metadata]
    [jingles.permissions :as permissions]
-
+   [jingles.view :as view]
    [jingles.users.api :as users]
    [jingles.users.api :refer [root]]
    [jingles.state :refer [set-state!]]
@@ -107,32 +107,4 @@
                "orgs"      {:key  4 :fn render-orgs      :title "Orgs"}
                "metadata"  {:key  6 :fn #(om/build metadata/render (get-in %1 [root :elements (get-in %1 [root :selected])]))  :title "Metadata"}})
 
-(defn render [data owner opts]
-  (reify
-    om/IDisplayName
-    (display-name [_]
-      "userdetailview")
-    om/IInitState
-    (init-state [_]
-      {:password-validate false})
-    om/IRenderState
-    (render-state [_ state]
-      (let [uuid (get-in data [root :selected])
-            element (get-in data [root :elements uuid])
-            section (get-in data [root :section])
-            ;key (get-in sections [section :key] 1)
-            ]
-        (d/div
-         {}
-         (d/h1 (:name element) " ")
-         (d/h6 uuid)
-         (apply n/nav {:bs-style "tabs" :active-key key}
-                (map
-                 (fn [[section data]]
-                   (n/nav-item {:key (:key data)
-                                :href (str "#/users/" uuid (if (empty? section) "" (str "/" section)))}
-                               (:title data)))
-                 (sort-by (fn [[section data]] (:key data)) (seq sections))))
-         (if-let [f (get-in sections [section :fn] )]
-           (f data owner state)
-           (goto (str "#/users/" uuid))))))))
+(def render (view/make root sections users/get {:password-validate false}))

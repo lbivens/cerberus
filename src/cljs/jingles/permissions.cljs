@@ -11,8 +11,6 @@
 
 
 (defn highlight [part]
-  (pr part)
-  
   (condp = part
     "_" (d/b "_")
     "..." (d/b "...")

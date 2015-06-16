@@ -14,8 +14,8 @@
    [jingles.api :as api]
    [jingles.services :as services]
    [jingles.metadata :as metadata]
-   [jingles.vms.api :as vms]
-   [jingles.vms.api :refer [root]]
+   [jingles.vms.api :refer [root] :as vms]
+   [jingles.view :as view]
    [jingles.packages.api :as packages]
    [jingles.state :refer [set-state!]]
    [jingles.utils :refer [make-event menu-items]]
@@ -49,7 +49,7 @@
          "Resolvers: "      (clojure.string/join ", " (:resolvers conf))(d/br)
          "DNS Domain: "     (:dns_domain conf)(d/br)
          "Quota: "          (->> (:quota conf) (fmt-bytes :gb))(d/br)
-         "I/O Priority: "   (:zfs_io_priority conf)(d/br)
+         "I/O Priority: "   (:zfs_io_pryesiority conf)(d/br)
          "CPU Shares: "     (:cpu_shares conf)(d/br)
          "CPU Cap: "        (-> (:cpu_cap conf) fmt-percent)(d/br)
          "Owner: "          (:name owner)(d/br)
@@ -240,7 +240,7 @@
            (g/col {:xs 2}
                   (b/button {:bs-style "primary"
                              :wrapper-classname "col-xs-2"
-                             :on-click (fn [] (pr (:uuid data) (val-by-id "snapshot-comment"))
+                             :on-click (fn []
                                          (if (not (empty? (val-by-id "snapshot-comment")))
                                            (vms/snapshot (:uuid data) (val-by-id "snapshot-comment"))))} "Create")))))
         (snapshot-table (:uuid data) (:snapshots data)))))))
@@ -298,33 +298,8 @@
   (stop-timer!)
   (reset! timer (js/setInterval #(vms/metrics uuid) 1000)))
 
-(defn render [data owner opts]
-  (reify
-    om/IDisplayName
-    (display-name [_]
-      "vmview")
-    om/IWillMount
-    (will-mount [_]
-      ;TODO: Make sure to re-enable this!
-      #_(start-timer! (get-in data [root :selected])))
-    om/IWillUnmount
-    (will-unmount [_]
-      (stop-timer!))
-    om/IRenderState
-    (render-state [_ _]
-      (let [uuid (get-in data [root :selected])
-            element (get-in data [root :elements uuid])
-            section (get-in data [root :section])
-            key (get-in sections [section :key] 1)]
-        (d/div
-         {}
-         (apply n/nav {:bs-style "tabs" :active-key key}
-                (map
-                 (fn [[section data]]
-                   (n/nav-item {:key (:key data)
-                                :href (str "#/vms/" uuid (if (empty? section) "" (str "/" section)))}
-                               (:title data)))
-                 (sort-by (fn [[section data]] (:key data)) (seq sections))))
-         (if-let [f (get-in sections [section :fn] )]
-           (f data element)
-           (goto (str "#/vms/" uuid))))))))
+(def render (view/make root sections
+                       (fn [uuid]
+                         ;;TODO: Make sure to re-enable this!
+                         #_(start-timer! (get-in data [root :selected]))
+                         (vms/get uuid))))

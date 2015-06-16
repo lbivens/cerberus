@@ -12,8 +12,9 @@
    [jingles.utils :refer [goto grid-row display]]
    [jingles.http :as http]
    [jingles.api :as api]
-   [jingles.networks.api :as networks]
-   [jingles.networks.api :refer [root]]
+   [jingles.networks.api :refer [root] :as networks]
+   [jingles.networks.api]
+   [jingles.view :as view]
    [jingles.services :as services]
    [jingles.metadata :as metadata]
    [jingles.state :refer [set-state!]]
@@ -27,37 +28,5 @@
 (def sections {""          {:key  1 :fn render-home      :title "General"}
                "metadata"  {:key  2 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
-(defn render [data owner opts]
-  (reify
-    om/IDisplayName
-    (display-name [_]
-      "networkdetailc")
-    om/IWillMount
-    (will-mount [_]
-      (networks/get (get-in data [root :selected]))
-      )
-    om/IInitState
-    (init-state [_]
-      {:edit-alias false}
-      )
-    om/IRenderState
-    (render-state [_ state]
-      (let [uuid (get-in data [root :selected])
-            element (get-in data [root :elements uuid])
-            section (get-in data [root :section])
-            key (get-in sections [section :key] 1)]
-        (pr section)
-        (d/div
-         {}
-         (apply n/nav {:bs-style "tabs" :active-key key}
-                (map
-                 (fn [[section data]]
-                   (n/nav-item {:key (:key data)
-                                :href (str "#/networks/" uuid (if (empty? section) "" (str "/" section)))}
-                               (:title data)))
-                 (sort-by (fn [[section data]] (:key data)) (seq sections))))
-         (if-let [f (get-in sections [section :fn] )]
-           (do
-             (pr element)
-             (f data element))
-           (goto (str "/networks/" uuid))))))))
+(def render (view/make root sections networks/get))
+

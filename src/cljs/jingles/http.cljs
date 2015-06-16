@@ -6,7 +6,7 @@
             [jingles.utils :refer [path-vec]]
             [jingles.state :refer [app-state set-state!]]))
 
-(enable-console-print!)
+(enable-console-print!)mk
 
 (defn mk-url [url]
   (clojure.string/join "/" (map #(if (keyword? %) (name %) (str %)) url)))

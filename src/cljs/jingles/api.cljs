@@ -52,13 +52,15 @@
 
 (defn post
   ([root path data callback]
-    (go
-      (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))]
-        (if (:success resp)
-          (callback (:body resp))))))
+   (go
+     (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))]
+       (callback resp))))
   ([root path data]
-   (post root path data #(let [uuid (:uuid %)]
-                           (set-state! [root :elements uuid] %)))))
+   (post root path data (fn [resp]
+                          (if (:success resp)
+                            (let [body (:body resp)
+                                  uuid (:uuid body)]
+                              (set-state! [root :elements uuid] body)))))))
 
 (defn put
   ([root path data]
@@ -107,11 +109,15 @@
     (request-and-get http/put root uuid (concat [:metadata] path) (hash-map key value))))
 
 
-(defn delete [root uuid]
-  (go
-    (let [req (<! (http/delete [root uuid]))]
-      (if (:success req)
-        (delete-state! [root :elements uuid])))))
+(defn delete
+  ([root [uuid & rest :as path]]
+   (delete root path
+           #(if (:success %)
+              (delete-state! [root :elements uuid]))))
+  ([root path callback]
+   (go
+     (let [resp (<! (http/delete (concat [root] path)))]
+       (callback resp)))))
 
 (defn delete-metadata [root uuid path]
   (request-and-get http/delete root uuid (concat [:metadata] path)))

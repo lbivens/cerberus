@@ -5,7 +5,7 @@
    [jingles.api :as api]
    [jingles.http :as http]
    [jingles.utils :refer [initial-state make-event]]
-   [jingles.state :refer [set-state! update-state! app-state]]))
+   [jingles.state :refer [set-state! update-state! app-state delete-state!]]))
 
 (def root :vms)
 
@@ -22,7 +22,7 @@
                 (http/get [root uuid :metrics])))
 
 (defn delete [uuid]
-  (api/delete root uuid))
+  (api/delete root [uuid]))
 
 (defn start [uuid]
   (api/put root [uuid :state] {:action :start}))
@@ -43,8 +43,17 @@
 (defn snapshot [uuid comment]
   (api/post root [uuid :snapshots]
             {:comment comment}
-            (fn [snapshot]
-              (update-state! [root :elements uuid :snapshots] assoc (:uuid snapshot) snapshot))))
+            (fn [resp]
+              (if (:success resp)
+                (let [snapshot (:body resp)]
+                  (update-state! [root :elements uuid :snapshots] assoc (:uuid snapshot) snapshot))))))
+
+(defn delete-snapshot [uuid snapshot]
+  (api/delete root [uuid :snapshots snapshot]
+              (fn [resp]
+                (if (:success resp)
+                  (delete-state! [root :elements vm :snapshots uuid])))))
+
 
 (defn change-package [uuid package]
   (api/put root [uuid :package] {:package package}))

@@ -4,6 +4,7 @@
    [om.core :as om :include-macros true]
    [om-bootstrap.random :as r]
    [jingles.list :as jlist]
+   [jingles.networks.view :as view]
    [jingles.networks.api :refer [root] :as networks]
    [jingles.utils :refer [initial-state]]
    [jingles.state :refer [set-state!]]
@@ -15,14 +16,6 @@
 (def config (mk-config root "Networks" actions))
 
 (set-state! [root :fields] (initial-state config))
-
-(defn show-view [app]
-  (let [uuid (get-in app [root :selected])
-        element (get-in app [root :elements uuid])]
-    (r/well
-     {}
-     (pr-str element))))
-
 
 (defn render [data owner opts]
   (reify
@@ -39,4 +32,4 @@
     (render-state [_ _]
       (condp = (:view data)
         :list (om/build jlist/view data {:opts {:config config}})
-        :show (show-view data)))))
+        :show (om/build view/render data {})))))

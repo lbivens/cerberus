@@ -18,17 +18,8 @@
 
 (set-state! [root :fields] (initial-state config))
 
-(defn show-view [app]
-  (let [uuid (get-in app [root :selected])
-        element (get-in app [root :elements uuid])]
-    (r/well
-     {}
-     (pr-str element))))
-
-(set-state! [root :fields] (initial-state config))
-
 (defn render [data owner opts]
-  (reify 
+  (reify
     om/IDisplayName
     (display-name [_]
       "hypervisorlistc")

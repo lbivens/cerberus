@@ -14,8 +14,8 @@
    [jingles.api :as api]
    [jingles.roles.api :as roles]
    [jingles.roles.api :refer [root]]
-   [jingles.services :as services]
    [jingles.metadata :as metadata]
+   [jingles.permissions :as permissions]
    [jingles.state :refer [set-state!]]
    [jingles.fields :refer [fmt-bytes fmt-percent]]))
 
@@ -24,8 +24,9 @@
 (defn render-home [app element]
   (pr-str element))
 
-(def sections {""          {:key  1 :fn render-home      :title "General"}
-               "metadata"  {:key  2 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+(def sections {""             {:key  1 :fn render-home                       :title "General"}
+               "permsissions" {:key  2 :fn #(om/build permissions/render %2) :title "Permissions"}
+               "metadata"     {:key  3 :fn #(om/build metadata/render %2)    :title "Metadata"}})
 
 (defn render [data owner opts]
   (reify

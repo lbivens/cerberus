@@ -12,6 +12,7 @@
    [jingles.utils :refer [goto grid-row val-by-id]]
    [jingles.http :as http]
    [jingles.api :as api]
+   [jingles.services :as services]
    [jingles.vms.api :as vms]
    [jingles.vms.api :refer [root]]
    [jingles.packages.api :as packages]
@@ -61,47 +62,7 @@
          (count (filter (fn [[_ state]] (= state "online")) services)) "/"
          (count (filter (fn [[_ state]] (= state "disabled")) services)))))))
 
-(defn render-services [data owner opts]
-  (reify
-    om/IRenderState
-    (render-state [_ _]
-      (let [services (:services data)
-            uuid (:uuid data)
-            sa (fn [s a] (vms/service-action uuid s a))]
-        (r/well
-         {}
-         (table
-          {:striped? true :bordered? true :condensed? true :hover? true :responsive? true}
-          (d/thead
-           {:striped? false}
-           (d/tr
-            {}
-            (d/td {} "Service")
-            (d/td {} "State")
-            (d/td {:class "actions"} "")))
-          (d/tbody
-           {}
-           (map
-            (fn [[srv state]]
-              (let [s= #(= state %)
-                    s!= #(not= state %)
-                    srv (clojure.string/replace (str srv) #"^:" "")
-                    sa (fn [a] (vms/service-action uuid srv a))]
-                (d/tr
-                 (d/td srv)
-                 (d/td state)
-                 (d/td
-                  {:class "actions no-carret"}
-                  (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
-                               :on-click (make-event identity)}
-                              (menu-items
-                               ["Enable"   {:class (if (s!= "disabled")     "disabled")} #(sa :enable)]
-                               ["Disable"  {:class (if (s=  "disabled")     "disabled")} #(sa :disable)]
-                               ["Restart"  {:class (if (s!= "online")       "disabled")} #(sa :restart)]
-                               ["Refresh"  {:class (if (s!= "online")       "disabled")} #(sa :refresh)]
-                               ["Clear"    {:class (if (s!= "maintainance") "disabled")} #(sa :clear)]
-                               ))))))
-            services))))))))
+
 
 
 (defn render-logs [data owner opts]
@@ -325,7 +286,7 @@
                "package"   {:key  3 :fn render-package   :title "Package"}
                "snapshots" {:key  4 :fn #(om/build render-snapshots %2) :title "Snapshot"}
                "backups"   {:key  5 :fn #(om/build render-backups %2)   :title "Backups"}
-               "services"  {:key  6 :fn #(om/build render-services %2)  :title "Services"}
+               "services"  {:key  6 :fn #(om/build services/render %2   {:opts {:action vms/service-action}})  :title "Services"}
                "logs"      {:key  7 :fn #(om/build render-logs %2)      :title "Logs"}
                "fw-rules"  {:key  8 :fn #(om/build render-fw-rules %2)  :title "Firewall"}
                "metrics"   {:key  9 :fn #(om/build render-metrics %2)   :title "Metrics"}

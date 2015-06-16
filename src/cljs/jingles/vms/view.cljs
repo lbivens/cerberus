@@ -13,6 +13,7 @@
    [jingles.http :as http]
    [jingles.api :as api]
    [jingles.services :as services]
+   [jingles.metadata :as metadata]
    [jingles.vms.api :as vms]
    [jingles.vms.api :refer [root]]
    [jingles.packages.api :as packages]
@@ -290,7 +291,7 @@
                "logs"      {:key  7 :fn #(om/build render-logs %2)      :title "Logs"}
                "fw-rules"  {:key  8 :fn #(om/build render-fw-rules %2)  :title "Firewall"}
                "metrics"   {:key  9 :fn #(om/build render-metrics %2)   :title "Metrics"}
-               "metadata"  {:key 10 :fn #(om/build render-metadata %2)  :title "Metadata"}})
+               "metadata"  {:key 10 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 ;; This is really ugly but something is crazy about the reify for OM here
 ;; this for will moutnt and will unmoutn are not the same and having timer in
 ;; let does not work either so lets "MAKE ALL THE THINGS GLOBAL!"

@@ -9,6 +9,19 @@
    [jingles.utils :refer [grid-row]]
    [jingles.utils :refer [make-event menu-items]]))
 
+
+(defn highlight [part]
+  (pr part)
+  
+  (condp = part
+    "_" (d/b "_")
+    "..." (d/b "...")
+    part))
+
+(defn perm [p]
+  (pr "PERMS " (map highlight p) #_(interleave (map highlight p) (repeat "->")))
+  (apply d/li (butlast  (interleave (map highlight p) (repeat "->")))))
+
 (defn render [data owner opts]
   (reify
     om/IDisplayName
@@ -18,5 +31,5 @@
     (render-state [_ _]
       (r/well
        {}
-       "Permissions:"
-       (pr-str (:permissions data))))))
+       (d/ul
+        (map perm (:permissions data)))))))

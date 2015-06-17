@@ -52,7 +52,15 @@
 (defroute "/datasets/:uuid" {:as params}
   (datasets/get (:uuid params))
   (set-state! [:datasets :selected] (:uuid params))
+  (set-state! [:datasets :section] "")
   (set-view! :datasets :show))
+
+(defroute "/datasets/:uuid/:section" {:as params}
+  (let [uuid (:uuid params)]
+    (datasets/get uuid)
+    (set-state! [:datasets :selected] uuid)
+    (set-state! [:datasets :section] (:section params))
+    (set-view! :datasets :show)))
 
 (defroute "/hypervisors" {:as params}
   (set-view! :hypervisors :list))
@@ -75,6 +83,13 @@
 (defroute "/packages/:uuid" {:as params}
   (packages/get (:uuid params))
   (set-state! [:packages :selected] (:uuid params))
+  (set-state! [:packages :section] "")
+  (set-view! :packages :show))
+
+(defroute "/packages/:uuid/:section" {:as params}
+  (packages/get (:uuid params))
+  (set-state! [:packages :selected] (:uuid params))
+  (set-state! [:packages :section] (:section params))
   (set-view! :packages :show))
 
 (defroute "/networks" {:as params}
@@ -83,6 +98,13 @@
 (defroute "/networks/:uuid" {:as params}
   (networks/get (:uuid params))
   (set-state! [:networks :selected] (:uuid params))
+  (set-state! [:networks :section] "")
+  (set-view! :networks :show))
+
+(defroute "/networks/:uuid/:section" {:as params}
+  (networks/get (:uuid params))
+  (set-state! [:networks :selected] (:uuid params))
+  (set-state! [:networks :section] (:section params))
   (set-view! :networks :show))
 
 (defroute "/ipranges" {:as params}
@@ -91,6 +113,13 @@
 (defroute "/ipranges/:uuid" {:as params}
   (ipranges/get (:uuid params))
   (set-state! [:ipranges :selected] (:uuid params))
+  (set-state! [:ipranges :section] "")
+  (set-view! :ipranges :show))
+
+(defroute "/ipranges/:uuid/:section" {:as params}
+  (ipranges/get (:uuid params))
+  (set-state! [:ipranges :selected] (:uuid params))
+  (set-state! [:ipranges :section] (:section params))
   (set-view! :ipranges :show))
 
 (defroute "/dtrace" {:as params}
@@ -99,6 +128,13 @@
 (defroute "/dtrace/:uuid" {:as params}
   (dtrace/get (:uuid params))
   (set-state! [:dtrace :selected] (:uuid params))
+  (set-state! [:dtrace :section] "")
+  (set-view! :dtrace :show))
+
+(defroute "/dtrace/:uuid/:section" {:as params}
+  (dtrace/get (:uuid params))
+  (set-state! [:dtrace :selected] (:uuid params))
+  (set-state! [:dtrace :section] (:section params))
   (set-view! :dtrace :show))
 
 (defroute "/users" {:as params}
@@ -122,6 +158,13 @@
 (defroute "/roles/:uuid" {:as params}
   (roles/get (:uuid params))
   (set-state! [:roles :selected] (:uuid params))
+  (set-state! [:roles :section] "")
+  (set-view! :roles :show))
+
+(defroute "/roles/:uuid/:section" {:as params}
+  (roles/get (:uuid params))
+  (set-state! [:roles :selected] (:uuid params))
+  (set-state! [:roles :section] (:section params))
   (set-view! :roles :show))
 
 (defroute "/orgs" {:as params}
@@ -130,6 +173,13 @@
 (defroute "/orgs/:uuid" {:as params}
   (orgs/get (:uuid params))
   (set-state! [:orgs :selected] (:uuid params))
+  (set-state! [:orgs :section] "")
+  (set-view! :orgs :show))
+
+(defroute "/orgs/:uuid/:section" {:as params}
+  (orgs/get (:uuid params))
+  (set-state! [:orgs :selected] (:uuid params))
+  (set-state! [:orgs :section] (:section params))
   (set-view! :orgs :show))
 
 (defroute "/clients" {:as params}
@@ -138,6 +188,13 @@
 (defroute "/clients/:uuid" {:as params}
   (clients/get (:uuid params))
   (set-state! [:clients :selected] (:uuid params))
+  (set-state! [:clients :section] "")
+  (set-view! :clients :show))
+
+(defroute "/clients/:uuid/:section" {:as params}
+  (clients/get (:uuid params))
+  (set-state! [:clients :selected] (:uuid params))
+  (set-state! [:clients :section] (:section params))
   (set-view! :clients :show))
 
 (let [h (History.)]

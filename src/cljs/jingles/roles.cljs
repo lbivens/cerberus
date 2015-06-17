@@ -6,6 +6,8 @@
    [jingles.roles.api :refer [root] :as roles]
    [jingles.utils :refer [initial-state]]
    [jingles.list :as jlist]
+   [jingles.roles.view :as view]
+
    [jingles.state :refer [set-state!]]
    [jingles.fields :refer [mk-config]]))
 
@@ -15,13 +17,6 @@
 (def config (mk-config root "Roles" actions))
 
 (set-state! [root :fields] (initial-state config))
-
-(defn show-view [app]
-  (let [uuid (get-in app [root :selected])
-        element (get-in app [root :elements uuid])]
-    (r/well
-     {}
-     (pr-str element))))
 
 (defn render [data owner opts]
   (reify
@@ -38,4 +33,4 @@
     (render-state [_ _]
       (condp = (:view data)
         :list (om/build jlist/view data {:opts {:config config}})
-        :show (show-view data)))))
+        :show (om/build view/render data {})))))

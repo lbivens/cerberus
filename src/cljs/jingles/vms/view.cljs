@@ -12,8 +12,10 @@
    [jingles.utils :refer [goto grid-row val-by-id]]
    [jingles.http :as http]
    [jingles.api :as api]
-   [jingles.vms.api :as vms]
-   [jingles.vms.api :refer [root]]
+   [jingles.services :as services]
+   [jingles.metadata :as metadata]
+   [jingles.vms.api :refer [root] :as vms]
+   [jingles.view :as view]
    [jingles.packages.api :as packages]
    [jingles.state :refer [set-state!]]
    [jingles.utils :refer [make-event menu-items]]
@@ -47,7 +49,7 @@
          "Resolvers: "      (clojure.string/join ", " (:resolvers conf))(d/br)
          "DNS Domain: "     (:dns_domain conf)(d/br)
          "Quota: "          (->> (:quota conf) (fmt-bytes :gb))(d/br)
-         "I/O Priority: "   (:zfs_io_priority conf)(d/br)
+         "I/O Priority: "   (:zfs_io_pryesiority conf)(d/br)
          "CPU Shares: "     (:cpu_shares conf)(d/br)
          "CPU Cap: "        (-> (:cpu_cap conf) fmt-percent)(d/br)
          "Owner: "          (:name owner)(d/br)
@@ -61,29 +63,8 @@
          (count (filter (fn [[_ state]] (= state "online")) services)) "/"
          (count (filter (fn [[_ state]] (= state "disabled")) services)))))))
 
-(defn render-services [data owner opts]
-  (reify
-    om/IRenderState
-    (render-state [_ _]
-      (let [services (:services data)]
-        (r/well
-         {}
-         (table
-          {:striped? true :bordered? true :condensed? true :hover? true :responsive? true}
-          (d/thead
-           {:striped? false}
-           (d/tr
-            {}
-            (d/td {} "Service")
-            (d/td {} "State")))
-          (d/tbody
-           {}
-           (map
-            (fn [[srv state]]
-              (d/tr
-               (d/td (clojure.string/replace (str srv) #"^:" ""))
-               (d/td state)))
-            services))))))))
+
+
 
 (defn render-logs [data owner opts]
   (reify
@@ -216,8 +197,8 @@
          (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
                       :on-click (make-event identity)}
                      (menu-items
-                      ["Roll Back" #(pr "rollback" vm)]
-                      ["Delete" #(vms/delete-snapshot vm uuid)])))))
+                      ["Roll Back" #(vms/restore-snapshot vm uuid)]
+                      ["Delete"    #(vms/delete-snapshot vm uuid)])))))
 
 (defn snapshot-table [vm snapshots]
   (g/col
@@ -259,7 +240,7 @@
            (g/col {:xs 2}
                   (b/button {:bs-style "primary"
                              :wrapper-classname "col-xs-2"
-                             :on-click (fn [] (pr (:uuid data) (val-by-id "snapshot-comment"))
+                             :on-click (fn []
                                          (if (not (empty? (val-by-id "snapshot-comment")))
                                            (vms/snapshot (:uuid data) (val-by-id "snapshot-comment"))))} "Create")))))
         (snapshot-table (:uuid data) (:snapshots data)))))))
@@ -280,14 +261,6 @@
        {}
        (pr-str (:fw_rules data))))))
 
-(defn render-metadata [data owner opts]
-  (reify
-    om/IRenderState
-    (render-state [_ _]
-      (r/well
-       {}
-       (pr-str (:metadata data))))))
-
 (defn nice-metrics [metrics]
   (reduce #(assoc %1 (:n %2) (:v %2)) metrics))
 
@@ -300,17 +273,16 @@
        (pr-str (nice-metrics (:metrics data)))))))
 
 
-
 (def sections {""          {:key  1 :fn #(om/build render-home %2)      :title "General"}
                "networks"  {:key  2 :fn #(om/build render-networks %2)  :title "Networks"}
                "package"   {:key  3 :fn render-package   :title "Package"}
                "snapshots" {:key  4 :fn #(om/build render-snapshots %2) :title "Snapshot"}
                "backups"   {:key  5 :fn #(om/build render-backups %2)   :title "Backups"}
-               "services"  {:key  6 :fn #(om/build render-services %2)  :title "Services"}
+               "services"  {:key  6 :fn #(om/build services/render %2   {:opts {:action vms/service-action}})  :title "Services"}
                "logs"      {:key  7 :fn #(om/build render-logs %2)      :title "Logs"}
                "fw-rules"  {:key  8 :fn #(om/build render-fw-rules %2)  :title "Firewall"}
                "metrics"   {:key  9 :fn #(om/build render-metrics %2)   :title "Metrics"}
-               "metadata"  {:key 10 :fn #(om/build render-metadata %2)  :title "Metadata"}})
+               "metadata"  {:key 10 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 ;; This is really ugly but something is crazy about the reify for OM here
 ;; this for will moutnt and will unmoutn are not the same and having timer in
 ;; let does not work either so lets "MAKE ALL THE THINGS GLOBAL!"
@@ -326,32 +298,8 @@
   (stop-timer!)
   (reset! timer (js/setInterval #(vms/metrics uuid) 1000)))
 
-(defn render [data owner opts]
-  (reify
-    om/IDisplayName
-    (display-name [_]
-      "vmview")
-    om/IWillMount
-    (will-mount [_]
-      (start-timer! (get-in data [root :selected])))
-    om/IWillUnmount
-    (will-unmount [_]
-      (stop-timer!))
-    om/IRenderState
-    (render-state [_ _]
-      (let [uuid (get-in data [root :selected])
-            element (get-in data [root :elements uuid])
-            section (get-in data [root :section])
-            key (get-in sections [section :key] 1)]
-        (d/div
-         {}
-         (apply n/nav {:bs-style "tabs" :active-key key}
-                (map
-                 (fn [[section data]]
-                   (n/nav-item {:key (:key data)
-                                :href (str "#/vms/" uuid (if (empty? section) "" (str "/" section)))}
-                               (:title data)))
-                 (sort-by (fn [[section data]] (:key data)) (seq sections))))
-         (if-let [f (get-in sections [section :fn] )]
-           (f data element)
-           (goto (str "#/vms/" uuid))))))))
+(def render (view/make root sections
+                       (fn [uuid]
+                         ;;TODO: Make sure to re-enable this!
+                         #_(start-timer! (get-in data [root :selected]))
+                         (vms/get uuid))))

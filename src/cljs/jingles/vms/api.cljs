@@ -52,7 +52,15 @@
   (api/delete root [uuid :snapshots snapshot]
               (fn [resp]
                 (if (:success resp)
-                  (delete-state! [root :elements vm :snapshots uuid])))))
+                  (delete-state! [root :elements uuid :snapshots uuid])))))
+
+(defn restore-snapshot [uuid snapshot]
+  (api/put root [uuid :snapshots snapshot] {:action "rollback"}
+           #(get uuid) []))
+
+(defn service-action [uuid service action]
+  (api/put root [uuid :services] {:service service :action action}
+           #(get uuid) []))
 
 
 (defn change-package [uuid package]

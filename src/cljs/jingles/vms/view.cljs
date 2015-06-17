@@ -139,6 +139,7 @@
 
 (defn render-package [app element]
   (let [current-package (:package element)
+        vm (:uuid element)
         packages (get-in app [:packages :elements])
         package (get-in packages [current-package])
         cmp-pkg (get-in app [:tmp :pkg] {})
@@ -163,7 +164,7 @@
         (d/thead
          {}
          (map d/td
-              ["Name" "CPU" "Memory" "Quota"]))
+              ["Name" "CPU" "Memory" "Quota" ""]))
 
         (apply d/tbody
                {}
@@ -174,15 +175,19 @@
                                  (> %2 v) (r/glyphicon {:glyph "chevron-up"})
                                  (< %2 v) (r/glyphicon {:glyph "chevron-down"})
                                  :else ""))
-                        td (fn [v f] (d/td (f (pkg v)) (cmp v (pkg v))))]
+                        td (fn [v f] (d/td (f (pkg v)) (cmp v (pkg v))))
+                        current (= uuid current-package)]
                     (d/tr
-                     {:class (if (= uuid current-package) "current" "")
+                     {:class (if current "current" "")
                       :on-mouse-over (fn [e] (set-state! [:tmp :pkg] pkg))
                       :on-mouse-leave (fn [e] (set-state! [:tmp :pkg] {}))}
                      (d/td name)
                      (td :cpu_cap fmt-percent)
                      (td :ram     #(fmt-bytes :mb %))
-                     (td :quota   #(fmt-bytes :gb %)))))
+                     (td :quota   #(fmt-bytes :gb %))
+                     (d/td (if (not current)
+                             (r/glyphicon {:glyph "transfer"
+                                           :on-click #(vms/change-package vm uuid)}))))))
                 packages))))))))
 
 (defn snapshot-row  [vm [uuid {comment :comment timestamp :timestamp

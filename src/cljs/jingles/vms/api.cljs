@@ -64,6 +64,7 @@
 
 
 (defn change-package [uuid package]
-  (api/put root [uuid :package] {:package package}))
+  (api/put root [uuid :package] {:package package}
+           #(get uuid) []))
 
 (def update-metadata (partial api/update-metadata root))

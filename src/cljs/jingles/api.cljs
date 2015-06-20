@@ -110,10 +110,9 @@
 
 
 (defn delete
-  ([root [uuid & rest :as path]]
-   (delete root path
-           #(if (:success %)
-              (delete-state! [root :elements uuid]))))
+  ([root path]
+   (go
+     (let [resp (<! (http/delete (concat [root] path)))])))
   ([root path callback]
    (go
      (let [resp (<! (http/delete (concat [root] path)))]

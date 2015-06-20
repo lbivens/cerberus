@@ -22,3 +22,11 @@
 (defn changepass [uuid newpass]
   (api/put root [uuid] {:password newpass})
   (println "PASSWORD SET. TODO Alert"))
+
+(defn grant [uuid perm]
+  (api/put root (concat [uuid :permissions] perm) {}
+           #(get uuid) []))
+
+(defn revoke [uuid perm]
+  (api/delete root (concat [uuid :permissions] perm)
+           #(get uuid)))

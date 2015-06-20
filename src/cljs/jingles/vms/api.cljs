@@ -62,7 +62,6 @@
   (api/put root [uuid :services] {:service service :action action}
            #(get uuid) []))
 
-
 (defn change-package [uuid package]
   (api/put root [uuid :package] {:package package}
            #(get uuid) []))

@@ -17,3 +17,11 @@
 (def get (partial api/get root))
 
 (def delete (partial api/delete root))
+
+(defn grant [uuid perm]
+  (api/put root (concat [uuid :permissions] perm) nil
+           #(get uuid) []))
+
+(defn revoke [uuid perm]
+  (api/delete root (concat [uuid :permissions] perm)
+           #(get uuid)))

@@ -102,7 +102,10 @@
 )
 
 (def sections {""          {:key  1 :fn render-password  :title "Authentication"}
-               "perms"     {:key  2 :fn #(om/build permissions/render (get-in %1 [root :elements (get-in %1 [root :selected])]))     :title "Permissions"}
+               "perms"     {:key  2
+                            :fn #(om/build permissions/render (get-in %1 [root :elements (get-in %1 [root :selected])])
+                                           {:opts {:grant users/grant :revoke users/revoke}})
+                            :title "Permissions"}
                "roles"     {:key  3 :fn render-roles     :title "Roles"}
                "orgs"      {:key  4 :fn render-orgs      :title "Orgs"}
                "metadata"  {:key  6 :fn #(om/build metadata/render (get-in %1 [root :elements (get-in %1 [root :selected])]))  :title "Metadata"}})

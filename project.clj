@@ -24,7 +24,7 @@
                  [org.omcljs/om "0.8.8"]
                  [com.lucasbradstreet/instaparse-cljs "1.3.5"]
                  ;;[cljsjs/react-with-addons "0.12.2-4"]
-                 [racehub/om-bootstrap "0.5.0"]
+                 [racehub/om-bootstrap "0.5.1"]
                  [secretary "1.2.2"]
                  [cljs-http "0.1.27"]]
 

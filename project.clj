@@ -11,8 +11,8 @@
 
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [ring "1.3.2"]
-                 [ring/ring-defaults "0.1.4"]
-                 [compojure "1.3.2"]
+                 [ring/ring-defaults "0.1.5"]
+                 [compojure "1.3.4"]
                  [enlive "1.1.5"]
                  [tailrecursion/ring-proxy "2.0.0-SNAPSHOT"]
                  [environ "1.0.0"]
@@ -22,11 +22,11 @@
                  ;; ClojureScript related dependencies
                  [org.clojure/clojurescript "0.0-3148"]
                  [org.omcljs/om "0.8.8"]
-                 [com.lucasbradstreet/instaparse-cljs "1.3.5"]
+                 [com.lucasbradstreet/instaparse-cljs "1.3.5.1"]
                  ;;[cljsjs/react-with-addons "0.12.2-4"]
                  [racehub/om-bootstrap "0.5.1"]
-                 [secretary "1.2.2"]
-                 [cljs-http "0.1.27"]]
+                 [secretary "1.2.3"]
+                 [cljs-http "0.1.35"]]
 
   :plugins [[lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]

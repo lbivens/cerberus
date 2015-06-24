@@ -2,10 +2,11 @@
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+   [clojure.string :refer [join]]
    [jingles.api :as api]
    [jingles.http :as http]
    [jingles.utils :refer [initial-state make-event]]
-   [jingles.state :refer [set-state!]]))
+   [jingles.state :refer [set-state! delete-state!]]))
 
 (def root :users)
 
@@ -22,3 +23,12 @@
 (defn changepass [uuid newpass]
   (api/put root [uuid] {:password newpass})
   (println "PASSWORD SET. TODO Alert"))
+
+(defn addkey [uuid keyname keydata]
+  (api/put root [uuid :keys] {keyname keydata} api/get [root uuid])
+  (println "SSH KEY ADDED. TODO Alert"))
+
+(defn deletekey [uuid keyname]
+  (api/delete root (concat [uuid :keys keyname])
+              #(get uuid)))
+

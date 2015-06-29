@@ -166,7 +166,7 @@
 )
 
 
-(def sections {""          {:key  1 :fn render-password  :title "Authentication"}
+(def sections {""          {:key  1 :fn #(om/build render-auth %2)  :title "Authentication"}
                "perms"     {:key  2
                             :fn #(om/build permissions/render (get-in %1 [root :elements (get-in %1 [root :selected])])
                                            {:opts {:grant users/grant :revoke users/revoke}})

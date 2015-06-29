@@ -44,11 +44,12 @@
     (let [req-body {:grant_type "password"
                     :username (val-by-id "login")
                     :password (val-by-id "password")}
-          response (<! (httpc/post login-path {:form-params req-body}))]
+          response (<! (httpc/post login-path {:form-params req-body
+                                               :accept "application/json"}))]
       (if (= 200 (:status response))
-        (let [e (js->clj (. js/JSON (parse (:body response))))
-              token (e "access_token")
-              expires-in (e "expires_in")]
+        (let [e (:body response)
+              token (e :access_token)
+              expires-in (e :expires_in)]
           (conf/login token expires-in))))))
 
 (defn login [app]

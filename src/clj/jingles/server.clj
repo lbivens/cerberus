@@ -13,12 +13,13 @@
             [cconf.core :as cconf]))
 
 
-(def settings (-> (cconf/argv)                  ;; Load command-line arguments    (highest priority)
-                  (cconf/env)                   ;; Load environment variables
-                  (cconf/file "config.json")    ;; Load options from config.json
-                  (cconf/defaults {:port 8888
-                                   :wiggle "http://127.0.0.1:8080/api"
-                                   :howl   "http://127.0.0.1:8081/howl"})))
+(def settings
+  (->
+   (cconf/argv)                  ;; Load command-line arguments    (highest priority)
+   (cconf/env)                   ;; Load environment variables
+   (cconf/file "config.json")    ;; Load options from config.json
+   (cconf/defaults {:port 8888
+                    :proxy "http://127.0.0.1:8080/api"})))
 
 (deftemplate page (io/resource "index.html") []
   [:body] (if is-dev? inject-devmode-html identity))
@@ -33,8 +34,7 @@
     (if is-dev?
       (reload/wrap-reload (wrap-defaults #'routes api-defaults))
       (wrap-defaults routes api-defaults))
-    (wrap-proxy "/api" (settings :wiggle))
-    (wrap-proxy "/howl" (settings :howl))))
+    (wrap-proxy "/api" (settings :proxy))))
 
 (defn run-web-server []
   (let [port (settings :port)]

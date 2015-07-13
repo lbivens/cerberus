@@ -23,6 +23,13 @@
         valid (not (empty? datasets))]
     (assoc add :data datasets :valid valid)))
 
+
+(defn type-name [type]
+  (condp = type
+    "lx-dataset" "lx"
+    "zone-dataset" "zone"
+    "zvol" "kvm"
+    type))
 (defn render [data]
   (reify
         om/IDisplayName
@@ -52,5 +59,5 @@
              (d/tr
               {:on-click #(om/transact! data (partial toggle-dataset uuid))
                :class  (if (installed? uuid) "installed" (if (picked? uuid) "selected" "not-selected"))}
-              (d/td (:name e))
+              (d/td (:name e) " (" (type-name (:type e)) ")")
               (d/td (:version e)))) datasets)))))))

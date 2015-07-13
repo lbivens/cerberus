@@ -6,6 +6,7 @@
             [figwheel-sidecar.auto-builder :as fig-auto]
             [figwheel-sidecar.core :as fig]
             [clojurescript-build.auto :as auto]
+            [clojure.java.shell :refer [sh]]
             [leiningen.core.main :as lein]))
 
 (def is-dev? (env :is-dev))
@@ -14,7 +15,6 @@
   (comp
      (set-attr :class "is-dev")
      (prepend (html [:script {:type "text/javascript" :src "/js/out/goog/base.js"}]))
-     ;(prepend (html [:script {:type "text/javascript" :src "/react/react.js"}]))
      (append  (html [:script {:type "text/javascript"} "goog.require('jingles.main')"]))))
 
 (defn browser-repl []

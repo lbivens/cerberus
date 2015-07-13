@@ -4,7 +4,6 @@
    [cljs.core.match.macros :refer [match]])
   (:require
    [om.core :as om :include-macros true]
-   [goog.net.cookies :as cks]
    [cljs-http.client :as httpc]
    [cljs.core.match]
    [om-tools.dom :as d :include-macros true]

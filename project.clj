@@ -30,7 +30,7 @@
 
   :plugins [[lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]
-            [lein-less "1.7.2"]]
+            [lein-less "1.7.3"]]
 
   :min-lein-version "2.5.1"
 

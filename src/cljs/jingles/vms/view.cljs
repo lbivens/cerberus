@@ -280,13 +280,67 @@
                                            (vms/snapshot (:uuid data) (val-by-id "snapshot-comment"))))} "Create")))))
         (snapshot-table (:uuid data) (:snapshots data)))))))
 
+(defn backup-row  [vm [uuid {comment :comment timestamp :timestamp
+                               state :state size :size}]]
+  (d/tr
+   (d/td (name uuid))
+   (d/td comment)
+   (d/td (str (js/Date. (/ timestamp 1000))))
+   (d/td state)
+   (d/td (fmt-bytes :b size))
+   (d/td {:class "actions no-carret"}
+         (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                      :on-click (make-event identity)}
+                     (menu-items
+                      ["Incremental" #(vms/backup vm uuid (val-by-id "backup-comment"))]
+                      ["Roll Back" #(vms/restore-backup vm uuid)]
+
+                      ["Delete"    #(vms/delete-backup vm uuid)])))))
+
+(defn backup-table [vm backups]
+  (g/col
+   {:md 11}
+   (table
+    {:id "backup-table"}
+    (d/thead
+     {}
+     (d/td "UUID")
+     (d/td "Comment")
+     (d/td "Timestamp")
+     (d/td "State")
+     (d/td "Size")
+     (d/td {:class "actions"}))
+    (apply d/tbody
+           {}
+           (map
+            (partial backup-row vm)
+            (sort-by (fn [[_ {t :timestamp}]] t) backups))))))
+
 (defn render-backups [data owner opts]
   (reify
     om/IRenderState
     (render-state [_ _]
       (r/well
        {}
-       (pr-str (:backups data))))))
+       (grid-row
+        (g/col
+         {:md 12}
+         (i/input
+          {:label "New Backup"}
+          (grid-row
+           (g/col
+            {:xs 10}
+            (i/input {:type :text
+                      :placeholder "Backup Comment"
+                      :id "backup-comment"}))
+           (g/col {:xs 2}
+                  (b/button {:bs-style "primary"
+                             :wrapper-classname "col-xs-2"
+                             :on-click (fn []
+                                         (if (not (empty? (val-by-id "backup-comment")))
+                                           (vms/backup (:uuid data) (val-by-id "backup-comment"))))} "Create")))))
+        (backup-table (:uuid data) (:backups data)))))))
+
 
 (defn render-fw-rules [data owner opts]
   (reify

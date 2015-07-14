@@ -58,6 +58,31 @@
   (api/put root [uuid :snapshots snapshot] {:action "rollback"}
            #(get uuid) []))
 
+(defn _backup [uuid opts]
+  (api/post root [uuid :backups]
+             opts
+             (fn [resp]
+               (if (:success resp)
+                 (let [backup (:body resp)]
+                   (update-state! [root :elements uuid :backups] assoc (:uuid backup) backup))))))
+
+(defn backup
+
+  ([uuid comment]
+   (_backup uuid {:comment comment}))
+  ([uuid parent comment]
+   (_backup uuid {:comment comment :parent parent})))
+
+(defn delete-backup [uuid backup]
+  (api/delete root [uuid :backups backup]
+              (fn [resp]
+                (if (:success resp)
+                  (delete-state! [root :elements uuid :backups backup])))))
+
+(defn restore-backup [uuid backup]
+  (api/put root [uuid :backups backup] {:action "rollback"}
+           #(get uuid) []))
+
 (defn service-action [uuid service action]
   (api/put root [uuid :services] {:service service :action action}
            #(get uuid) []))

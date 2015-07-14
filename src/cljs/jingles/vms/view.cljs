@@ -99,12 +99,20 @@
     ip        :ip
     netmask   :netmask
     gateway   :gateway
-    mac       :mac}]
+    mac       :mac
+    primary   :primary}]
   (g/col
    {:md 4}
    (p/panel
     {:header
      [interface
+      (if (not primary)
+        (b/button
+         {:bs-style "warning"
+          :class "pull-right"
+          :bs-size "xsmall"
+          :on-click
+          #(vms/make-network-primary uuid mac)} "!"))
       (b/button
        {:bs-style "primary"
         :class "pull-right"

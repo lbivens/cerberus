@@ -71,9 +71,9 @@
             #(get uuid)))
 
 (defn delete-network [uuid mac]
-  (api/delete root [uuid :nics mac]
-              (fn [resp]
-                (if (:success resp)
-                  (delete-state! [root :elements uuid :networks mac])))))
+  (api/delete root [uuid :nics mac] #(get uuid)))
+
+(defn make-network-primary [uuid mac]
+  (api/put root [uuid :nics mac] {:primary true} #(get uuid) []))
 
 (def update-metadata (partial api/update-metadata root))

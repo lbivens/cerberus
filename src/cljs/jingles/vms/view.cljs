@@ -93,7 +93,8 @@
   (d/li {:class "list-group-item"} args))
 
 (defn render-network
-  [{interface :interface
+  [uuid
+   {interface :interface
     tag       :nic_tag
     ip        :ip
     netmask   :netmask
@@ -102,7 +103,14 @@
   (g/col
    {:md 4}
    (p/panel
-    {:header interface
+    {:header
+     [interface
+      (b/button
+       {:bs-style "primary"
+        :class "pull-right"
+        :bs-size "xsmall"
+        :on-click
+        #(vms/delete-network uuid mac)} "X")]
      :list-group
      (d/ul {:class "list-group"}
            (group-li "Tag: "     tag)
@@ -111,13 +119,13 @@
            (group-li "Gateway: " gateway)
            (group-li "MAC: "     mac))})))
 
+
 (defn render-networks [app owner {uuid :uuid}]
   (reify
     om/IRenderState
     (render-state [_ _]
       (let [data (get-in app [root :elements uuid])
             nets (vals (get-in app [:networks :elements]))]
-        (pr "networks: " nets)
         (let [networks (get-in data [:config :networks])
               rows (partition 4 4 nil networks)]
           (r/well
@@ -133,9 +141,10 @@
              {:xs 2}
              (b/button {:bs-style "primary"
                         :on-click #(vms/add-network uuid (val-by-id "net-add"))} "Add")))
-           (g/grid
-            nil
-            (map #(g/row nil (map render-network %)) rows))))))))
+           (let [render-network (partial render-network uuid)]
+             (g/grid
+              nil
+              (map #(g/row nil (map render-network %)) rows)))))))))
 
 (defn cmp-vals [package cmp-package val]
   (if-let [cmp-vap (cmp-package val)]

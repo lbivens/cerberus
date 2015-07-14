@@ -52,7 +52,7 @@
   (api/delete root [uuid :snapshots snapshot]
               (fn [resp]
                 (if (:success resp)
-                  (delete-state! [root :elements uuid :snapshots uuid])))))
+                  (delete-state! [root :elements uuid :snapshots snapshot])))))
 
 (defn restore-snapshot [uuid snapshot]
   (api/put root [uuid :snapshots snapshot] {:action "rollback"}
@@ -66,9 +66,14 @@
   (api/put root [uuid :package] {:package package}
            #(get uuid) []))
 
-
 (defn add-network [uuid network]
   (api/post root [uuid :nics] {:network network}
             #(get uuid)))
+
+(defn delete-network [uuid mac]
+  (api/delete root [uuid :nics mac]
+              (fn [resp]
+                (if (:success resp)
+                  (delete-state! [root :elements uuid :networks mac])))))
 
 (def update-metadata (partial api/update-metadata root))

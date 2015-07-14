@@ -50,7 +50,12 @@
        data
        {:type :input :label "Name" :id "ipr-name" :key :name}
        {:type :input :label "NIC Tag" :id "ipr-tag" :key :tag}
-       {:type :input :label "VLAN" :id "ipr-vlan" :key :vlan :data-type :integer :validator #(<= 0 %2 4096)}
+       {:type :input :label "VLAN" :id "ipr-vlan" :key :vlan :data-type :integer
+        :validator #(and
+                     (or
+                      (nil? %2)
+                      (not (js/isNaN  %2)))
+                     (<= 0 %2 4096))}
 
        {:type :input :label "Subnet IP" :id "ipr-network" :key :network :validator valid-ip}
        {:type :input :label "Netmask" :id "ipr-netmask" :key :netmask :validator valid-ip}

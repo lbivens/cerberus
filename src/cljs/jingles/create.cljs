@@ -14,22 +14,21 @@
     :integer #(integer? %2)))
 
 (defn mk-validator [{validator :validator data-type :data-type
-                          optional :optional
-                          :or {data-type :string}}]
+                     optional :optional
+                     :or {data-type :string}}]
   (let [validator (or validator (default-validator data-type))]
     #(or (and optional (empty? %2)) (validator %1 %2))))
 
-
 (defn to-dt [data-type val]
   (condp = data-type
-    :integer (str->int val)
+    :integer (if (empty? val)
+               nil
+               (str->int val))
     val))
 
 (defn from-dt [data-type val]
   (condp = data-type
     val))
-
-
 
 (defn validate-data [data spec]
   (let [results (map
@@ -39,6 +38,7 @@
                          path (concat [:data] path)
                          val (get-in data path)
                          validator (mk-validator field)]
+                     (pr data val)
                      (validator data val))) spec)]
 
     (every? identity results)))
@@ -49,8 +49,8 @@
     (om/transact! data [:valid] (constantly result))))
 
 (defn input [data spec {id :id key :key validator :validator label :label type :type data-type :data-type
-                   unit :unit options :options optional :optional
-                   :or {data-type :string type :input} :as field}]
+                        unit :unit options :options optional :optional
+                        :or {data-type :string type :input} :as field}]
   (let [data-path (concat [:data] (if (vector? key) key [key]))
         view-path (concat [:view] (if (vector? key) key [key]))
         validator (mk-validator field)
@@ -59,10 +59,10 @@
         set-fn #(let [v (val-by-id id)
                       dv (to-dt data-type v)
                       data' (assoc-in
-                                   (if key
-                                     (assoc-in data data-path dv)
-                                     data)
-                                   view-path v)]
+                             (if key
+                               (assoc-in data data-path dv)
+                               data)
+                             view-path v)]
                   (pr data-path dv view-path v data)
                   (om/transact! data view-path (constantly v))
                   (if key
@@ -74,7 +74,7 @@
               :id id
               :addon-after unit
               :has-feedback? true
-              :bs-style (if (validator data-val) "success" "error")
+              :bs-style (if (validator data data-val) "success" "error")
               :on-change set-fn
               :on-blur set-fn
               :value (from-dt data-type val)}
@@ -85,7 +85,6 @@
                   (if (and options optional)
                     (concat [["None" nil]] options)
                     options)))))
-
 
 (defn render [data & spec]
   (d/form {:class "form-horizontal"}

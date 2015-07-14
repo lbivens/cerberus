@@ -66,4 +66,9 @@
   (api/put root [uuid :package] {:package package}
            #(get uuid) []))
 
+
+(defn add-network [uuid network]
+  (api/post root [uuid :nics] {:network network}
+            #(get uuid)))
+
 (def update-metadata (partial api/update-metadata root))

@@ -15,6 +15,7 @@
    [jingles.services :as services]
    [jingles.metadata :as metadata]
    [jingles.vms.api :refer [root] :as vms]
+   [jingles.networks.api :as networks]
    [jingles.view :as view]
    [jingles.packages.api :as packages]
    [jingles.state :refer [set-state!]]
@@ -63,9 +64,6 @@
          (count (filter (fn [[_ state]] (= state "online")) services)) "/"
          (count (filter (fn [[_ state]] (= state "disabled")) services)))))))
 
-
-
-
 (defn render-logs [data owner opts]
   (reify
     om/IRenderState
@@ -94,12 +92,13 @@
 (defn group-li [& args]
   (d/li {:class "list-group-item"} args))
 
-(defn render-network [{interface :interface
-                       tag       :nic_tag
-                       ip        :ip
-                       netmask   :netmask
-                       gateway   :gateway
-                       mac       :mac}]
+(defn render-network
+  [{interface :interface
+    tag       :nic_tag
+    ip        :ip
+    netmask   :netmask
+    gateway   :gateway
+    mac       :mac}]
   (g/col
    {:md 4}
    (p/panel
@@ -112,17 +111,31 @@
            (group-li "Gateway: " gateway)
            (group-li "MAC: "     mac))})))
 
-(defn render-networks [data owner opts]
+(defn render-networks [app owner {uuid :uuid}]
   (reify
     om/IRenderState
     (render-state [_ _]
-      (let [networks (get-in data [:config :networks])
-            rows (partition 4 4 nil networks)]
-        (r/well
-         nil
-         (g/grid
-          nil
-          (map #(g/row nil (map render-network %)) rows)))))))
+      (let [data (get-in app [root :elements uuid])
+            nets (vals (get-in app [:networks :elements]))]
+        (pr "networks: " nets)
+        (let [networks (get-in data [:config :networks])
+              rows (partition 4 4 nil networks)]
+          (r/well
+           {}
+           (grid-row
+            (g/col
+             {:xs 4}
+             (i/input
+              {:type "select" :include-empty true :id "net-add"}
+              (d/option)
+              (map #(d/option {:value (:uuid %)} (:name %)) nets)))
+            (g/col
+             {:xs 2}
+             (b/button {:bs-style "primary"
+                        :on-click #(vms/add-network uuid (val-by-id "net-add"))} "Add")))
+           (g/grid
+            nil
+            (map #(g/row nil (map render-network %)) rows))))))))
 
 (defn cmp-vals [package cmp-package val]
   (if-let [cmp-vap (cmp-package val)]
@@ -277,17 +290,22 @@
        {}
        (pr-str (nice-metrics (:metrics data)))))))
 
+(defn b [f]
+  #(om/build f %2))
 
-(def sections {""          {:key  1 :fn #(om/build render-home %2)      :title "General"}
-               "networks"  {:key  2 :fn #(om/build render-networks %2)  :title "Networks"}
-               "package"   {:key  3 :fn render-package   :title "Package"}
-               "snapshots" {:key  4 :fn #(om/build render-snapshots %2) :title "Snapshot"}
-               "backups"   {:key  5 :fn #(om/build render-backups %2)   :title "Backups"}
-               "services"  {:key  6 :fn #(om/build services/render %2   {:opts {:action vms/service-action}})  :title "Services"}
-               "logs"      {:key  7 :fn #(om/build render-logs %2)      :title "Logs"}
-               "fw-rules"  {:key  8 :fn #(om/build render-fw-rules %2)  :title "Firewall"}
-               "metrics"   {:key  9 :fn #(om/build render-metrics %2)   :title "Metrics"}
-               "metadata"  {:key 10 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+(def sections
+  {""          {:key  1 :fn (b render-home)      :title "General"}
+   "networks"  {:key  2 :fn #(om/build
+                              render-networks %1
+                              {:opts {:uuid (:uuid %2)}})  :title "Networks"}
+   "package"   {:key  3 :fn render-package   :title "Package"}
+   "snapshots" {:key  4 :fn (b render-snapshots) :title "Snapshot"}
+   "backups"   {:key  5 :fn (b render-backups)   :title "Backups"}
+   "services"  {:key  6 :fn #(om/build services/render %2   {:opts {:action vms/service-action}})  :title "Services"}
+   "logs"      {:key  7 :fn (b render-logs)      :title "Logs"}
+   "fw-rules"  {:key  8 :fn (b render-fw-rules)  :title "Firewall"}
+   "metrics"   {:key  9 :fn (b render-metrics)   :title "Metrics"}
+   "metadata"  {:key 10 :fn (b metadata/render)  :title "Metadata"}})
 ;; This is really ugly but something is crazy about the reify for OM here
 ;; this for will moutnt and will unmoutn are not the same and having timer in
 ;; let does not work either so lets "MAKE ALL THE THINGS GLOBAL!"
@@ -303,8 +321,11 @@
   (stop-timer!)
   (reset! timer (js/setInterval #(vms/metrics uuid) 1000)))
 
-(def render (view/make root sections
-                       (fn [uuid]
-                         ;;TODO: Make sure to re-enable this!
-                         #_(start-timer! (get-in data [root :selected]))
-                         (vms/get uuid))))
+(def render
+  (view/make
+   root sections
+   (fn [data uuid]
+     ;;TODO: Make sure to re-enable this!
+     #_(start-timer! (get-in data [root :selected]))
+     (networks/list data)
+     (vms/get uuid))))

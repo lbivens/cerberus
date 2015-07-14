@@ -7,11 +7,6 @@
    [jingles.utils :refer [goto grid-row display]]
    [jingles.fields :refer [fmt-bytes fmt-percent]]))
 
-
-
-
-
-
 (defn make [root sections get & [init-state]]
   (fn render [data owner opts]
     (reify
@@ -20,7 +15,7 @@
         (str (name root) "detailc"))
       om/IWillMount
       (will-mount [_]
-        (get (get-in data [root :selected])))
+        (get data (get-in data [root :selected])))
       om/IInitState
       (init-state [_] init-state)
       om/IRenderState

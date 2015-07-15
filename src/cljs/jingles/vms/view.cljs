@@ -414,103 +414,125 @@
   (reify
     om/IInitState
     (init-state [_]
-      {:i-action "block"
-       :i-proto "tcp"
-       :i-target "all"})
+      {:action "block"
+       :direction "inbound"
+       :protocol "tcp"
+       :all-ports false
+       :target "all"})
     om/IRenderState
     (render-state [_ state]
       (r/well
        {}
+       (grid-row
+        (let [lc "col-xs-2 col-lg-1 call-md-1 col-sm-1"]
+          (d/form
+           {:class "form-horizontal"}
+           (i/input
+            {:type "select" :label "direction"
+             :id "direction"
+             :value (:direction state)
+             :class "input-sm"
+             :label-classname lc
+             :wrapper-classname "col-xs-10"
+             :on-change #(o-state! owner :direction)}
+            (d/option {:value "inbound"} "Inbound")
+            (d/option {:value "outbound"} "Outbound"))
+           (i/input
+            {:type "select" :label "protocol"
+             :id "protocol"
+             :class "input-sm"
+             :value (:protocol state)
+             :label-classname lc :wrapper-classname "col-xs-10"
+             :on-change #(do
+                           (om/set-state! owner :icmp-type "0")
+                           (o-state! owner :protocol))}
+            (d/option {:value "tcp"} "TCP")
+            (d/option {:value "udp"} "UDP")
+            (d/option {:value "icmp"} "ICMP"))
+           (i/input
+            {:type "select"
+             :label (if (=(:direction state) "inbound")
+                      "source" "destination")
+             :id "target" :value (:target state)
+             :class "input-sm"
+             :label-classname lc :wrapper-classname "col-xs-10"
+             :on-change #(do
+                           (om/set-state! owner :mask "24")
+                           (o-state! owner :target))}
+            (d/option {:value "all"} "all")
+            (d/option {:value "ip"} "IP")
+            (d/option {:value "subnet"} "Subnet"))
+           (if (= (:target state) "ip")
+             (i/input {:type "text" :label "source-ip" :class "input-sm"
+                       :label-classname lc :wrapper-classname "col-xs-10"
+                       }))
+           (if (= (:target state) "subnet")
+             [(i/input {:type "text" :label "source-subnet" :class "input-sm"
+                        :label-classname lc :wrapper-classname "col-xs-10"
+                        })
+              (i/input {:type "select" :label "source-mask" :value (:mask state)
+                        :label-classname lc :wrapper-classname "col-xs-10"
+                        :class "input-sm"
+                        :on-change #(o-state! owner :mask)}
+                       (map #(d/option {:value %} %) (range 1 33)))])
+           (if (or
+                (= (:protocol state) "tcp")
+                (= (:protocol state) "udp"))
+             [(i/input {:type "checkbox" :label "All Ports"
+                        :id "all-ports"
+                        :checked (:all-ports state)
+                        :wrapper-classname "col-xs-offset-2 col-xs-10 col-lg-offset-1 col-md-offset-1 col-xl-offset-1"
+                        :on-change #(om/set-state! owner :all-ports (.-checked (.-target %)))})
+              (if (not (:all-ports state))
+                (i/input {:type "text" :label "ports" :class "input-sm"
+                          :label-classname lc :wrapper-classname "col-xs-10"}))])
+           (if (= (:protocol state) "icmp")
+             [(i/input {:type "select" :label "type" :id "icmp-type"
+                        :value (:icmp-type state)
+                        :class "input-sm"
+                        :label-classname lc :wrapper-classname "col-xs-10"
+                        :on-change #(do
+                                      (o-state! owner :icmp-type)
+                                      (om/set-state! owner :icmp-code "0"))}
+                       (map
+                        (fn [[id obj]]
+                          (d/option {:value id} (:name obj) " (" id ")"))
+                        (sort-by #(str->int (first %)) icmp)))
+              (if-let [codes (get-in icmp [(:icmp-type state) :codes])]
+                (let [sorted-codes (sort-by #(str->int (first %)) codes)
+                      opts (doall
+                            (map
+                             (fn [[id name]]
+                               (pr id name)
+                               (d/option
+                                {:id (str "code-"
+                                          (:icmp-type state)
+                                          "-" id) :value id}
+                                name " (" id ")"))
+                             sorted-codes))]
+                  (pr opts)
+                  (i/input
+                   {:type "select" :label "code" :id "icmp-code"
+                    :class "input-sm"
+                    :on-change #(o-state! owner :icmp-code)
+                    :label-classname lc :wrapper-classname "col-xs-10"
+                    :value (:icmp-code state)} opts)))])
+           (i/input
+            {:type "select" :label "action" :id "action" :value (:action state)
+             :class "input-sm"
+             :label-classname lc
+             :wrapper-classname "col-xs-10"
+             :on-change #(o-state! owner :action)}
+            (d/option {:value ""} "")
+            (d/option {:value "allow"} "allow")
+            (d/option {:value "block"} "block")))))
        (grid-row
         (pr "state: " state)
         (g/col
          {:xs 5}
          (p/panel
           {:header "inbound"}
-          (d/form
-           {:class "form-horizontal"}
-          
-           (i/input
-            {:type "select" :label "protocol"
-             :id "i-proto"
-             :class "input-sm"
-             :value (:i-proto state)
-             :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
-             :on-change #(do
-                           (om/set-state! owner :i-icmp-type "0")
-                           (o-state! owner :i-proto))}
-            (d/option {:value "tcp"} "TCP")
-            (d/option {:value "udp"} "UDP")
-            (d/option {:value "icmp"} "ICMP"))
-           (i/input
-            {:type "select" :label "source" :id "i-target" :value (:i-target state)
-             :class "input-sm"
-             :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
-             :on-change #(do
-                           (om/set-state! owner :i-mask "24")
-                           (o-state! owner :i-target))}
-            (d/option {:value "all"} "all")
-            (d/option {:value "ip"} "IP")
-            (d/option {:value "subnet"} "Subnet"))
-           (if (= (:i-target state) "ip")
-             (i/input {:type "text" :label "source-ip" :class "input-sm"
-                       :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
-}))
-           (if (= (:i-target state) "subnet")
-             [(i/input {:type "text" :label "source-subnet" :class "input-sm"
-                        :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
-})
-              (i/input {:type "select" :label "source-mask" :value (:i-mask state)
-                        :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
-                        :class "input-sm"
-                        :on-change #(o-state! owner :i-mask)}
-                       (map #(d/option {:value %} %) (range 1 33)))])
-           (if (or
-                (= (:i-proto state) "tcp")
-                (= (:i-proto state) "udp"))
-             [(i/input {:type "checkbox" :label "All Ports"
-                        :id "i-all-ports"
-                        :checked (:i-all-ports state)
-                        :wrapper-classname "col-xs-offset-2 col-xs-10"
-                        :on-change #(om/set-state! owner :i-all-ports (.-checked (.-target %)))})
-              (if (not (:i-all-ports state))
-                (i/input {:type "text" :label "ports" :class "input-sm"
-                          :label-classname "col-xs-2" :wrapper-classname "col-xs-10"}))])
-           (if (= (:i-proto state) "icmp")
-             [(i/input {:type "select" :label "type" :id "i-icmp-type"
-                        :value (:i-icmp-type state)
-                        :class "input-sm"
-                        :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
-                        :on-change #(do
-                                      (o-state! owner :i-icmp-type)
-                                      (om/set-state! owner :i-icmp-code "0"))}
-                       (map
-                        (fn [[id obj]]
-                          (d/option {:value id} (:name obj) " (" id ")"))
-                        (sort-by #(str->int (first %)) icmp)))
-              (if-let [codes (get-in icmp [(:i-icmp-type state) :codes])]
-                (let [codes (sort-by #(str->int (first %)) codes)
-                      opts (map
-                            (fn [[id name]]
-                              (pr id name)
-                              (d/option {:value id} name " (" id ")"))
-                            codes)]
-                  (pr opts)
-                  (i/input
-                   {:type "select" :label "code" :id "i-icmp-code"
-                    :class "input-sm"
-                    :on-change #(o-state! owner :i-icmp-code)
-                    :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
-                    :value (:i-icmp-code state)} opts)))])
-           (i/input
-            {:type "select" :label "action" :id "i-action" :value (:i-action state)
-             :class "input-sm"
-             :label-classname "col-xs-2"
-             :wrapper-classname "col-xs-10"
-             :on-change #(o-state! owner :i-action)}
-            (d/option {:value ""} "")
-            (d/option {:value "allow"} "allow")
-            (d/option {:value "block"} "block")))))
+          ))
         (g/col
          {:xs 5}
          (p/panel

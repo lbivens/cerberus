@@ -9,7 +9,7 @@
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
    [om-bootstrap.button :as b]
-   [jingles.utils :refer [goto grid-row val-by-id]]
+   [jingles.utils :refer [goto grid-row val-by-id str->int]]
    [jingles.http :as http]
    [jingles.api :as api]
    [jingles.services :as services]
@@ -281,7 +281,7 @@
         (snapshot-table (:uuid data) (:snapshots data)))))))
 
 (defn backup-row  [vm [uuid {comment :comment timestamp :timestamp
-                               state :state size :size}]]
+                             state :state size :size}]]
   (d/tr
    (d/td (name uuid))
    (d/td comment)
@@ -342,12 +342,179 @@
         (backup-table (:uuid data) (:backups data)))))))
 
 
+(defn fw-panel [direction data]
+  (g/col
+   {:xs 5}
+   (p/panel
+    {:header direction}
+    (i/input {:type "select"}))))
+
+(defn o-state! [owner id]
+  (om/set-state! owner id (val-by-id (name id))))
+
+
+(def icmp
+  {"0"  {:name "Echo Reply" :codes {"0" "No Code"}}
+   "3"  {:name "Destination Unreachable"
+         :codes {"0"  "Net Unreachable"
+                 "1"  "Host Unreachable"
+                 "2"  "Protocol Unreachable"
+                 "3"  "Port Unreachable"
+                 "4"  "Fragmentation Needed and Don't Fragment was Set"
+                 "5"  "Source Route Failed"
+                 "6"  "Destination Network Unknown"
+                 "7"  "Destination Host Unknown"
+                 "8"  "Source Host Isolated"
+                 "9"  "Communication with Destination Network is Administratively Prohibited"
+                 "10" "Communication with Destination Host is Administratively Prohibited"
+                 "11" "Destination Network Unreachable for Type of Service"
+                 "12" "Destination Host Unreachable for Type of Service"
+                 "13" "Communication Administratively Prohibited"
+                 "14" "Host Precedence Violation"
+                 "15" "Precedence cutoff in effect"}}
+   "4"  {:name "Source Quench" :codes {"0" "No Code"}}
+   "5"  {:name "Redirect"
+         :codes {"0" "Redirect Datagram for the Network (or subnet)"
+                 "1" "Redirect Datagram for the Host"
+                 "2" "Redirect Datagram for the Type of Service and Network"
+                 "3" "Redirect Datagram for the Type of Service and Host"}}
+   "6"  {:name "Alternate Host Address" :codes {0 "Alternate Address for Host"}}
+   "8"  {:name "Echo" :codes {"0" "No Code"}}
+   "9"  {:name "Router Advertisement" :codes {"0" "No Code"}}
+   "10" {:name "Router Selection" :codes {"0" "No Code"}}
+   "11" {:name "Time Exceeded"
+         :codes {"0" "Time to Live exceeded in Transit"
+                 "1" "Fragment Reassembly Time Exceeded"}}
+   "12" {:name "Parameter Problem"
+         :codes {"0" "Pointer indicates the error"
+                 "1" "Missing a Required Option"
+                 "2" "Bad Length"}}
+   "13" {:name "Timestamp" :codes {"0" "No Code"}}
+   "14" {:name "Timestamp Reply" :codes {"0" "No Code"}}
+   "15" {:name "Information Request" :codes {"0" "No Code"}}
+   "16" {:name "Information Reply" :codes {"0" "No Code"}}
+   "17" {:name "Address Mask Request" :codes {"0" "No Code"}}
+   "18" {:name "Address Mask Reply" :codes {"0" "No Code"}}
+   "30" {:name "Traceroute" :codes {"0" "No Code"}}
+   "31" {:name "Datagram Conversion Error" :codes {"0" "No Code"}}
+   "32" {:name "Mobile Host Redirect" :codes {"0" "No Code"}}
+   "33" {:name "IPv6 Where-Are-You" :codes {"0" "No Code"}}
+   "34" {:name "IPv6 I-Am-Here" :codes {"0" "No Code"}}
+   "35" {:name "Mobile Registration Request" :codes {"0" "No Code"}}
+   "36" {:name "Mobile Registration Reply" :codes {"0" "No Code"}}
+   "39" {:name "SKIP" :codes {"0" "No Code"}}
+   "40" {:name "Photuris"
+         :codes {"0" "Reserved"
+                 "1" "unknown security parameters index"
+                 "2" "valid security parameters, but authentication failed"
+                 "3" "valid security parameters, but decryption failed"}}})
+
+
 (defn render-fw-rules [data owner opts]
   (reify
+    om/IInitState
+    (init-state [_]
+      {:i-action "block"
+       :i-proto "tcp"
+       :i-target "all"})
     om/IRenderState
-    (render-state [_ _]
+    (render-state [_ state]
       (r/well
        {}
+       (grid-row
+        (pr "state: " state)
+        (g/col
+         {:xs 5}
+         (p/panel
+          {:header "inbound"}
+          (d/form
+           {:class "form-horizontal"}
+          
+           (i/input
+            {:type "select" :label "protocol"
+             :id "i-proto"
+             :class "input-sm"
+             :value (:i-proto state)
+             :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
+             :on-change #(do
+                           (om/set-state! owner :i-icmp-type "0")
+                           (o-state! owner :i-proto))}
+            (d/option {:value "tcp"} "TCP")
+            (d/option {:value "udp"} "UDP")
+            (d/option {:value "icmp"} "ICMP"))
+           (i/input
+            {:type "select" :label "source" :id "i-target" :value (:i-target state)
+             :class "input-sm"
+             :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
+             :on-change #(do
+                           (om/set-state! owner :i-mask "24")
+                           (o-state! owner :i-target))}
+            (d/option {:value "all"} "all")
+            (d/option {:value "ip"} "IP")
+            (d/option {:value "subnet"} "Subnet"))
+           (if (= (:i-target state) "ip")
+             (i/input {:type "text" :label "source-ip" :class "input-sm"
+                       :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
+}))
+           (if (= (:i-target state) "subnet")
+             [(i/input {:type "text" :label "source-subnet" :class "input-sm"
+                        :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
+})
+              (i/input {:type "select" :label "source-mask" :value (:i-mask state)
+                        :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
+                        :class "input-sm"
+                        :on-change #(o-state! owner :i-mask)}
+                       (map #(d/option {:value %} %) (range 1 33)))])
+           (if (or
+                (= (:i-proto state) "tcp")
+                (= (:i-proto state) "udp"))
+             [(i/input {:type "checkbox" :label "All Ports"
+                        :id "i-all-ports"
+                        :checked (:i-all-ports state)
+                        :wrapper-classname "col-xs-offset-2 col-xs-10"
+                        :on-change #(om/set-state! owner :i-all-ports (.-checked (.-target %)))})
+              (if (not (:i-all-ports state))
+                (i/input {:type "text" :label "ports" :class "input-sm"
+                          :label-classname "col-xs-2" :wrapper-classname "col-xs-10"}))])
+           (if (= (:i-proto state) "icmp")
+             [(i/input {:type "select" :label "type" :id "i-icmp-type"
+                        :value (:i-icmp-type state)
+                        :class "input-sm"
+                        :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
+                        :on-change #(do
+                                      (o-state! owner :i-icmp-type)
+                                      (om/set-state! owner :i-icmp-code "0"))}
+                       (map
+                        (fn [[id obj]]
+                          (d/option {:value id} (:name obj) " (" id ")"))
+                        (sort-by #(str->int (first %)) icmp)))
+              (if-let [codes (get-in icmp [(:i-icmp-type state) :codes])]
+                (let [codes (sort-by #(str->int (first %)) codes)
+                      opts (map
+                            (fn [[id name]]
+                              (pr id name)
+                              (d/option {:value id} name " (" id ")"))
+                            codes)]
+                  (pr opts)
+                  (i/input
+                   {:type "select" :label "code" :id "i-icmp-code"
+                    :class "input-sm"
+                    :on-change #(o-state! owner :i-icmp-code)
+                    :label-classname "col-xs-2" :wrapper-classname "col-xs-10"
+                    :value (:i-icmp-code state)} opts)))])
+           (i/input
+            {:type "select" :label "action" :id "i-action" :value (:i-action state)
+             :class "input-sm"
+             :label-classname "col-xs-2"
+             :wrapper-classname "col-xs-10"
+             :on-change #(o-state! owner :i-action)}
+            (d/option {:value ""} "")
+            (d/option {:value "allow"} "allow")
+            (d/option {:value "block"} "block")))))
+        (g/col
+         {:xs 5}
+         (p/panel
+          {:header "outbound"})))
        (pr-str (:fw_rules data))))))
 
 (defn nice-metrics [metrics]

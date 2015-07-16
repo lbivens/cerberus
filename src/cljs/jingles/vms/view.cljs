@@ -9,7 +9,7 @@
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
    [om-bootstrap.button :as b]
-   [jingles.utils :refer [goto grid-row val-by-id str->int]]
+   [jingles.utils :refer [goto grid-row row val-by-id str->int]]
    [jingles.http :as http]
    [jingles.api :as api]
    [jingles.services :as services]
@@ -138,7 +138,7 @@
               rows (partition 4 4 nil networks)]
           (r/well
            {}
-           (grid-row
+           (row
             (g/col
              {:xs 4}
              (i/input
@@ -177,7 +177,7 @@
     (packages/list app)
     (r/well
      {}
-     (grid-row
+     (row
       (g/col
        {:md 4}
        (p/panel
@@ -260,12 +260,12 @@
     (render-state [_ _]
       (r/well
        {}
-       (grid-row
+       (row
         (g/col
          {:md 12}
          (i/input
           {:label "New Snapshot"}
-          (grid-row
+          (row
            (g/col
             {:xs 10}
             (i/input {:type :text
@@ -322,12 +322,12 @@
     (render-state [_ _]
       (r/well
        {}
-       (grid-row
+       (row
         (g/col
          {:md 12}
          (i/input
           {:label "New Backup"}
-          (grid-row
+          (row
            (g/col
             {:xs 10}
             (i/input {:type :text
@@ -410,6 +410,101 @@
                  "3" "valid security parameters, but decryption failed"}}})
 
 
+
+(defn icmp-codes [type]
+  (if-let [codes (get-in icmp [type :codes])]
+    (map
+     (fn [[id name]]
+       (pr id name)
+       (d/option
+        {:value id}
+        name " (" id ")"))
+     (sort-by #(str->int (first %)) codes))))
+
+(def lc "col-xs-2  col-lg-1 col-md-1 col-sm-1")
+
+(def wc "col-xs-10 col-lg-5 col-sm-5 col-md-5")
+
+(defn select [id label owner state config & body]
+  (let [merged-config (merge {:type "select" :id (name id) :label label
+                              :value (id state) :class "input-sm"
+                              :label-classname lc :wrapper-classname wc} config)
+        final-config (if-let [change-fn (:on-change config)]
+                       (assoc merged-config
+                              :on-change #(do
+                                            (o-state! owner id)
+                                            (change-fn %)))
+                       (assoc merged-config
+                              :on-change #(o-state! owner id)))]
+    (i/input final-config body)))
+
+(defn direction-select [owner state]
+  (select :direction "Direction" owner state {}
+          (d/option {:value "inbound"} "Inbound")
+          (d/option {:value "outbound"} "Outbound")))
+
+(defn protocol-select [owner state]
+  (select :protocol "Protocol" owner state
+          {:on-change #(om/set-state! owner :icmp-type "0")}
+          (d/option {:value "tcp"} "TCP")
+          (d/option {:value "udp"} "UDP")
+          (d/option {:value "icmp"} "ICMP")))
+
+(defn target-select [owner state]
+  (select :target
+          (if (= (:direction state) "inbound")
+            "Source" "Destination")
+          owner state
+          {:on-change #(om/set-state! owner :mask "24")}
+          (d/option {:value "all"} "all")
+          (d/option {:value "ip"} "IP")
+          (d/option {:value "subnet"} "Subnet")))
+
+(defn target-data [owner state]
+  (condp = (:target state)
+    "ip" (i/input {:type "text" :label "source-ip" :class "input-sm"
+                   :label-classname lc :wrapper-classname wc})
+    "subnet" [(i/input {:type "text" :label "Subnet" :class "input-sm"
+                        :label-classname lc :wrapper-classname wc})
+              (select :mask "Mask" owner state {}
+                      (map #(d/option {:value %} %) (range 1 33)))]
+    []))
+
+(defn port-data [owner state]
+  (if (or
+       (= (:protocol state) "tcp")
+       (= (:protocol state) "udp"))
+    [(i/input {:type "checkbox" :label "All Ports"
+               :id "all-ports"
+               :checked (:all-ports state)
+               :wrapper-classname (str "col-xs-offset-2 col-sm-offset-1 "
+                                       "col-md-offset-1 col-lg-offset-1 "
+                                       "col-xl-offset-1 " wc)
+               :on-change #(om/set-state! owner :all-ports (.-checked (.-target %)))})
+     (if (not (:all-ports state))
+       (i/input {:type "text" :label "ports" :class "input-sm"
+                 :label-classname lc :wrapper-classname wc}))]))
+
+(defn icmp-type-select [owner state]
+  (if (= (:protocol state) "icmp")
+    (select :icmp-type "Type" owner state
+            {:on-change #(om/set-state! owner :icmp-code "0")}
+            (map
+             (fn [[id obj]]
+               (d/option {:value id} (:name obj) " (" id ")"))
+             (sort-by #(str->int (first %)) icmp)))))
+
+(defn icmp-code-select [owner state]
+  (if  (= (:protocol state) "icmp")
+    (if-let [codes (icmp-codes (:icmp-type state))]
+      (select :icmp-code "Code" owner state {} codes))))
+
+(defn action-select [owner state]
+  (select :action "Action" owner state {}
+          (d/option {:value ""} "")
+          (d/option {:value "allow"} "allow")
+          (d/option {:value "block"} "block")))
+
 (defn render-fw-rules [data owner opts]
   (reify
     om/IInitState
@@ -423,118 +518,26 @@
     (render-state [_ state]
       (r/well
        {}
-       (grid-row
-        (let [lc "col-xs-2 col-lg-1 call-md-1 col-sm-1"]
-          (d/form
-           {:class "form-horizontal"}
-           (i/input
-            {:type "select" :label "direction"
-             :id "direction"
-             :value (:direction state)
-             :class "input-sm"
-             :label-classname lc
-             :wrapper-classname "col-xs-10"
-             :on-change #(o-state! owner :direction)}
-            (d/option {:value "inbound"} "Inbound")
-            (d/option {:value "outbound"} "Outbound"))
-           (i/input
-            {:type "select" :label "protocol"
-             :id "protocol"
-             :class "input-sm"
-             :value (:protocol state)
-             :label-classname lc :wrapper-classname "col-xs-10"
-             :on-change #(do
-                           (om/set-state! owner :icmp-type "0")
-                           (o-state! owner :protocol))}
-            (d/option {:value "tcp"} "TCP")
-            (d/option {:value "udp"} "UDP")
-            (d/option {:value "icmp"} "ICMP"))
-           (i/input
-            {:type "select"
-             :label (if (=(:direction state) "inbound")
-                      "source" "destination")
-             :id "target" :value (:target state)
-             :class "input-sm"
-             :label-classname lc :wrapper-classname "col-xs-10"
-             :on-change #(do
-                           (om/set-state! owner :mask "24")
-                           (o-state! owner :target))}
-            (d/option {:value "all"} "all")
-            (d/option {:value "ip"} "IP")
-            (d/option {:value "subnet"} "Subnet"))
-           (if (= (:target state) "ip")
-             (i/input {:type "text" :label "source-ip" :class "input-sm"
-                       :label-classname lc :wrapper-classname "col-xs-10"
-                       }))
-           (if (= (:target state) "subnet")
-             [(i/input {:type "text" :label "source-subnet" :class "input-sm"
-                        :label-classname lc :wrapper-classname "col-xs-10"
-                        })
-              (i/input {:type "select" :label "source-mask" :value (:mask state)
-                        :label-classname lc :wrapper-classname "col-xs-10"
-                        :class "input-sm"
-                        :on-change #(o-state! owner :mask)}
-                       (map #(d/option {:value %} %) (range 1 33)))])
-           (if (or
-                (= (:protocol state) "tcp")
-                (= (:protocol state) "udp"))
-             [(i/input {:type "checkbox" :label "All Ports"
-                        :id "all-ports"
-                        :checked (:all-ports state)
-                        :wrapper-classname "col-xs-offset-2 col-xs-10 col-lg-offset-1 col-md-offset-1 col-xl-offset-1"
-                        :on-change #(om/set-state! owner :all-ports (.-checked (.-target %)))})
-              (if (not (:all-ports state))
-                (i/input {:type "text" :label "ports" :class "input-sm"
-                          :label-classname lc :wrapper-classname "col-xs-10"}))])
-           (if (= (:protocol state) "icmp")
-             [(i/input {:type "select" :label "type" :id "icmp-type"
-                        :value (:icmp-type state)
-                        :class "input-sm"
-                        :label-classname lc :wrapper-classname "col-xs-10"
-                        :on-change #(do
-                                      (o-state! owner :icmp-type)
-                                      (om/set-state! owner :icmp-code "0"))}
-                       (map
-                        (fn [[id obj]]
-                          (d/option {:value id} (:name obj) " (" id ")"))
-                        (sort-by #(str->int (first %)) icmp)))
-              (if-let [codes (get-in icmp [(:icmp-type state) :codes])]
-                (let [sorted-codes (sort-by #(str->int (first %)) codes)
-                      opts (doall
-                            (map
-                             (fn [[id name]]
-                               (pr id name)
-                               (d/option
-                                {:id (str "code-"
-                                          (:icmp-type state)
-                                          "-" id) :value id}
-                                name " (" id ")"))
-                             sorted-codes))]
-                  (pr opts)
-                  (i/input
-                   {:type "select" :label "code" :id "icmp-code"
-                    :class "input-sm"
-                    :on-change #(o-state! owner :icmp-code)
-                    :label-classname lc :wrapper-classname "col-xs-10"
-                    :value (:icmp-code state)} opts)))])
-           (i/input
-            {:type "select" :label "action" :id "action" :value (:action state)
-             :class "input-sm"
-             :label-classname lc
-             :wrapper-classname "col-xs-10"
-             :on-change #(o-state! owner :action)}
-            (d/option {:value ""} "")
-            (d/option {:value "allow"} "allow")
-            (d/option {:value "block"} "block")))))
-       (grid-row
+       (row
+        (g/col
+         {}
+         (direction-select owner state)
+         (protocol-select owner state)
+         (target-select owner state)
+         (target-data owner state)
+         (port-data owner state)
+         (icmp-type-select owner state)
+         (icmp-code-select owner state)
+         (action-select owner state)))
+       (row
         (pr "state: " state)
         (g/col
-         {:xs 5}
+         {:xs 6}
          (p/panel
           {:header "inbound"}
           ))
         (g/col
-         {:xs 5}
+         {:xs 6}
          (p/panel
           {:header "outbound"})))
        (pr-str (:fw_rules data))))))

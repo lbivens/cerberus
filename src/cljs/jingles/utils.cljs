@@ -52,9 +52,11 @@
     (list? key) (get-in element (vec key))
     (vector? key) (get-in element (vec key))
     :else ""))
+(defn row [& body]
+  (g/row {} body))
 
 (defn grid-row [& body]
-  (g/grid {} (g/row {} body)))
+  (g/grid {} (apply row body)))
 
 (defn str->int [v]
   (js/parseInt v))

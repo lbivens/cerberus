@@ -66,8 +66,16 @@
                  (let [backup (:body resp)]
                    (update-state! [root :elements uuid :backups] assoc (:uuid backup) backup))))))
 
-(defn backup
+(defn add-fw-rule [uuid rule]
+  (api/post root [uuid :fw_rules] rule
+            #(get uuid)))
 
+(defn delete-fw-rule [uuid rule]
+  (api/delete
+   root [uuid :fw_rules rule]
+   #(get uuid)))
+
+(defn backup
   ([uuid comment]
    (_backup uuid {:comment comment}))
   ([uuid parent comment]

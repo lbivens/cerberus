@@ -1,5 +1,6 @@
 (ns jingles.vms.view
   (:require
+   [clojure.string :as cstr]
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.table :refer [table]]
@@ -47,7 +48,7 @@
          "Max Swap: "       (->> (:max_swap conf) (fmt-bytes :b))(d/br)
          "State: "          (:state conf)(d/br)
          "Memory: "         (->> (:ram conf) (fmt-bytes :mb))(d/br)
-         "Resolvers: "      (clojure.string/join ", " (:resolvers conf))(d/br)
+         "Resolvers: "      (cstr/join ", " (:resolvers conf))(d/br)
          "DNS Domain: "     (:dns_domain conf)(d/br)
          "Quota: "          (->> (:quota conf) (fmt-bytes :gb))(d/br)
          "I/O Priority: "   (:zfs_io_pryesiority conf)(d/br)
@@ -409,18 +410,6 @@
                  "2" "valid security parameters, but authentication failed"
                  "3" "valid security parameters, but decryption failed"}}})
 
-
-
-(defn icmp-codes [type]
-  (if-let [codes (get-in icmp [type :codes])]
-    (map
-     (fn [[id name]]
-       (pr id name)
-       (d/option
-        {:value id}
-        name " (" id ")"))
-     (sort-by #(str->int (first %)) codes))))
-
 (def lc "col-xs-2  col-lg-1 col-md-1 col-sm-1")
 
 (def wc "col-xs-10 col-lg-5 col-sm-5 col-md-5")
@@ -462,10 +451,16 @@
 
 (defn target-data [owner state]
   (condp = (:target state)
-    "ip" (i/input {:type "text" :label "source-ip" :class "input-sm"
-                   :label-classname lc :wrapper-classname wc})
+    "ip" (i/input {:type "text"
+                   :label (if (= (:direction state) "inbound")
+                            "Source IP" "Destination IP")
+                   :class "input-sm" :id "ip" :value (:ip state)
+                   :label-classname lc :wrapper-classname wc
+                   :on-change #(o-state! owner :ip)})
     "subnet" [(i/input {:type "text" :label "Subnet" :class "input-sm"
-                        :label-classname lc :wrapper-classname wc})
+                        :id "subnet" :value (:subnet state)
+                        :label-classname lc :wrapper-classname wc
+                        :on-change #(o-state! owner :subnet)})
               (select :mask "Mask" owner state {}
                       (map #(d/option {:value %} %) (range 1 33)))]
     []))
@@ -482,34 +477,130 @@
                                        "col-xl-offset-1 " wc)
                :on-change #(om/set-state! owner :all-ports (.-checked (.-target %)))})
      (if (not (:all-ports state))
-       (i/input {:type "text" :label "ports" :class "input-sm"
+       (i/input {:type "text" :label "Ports" :class "input-sm" :id "ports"
+                 :value (:ports state)
+                 :on-change #(o-state! owner :ports)
                  :label-classname lc :wrapper-classname wc}))]))
 
-(defn icmp-type-select [owner state]
-  (if (= (:protocol state) "icmp")
-    (select :icmp-type "Type" owner state
-            {:on-change #(om/set-state! owner :icmp-code "0")}
-            (map
-             (fn [[id obj]]
-               (d/option {:value id} (:name obj) " (" id ")"))
-             (sort-by #(str->int (first %)) icmp)))))
+(defn icmp-type-select [data owner {parent :parent}]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (if (= (:protocol data) "icmp")
+        (apply select :icmp-type "Type" parent data
+                {:on-change #(om/set-state! parent :icmp-code "0")}
+                (map
+                 (fn [[id obj]]
+                   (d/option {:value id} (str (:name obj) " (" id ")")))
+                 (sort-by #(str->int (first %)) icmp)))))))
 
-(defn icmp-code-select [owner state]
-  (if  (= (:protocol state) "icmp")
-    (if-let [codes (icmp-codes (:icmp-type state))]
-      (select :icmp-code "Code" owner state {} codes))))
+(defn icmp-codes [{id :id name :name} owner]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (d/option
+       {:value id}
+       (str name " (" id ")")))))
+
+(defn icmp-code-select [data owner {parent :parent}]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (if  (= (:protocol data) "icmp")
+        (if-let [codes (get-in icmp [(:icmp-type data) :codes])]
+          (apply select :icmp-code "Code" parent data {}
+                  (om/build-all
+                   icmp-codes
+                   (map (fn [[id name]] {:id id :name name})
+                        (sort-by #(str->int (first %)) codes))
+                   {:key :id})))))))
 
 (defn action-select [owner state]
   (select :action "Action" owner state {}
-          (d/option {:value ""} "")
           (d/option {:value "allow"} "allow")
           (d/option {:value "block"} "block")))
+
+
+(defn rule-target [state]
+  (pr state)
+  (condp = (:target state)
+    "all" "all"
+    "ip" {:ip (:ip state)}
+    "subnet" {:subnet (:subnet state) :mask (str->int (:mask state))}))
+
+(defn rule-filter [state]
+  (if (= (:protocol state) "icmp")
+    [{:type (str->int (:icmp-type state))
+       :code (str->int (:icmp-code state))}]
+    (if (:all-ports state)
+      "all"
+      (map str->int (cstr/split (:ports state) #"[, ]+") ))))
+
+
+;; TODO: make this prpperly cehck for va
+(defn valid-rule [{action :action
+                   direction :direction
+                   target :target
+                   protocol :protocol
+                   filter :filter}]
+  true)
+
+(defn add-rule [state]
+  (let [payload {:action (:action state)
+                 :direction (:direction state)
+                 :target (rule-target state)
+                 :protocol (:protocol state)
+                 :filters (rule-filter state)}]
+    (if (valid-rule payload)
+      (vms/add-fw-rule (:uuid state) payload))))
+
+
+(defn render-target [target]
+  (cond
+    (= "all" target) "all"
+    (:ip target)  (:ip target)
+    :else (str (:subnet target) "/" (:mask target))))
+
+(defn render-filter [filters]
+  (cond
+    (= "all" filters) "*"
+    (:code (first  filters)) (str "ICMP("(:code (first  filters)) "/" (:type (first filters)) ")")
+    :else  (cstr/join ", " filters)))
+
+(defn render-rule [uuid
+                   {id :id target :target protocol :protocol action :action
+                    direction :direction filters :filters}]
+  (let [target-str (str protocol "://" (render-target target))
+        filters-str (render-filter filters)]
+    (pr filters-str)
+    (row
+     (d/span
+      (if (= direction "inbound")
+        (d/span
+         target-str " "
+         (if (= "allow" action)
+           (r/glyphicon {:glyph "transfer"})
+           (r/glyphicon {:glyph "fire"}))
+         " " (r/glyphicon {:glyph "cloud"}) ":" filters-str)
+        (d/span
+         (r/glyphicon {:glyph "cloud"}) " "
+         (if (= "allow" action)
+           (r/glyphicon {:glyph "transfer"})
+           (r/glyphicon {:glyph "fire"})) " "
+         target-str ":" filters-str)))
+     (b/button
+      {:bs-style "warning"
+       :bs-size "xsmall"
+       :class "pull-right"
+       :on-click #(vms/delete-fw-rule uuid id)}
+      "x"))))
 
 (defn render-fw-rules [data owner opts]
   (reify
     om/IInitState
     (init-state [_]
-      {:action "block"
+      {:uuid (:uuid data)
+       :action "block"
        :direction "inbound"
        :protocol "tcp"
        :all-ports false
@@ -526,21 +617,30 @@
          (target-select owner state)
          (target-data owner state)
          (port-data owner state)
-         (icmp-type-select owner state)
-         (icmp-code-select owner state)
+         (om/build icmp-type-select state
+                   {:opts {:parent owner}
+                    :react-key "icmp-type"})
+         (om/build icmp-code-select state
+                   {:opts {:parent owner}
+                    :react-key "icmp-code"})
          (action-select owner state)))
+       (row (b/button
+          {:bs-style "primary"
+           :on-click #(add-rule state)}
+          "add"))
        (row
-        (pr "state: " state)
         (g/col
-         {:xs 6}
+         {:xs 12 :md 6}
          (p/panel
           {:header "inbound"}
-          ))
+          (let [rules (filter #(= (:direction %) "inbound") (:fw_rules data))]
+            (map (partial render-rule (:uuid data)) rules))))
         (g/col
-         {:xs 6}
+         {:xs 12 :md 6}
          (p/panel
-          {:header "outbound"})))
-       (pr-str (:fw_rules data))))))
+          {:header "outbound"}
+          (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
+            (map (partial render-rule (:uuid data)) rules)))))))))
 
 (defn nice-metrics [metrics]
   (reduce #(assoc %1 (:n %2) (:v %2)) metrics))
@@ -569,6 +669,7 @@
    "fw-rules"  {:key  8 :fn (b render-fw-rules)  :title "Firewall"}
    "metrics"   {:key  9 :fn (b render-metrics)   :title "Metrics"}
    "metadata"  {:key 10 :fn (b metadata/render)  :title "Metadata"}})
+
 ;; This is really ugly but something is crazy about the reify for OM here
 ;; this for will moutnt and will unmoutn are not the same and having timer in
 ;; let does not work either so lets "MAKE ALL THE THINGS GLOBAL!"

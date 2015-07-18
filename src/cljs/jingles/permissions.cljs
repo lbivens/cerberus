@@ -21,7 +21,7 @@
    [jingles.orgs.api :as orgs]
    [jingles.clients.api :as clients]
 
-   [jingles.utils :refer [grid-row val-by-id make-event menu-items]]
+   [jingles.utils :refer [row val-by-id make-event menu-items]]
    [jingles.state :refer [app-state]]))
 
 
@@ -167,8 +167,7 @@
             revoke (partial revoke uuid)]
         (r/well
          {}
-         (g/row
-          {}
+         (row
           (g/col
            {:xs 3}
            (i/input
@@ -202,14 +201,18 @@
            {:xs 3}
            (if-let [path (end state perms)]
              (b/button {:on-click #(grant path)} "submit!"))))
-         (d/table
-          {:striped? true :bordered? true :condensed? true :hover? true :responsive? true}
-          (d/thead
-           {:striped? false}
-           (d/tr
-            {}
-            (d/td)
-            (d/td)))
-          (d/tbody
-           {}
-           (map (partial perm  revoke) (:permissions data)))))))))
+         (row
+          (g/col
+           {:xs 12}
+           (d/table
+            {:striped? true :bordered? true :condensed? true :hover? true :responsive? true
+             :style {:width "100%"}}
+            (d/thead
+             {:striped? false}
+             (d/tr
+              {}
+              (d/td)
+              (d/td)))
+            (d/tbody
+             {}
+             (map (partial perm  revoke) (:permissions data)))))))))))

@@ -49,7 +49,7 @@
                 (om/transact! data :remote-datasets (constantly (:body resp)))
                 (pr "error: " resp)))))
         (table
-         {:striped? true :bordered? true :condensed? true :hover? true :responsive? true :id "remote-datasets"}
+         {:striped? true :condensed? true :hover? true :responsive? true :id "remote-datasets"}
          (d/thead
           (d/td "Name")
           (d/td "Version"))

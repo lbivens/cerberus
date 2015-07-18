@@ -116,7 +116,7 @@
    {:class large :id "list-tbl"}
    (let [opts {:fields fields :root root :actions actions :set-filter set-filter}]
      (table
-      {:bordered? true :condensed? true :hover? true}
+      {:condensed? true :hover? true}
       (om/build tbl-headers (:sort data) {:opts opts})
       (d/tbody
        (om/build-all tbl-row elements {:key :uuid :opts opts}))))

@@ -49,7 +49,7 @@
         (r/well
          {}
          (table
-          {:striped? true :bordered? true :condensed? true :hover? true :responsive? true}
+          {:striped? true :condensed? true :hover? true :responsive? true}
           (d/thead
            {:striped? false}
            (d/tr

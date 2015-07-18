@@ -205,7 +205,7 @@
           (g/col
            {:xs 12}
            (d/table
-            {:striped? true :bordered? true :condensed? true :hover? true :responsive? true
+            {:striped? true :condensed? true :hover? true :responsive? true
              :style {:width "100%"}}
             (d/thead
              {:striped? false}

@@ -21,10 +21,34 @@
 
 
 
-(defn render-home [app element]
-  (pr-str element))
+(defn render-home [data owner opts]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (r/well
+       {}
+       (d/h2 (:name data))
+       "UUID: " (:uuid data) (d/br)
+       "CPU Capacy: " (:cpu_cap data) (d/br)
+       "Quota: " (:quota data) (d/br)
+       "RAM: " (:ram data) (d/br)
+       "Compression: " (:compression data) (d/br)))))
 
-(def sections {""          {:key  1 :fn render-home      :title "General"}
-               "metadata"  {:key  2 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+(defn render-requirement [{attribute :attribute condition :condition value :value
+                           weight :weight}]
+  [(d/dt weight) (d/dd attribute " " condition " " value)])
 
-(def render (view/make root sections packages/get))
+(defn render-reqs [app owner opts]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (r/well
+       {}
+       (map render-requirement app)))))
+
+(def sections
+  {""             {:key  1 :fn #(om/build render-home %2)      :title "General"}
+   "requirements" {:key  2 :fn #(om/build render-reqs (:requirements %2))  :title "Requirements"}
+   "metadata"     {:key  2 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+
+(def render (view/make root sections #(packages/get %2)))

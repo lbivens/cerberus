@@ -174,7 +174,11 @@
    "orgs"      {:key  4 :fn render-orgs      :title "Orgs"}
    "metadata"  {:key  6 :fn #(om/build metadata/render (get-in %1 [root :elements (get-in %1 [root :selected])]))  :title "Metadata"}})
 
-(def render (view/make root sections users/get {:password-validate false
-                                                :add-ssh-modal false
-                                                :key-name-validate false
-                                                :key-data-validate false}))
+(def render
+  (view/make
+   root sections
+   #(users/get %2)
+   {:password-validate false
+    :add-ssh-modal false
+    :key-name-validate false
+    :key-data-validate false}))

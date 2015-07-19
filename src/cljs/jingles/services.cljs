@@ -9,8 +9,6 @@
    [jingles.utils :refer [grid-row]]
    [jingles.utils :refer [make-event menu-items]]))
 
-
-
 (defn tbl-row [[srv state] owner {:keys [action uuid]}]
   (reify
     om/IDisplayName

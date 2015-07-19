@@ -28,4 +28,4 @@
                "permissions" {:key  2 :fn #(om/build permissions/render %2 {:opts {:grant clients/grant :revoke clients/revoke}}) :title "Permissions"}
                "metadata"    {:key  3 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
-(def render (view/make root sections clients/get))
+(def render (view/make root sections #(clients/get %2)))

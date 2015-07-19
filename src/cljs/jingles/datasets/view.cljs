@@ -65,4 +65,4 @@
                "networks"      {:key  3 :fn #(om/build networks (:networks %2))         :title "Networks"}
                "metadata"      {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
-(def render (view/make root sections datasets/get))
+(def render (view/make root sections #(datasets/get %2)))

@@ -93,15 +93,17 @@
                      :divider
                      ["Networks" "#/networks"]
                      ["IP Ranges" "#/ipranges"]
-                     ["DTrace" "#/dtrace"]
+                     #_["DTrace" "#/dtrace"]
                      :divider
                      ["Logout" #(conf/logout)]
                      ["Logout & Reset UI" #(conf/clear)]))
-        (n/nav-item {:key 5 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
+        ;;Removed this for now
+        #_(n/nav-item {:key 5 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
                     (pb/progress-bar {:min 0
                                       :max (get-in data [:total-memory] 0)
                                       :now (get-in data [:provisioned-memory] 0) :label "RAM"}))
-        (n/nav-item {:key 6 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
+        ;; Removed this for now
+        #_(n/nav-item {:key 6 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
                     (pb/progress-bar {:min 0
                                       :max (get-in data [:disk-size] 0)
                                       :now (get-in data [:disk-used] 0) :label "Disk"})))

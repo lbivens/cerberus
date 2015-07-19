@@ -14,10 +14,45 @@
 
 
 
-(defn render-home [app element]
-  (pr-str element))
+(defn render-home [data owner opts]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (r/well
+       {}
+       (d/h2 (:name data))
+       "UUID: " (:uuid data) (d/br)
+       "Network: " (:network data) (d/br)
+       "Gateway: " (:gateway data) (d/br)
+       "Netmask: " (:netmask data) (d/br)
+       "VLAN: " (:vlan data) (d/br)
+       "TAG: " (:tag data) (d/br)
+       (pr-str data)))))
 
-(def sections {""          {:key  1 :fn render-home      :title "General"}
-               "metadata"  {:key  2 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+(defn render-ips [data owner opts]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (r/well
+       {}
+       (g/row
+        {}
+        (g/col
+         {:xs 12 :sm 6}
+         (p/panel
+          {:header "Free"}
+          (d/ul
+           (map d/li (:free data)))))
+        (g/col
+         {:xs 12 :sm 6}
+         (p/panel
+          {:header "Used"}
+          (d/ul
+           (map d/li (:used data))))))))))
 
-(def render (view/make root sections ipranges/get))
+(def sections
+  {""          {:key  1 :fn #(om/build render-home %2)     :title "General"}
+   "ips"       {:key  2 :fn #(om/build render-ips %2)      :title "IPs"}
+   "metadata"  {:key  3 :fn #(om/build metadata/render %2) :title "Metadata"}})
+
+(def render (view/make root sections #(ipranges/get %2)))

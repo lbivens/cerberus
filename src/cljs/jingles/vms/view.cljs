@@ -89,7 +89,6 @@
                (d/td log)))
             logs))))))))
 
-
 (defn group-li [& args]
   (d/li {:class "list-group-item"} args))
 

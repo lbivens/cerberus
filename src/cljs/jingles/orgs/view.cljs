@@ -20,11 +20,48 @@
    [jingles.fields :refer [fmt-bytes fmt-percent]]))
 
 
-(defn render-home [app element]
-  (pr-str element))
+(defn render-resources [data owner opts]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (r/well
+       {}
+       (map
+        (fn [[uuid resource]]
+          (g/col
+           {:xs 12 :sm 6}
+           (p/panel
+            {:header (d/b uuid)}
+            (d/dl
+             {}
+             (map
+              (fn [e] [(d/dt (:action e))
+                       (d/dd (str (js/Date. (:time e))))])
+              (sort-by :time resource))))))
+        (sort-by first data))))))
 
-(def sections {""          {:key  1 :fn render-home      :title "General"}
-               "metadata"  {:key  2 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+(defn render-triggers [data owner opts]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (r/well
+       {}
+       (pr-str data)))))
 
-(def render (view/make root sections orgs/get))
+(defn render-home [data owner opts]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (r/well
+       {}
+       (d/h3
+        (:name data))
+       (:uuid data)))))
 
+(def sections
+  {""          {:key  1 :fn #(om/build render-home %2)      :title "General"}
+   "resources" {:key  2 :fn #(om/build render-resources (:resources %2))  :title "Resources"}
+   "triggers"  {:key  3 :fn #(om/build render-triggers (:triggers %2))  :title "Triggers"}
+   "metadata"  {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+
+(def render (view/make root sections #(orgs/get %2)))

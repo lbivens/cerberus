@@ -12,8 +12,6 @@
    [jingles.metadata :as metadata]
    [jingles.ipranges.api :refer [root] :as ipranges]))
 
-
-
 (defn render-home [data owner opts]
   (reify
     om/IRenderState

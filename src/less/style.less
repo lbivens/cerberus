@@ -7,18 +7,21 @@
 //
 //## Gray and brand colors for use across Bootstrap.
 
+
 @gray-base:              #000;
 @gray-darker:            lighten(@gray-base, 13.5%); // #222
-@gray-dark:              lighten(@gray-base, 20%);   // #333
-@gray:                   lighten(@gray-base, 33.5%); // #555
-@gray-light:             #4E5D6C;   // #999
-@gray-lighter:           #EBEBEB; // #eee
+@gray-dark:              #212121;
+@gray:                   #666;
+@gray-light:             #bbb;
+@gray-lighter:           lighten(@gray-base, 93.5%); // #eee
 
-@brand-primary:         #DF691A;
-@brand-success:         #5cb85c;
-@brand-info:            #5bc0de;
-@brand-warning:         #f0ad4e;
-@brand-danger:          #d9534f;
+@brand-primary:         #2196F3;
+@brand-success:         #4CAF50;
+@brand-info:            #9C27B0;
+@brand-warning:         #ff9800;
+@brand-danger:          #e51c23;
+
+@brand-selected:        #2196f3;
 
 
 //== Scaffolding
@@ -1079,6 +1082,35 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 #add-body .form-group .form-control {
     background-color: rgb(235, 235, 235);
     color: #F0602B;
+}
+
+#add-view ul.nav>li {
+    background: none;
+}
+
+#add-view ul.nav>li:hover {
+    border-right: 2px solid @brand-selected;
+    background: none;
+    color: 2px solid;
+}
+
+#add-view ul.nav>li:hover a {
+    background: none;
+    color: @brand-selected;
+}
+
+#add-view ul.nav>li.active  {
+    border-right: 2px solid @brand-selected;
+    background: none;
+    color: @brand-selected;
+}
+
+#add-view ul.nav>li.success.active>a  {
+    color: @brand-selected;
+}
+
+#add-view ul.nav>li.danger>a  {
+    color: @brand-danger;
 }
 
 // still to be commented

@@ -41,7 +41,7 @@
              :dataset {:title "Dataset" :type :string
                        :key (partial api/get-sub-element :datasets :dataset
                                      #(str (:name %) "-" (:version %)))}
-             :package {:titxbaple "Package" :type :string
+             :package {:title "Package" :type :string
                        :key (partial api/get-sub-element :packages :package [:name])}))
 
 (set-state! [root :fields] (initial-state config))

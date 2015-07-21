@@ -58,11 +58,13 @@
     om/IRender
     (render [_]
       (let [id (:id field)
-            order (get-in data [:order] :asc)]
-        (if (= id (get-in data [:field]))
-          (d/td (d/a {:onClick #(om/transact! data :order (fn [_] (flip-order order)))
-                      :className (order-class order)} (:title field) " " (order-str order)))
-          (d/td (d/a {:onClick #(om/transact! data (constantly {:field id :order :asc}))} (:title field))))))))
+            style (if (get-in data [:fields id :show]) {} {:display :none})
+            order (get-in data [:sort :order] :asc)]
+
+        (if (= id (get-in data [:sort :field]))
+          (d/td {:style style} (d/a {:onClick #(om/transact! data [:sort :order] (fn [_] (flip-order order)))
+                         :className (order-class order)} (:title field) " " (order-str order)))
+          (d/td {:style style} (d/a {:onClick #(om/transact! data [:sort] (constantly {:field id :order :asc}))} (:title field))))))))
 
 (defn tbl-headers [data owner {:keys [fields actions]}]
   (reify
@@ -96,8 +98,8 @@
     om/IDisplayName
     (display-name [_]
       "tblrowc")
-    om/IRender
-    (render [_]
+    om/IRenderState
+    (render-state [_ _]
       (let [style (if (:show data) {} {:display :none})
             cells (:row data)]
         (d/tr
@@ -117,7 +119,7 @@
    (let [opts {:fields fields :root root :actions actions :set-filter set-filter}]
      (table
       {:condensed? true :hover? true}
-      (om/build tbl-headers (:sort data) {:opts opts})
+      (om/build tbl-headers data {:opts opts})
       (d/tbody
        (om/build-all tbl-row elements {:key :uuid :opts opts}))))
    #_(pagination root data)))

@@ -85,16 +85,4 @@
                                         {:source-paths ["env/prod/cljs"]
                                          :compiler
                                          {:optimizations :advanced
-                                          :pretty-print false}}}}}
-
-
-             :uberjar {:source-paths ["env/prod/clj"]
-                       :hooks [leiningen.cljsbuild leiningen.less]
-                       :env {:production true}
-                       :omit-source true
-                       :aot :all
-                       :cljsbuild {:builds {:app
-                                            {:source-paths ["env/prod/cljs"]
-                                             :compiler
-                                             {:optimizations :advanced
-                                              :pretty-print false}}}}}})
+                                          :pretty-print false}}}}}})

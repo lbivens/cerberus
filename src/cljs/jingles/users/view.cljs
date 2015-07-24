@@ -52,7 +52,6 @@
                               :password-validate
                               :password2-val
                               owner)})
-
       (b/button {:bs-style "primary"
                  :className "pull-right"
                  :onClick #(users/changepass uuid (:password1-val state))
@@ -167,21 +166,20 @@
          {}
          (row
           (col
-           {:xs 4}
+           {:xs 10 :sm 4}
            (i/input
             {:type "select" :id "role"}
             (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) roles)))
           (col
-           {:xs 1}
+           {:xs 2 :sm 1}
            (b/button
             {:bs-style "primary"
              :className "pull-right"
              :onClick #(users/add-role  id (val-by-id "role"))
              :disabled? (false? (:password-validate state))}
-            "Add")))
-         (row
+            "Add"))
           (col
-           {}
+           {:xs 12 :sm 6}
            (d/ul
             (map
              (fn [uuid]
@@ -204,30 +202,34 @@
          {}
          (row
           (col
-           {:xs 4}
+           {:xs 10 :sm 4}
            (i/input
             {:type "select" :id "org"}
             (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) orgs)))
           (col
-           {:xs 1}
+           {:xs 2 :sm 1}
            (b/button
             {:bs-style "primary"
              :className "pull-right"
              :onClick #(users/add-org  id (val-by-id "org"))
              :disabled? (false? (:password-validate state))}
-            "Add")))
-         (row
+            "Add"))
           (col
-           {}
+           {:xs 12 :sm 6}
            (d/ul
             (map
              (fn [uuid]
                (d/li
                 (d/a {href (str "#/orgs/" uuid)} (get-in orgs [uuid :name]))
-                     (b/button {:bs-size "xsmall"
-                                :className "pull-right"
-                                :onClick #(users/remove-org id uuid)}
-                               (r/glyphicon {:glyph "remove"}))))
+                (b/button {:bs-size "xsmall"
+                           :className "pull-right"
+                           :onClick #(users/remove-org id uuid)}
+                          (r/glyphicon {:glyph "remove"}))
+                (if (not= uuid (:org element))
+                  (b/button {:bs-size "xsmall"
+                             :className "pull-right"
+                             :onClick #(users/active-org id uuid)}
+                            (r/glyphicon {:glyph "check"})))))
              current-orgs)))))))))
 
 (def sections

@@ -49,5 +49,8 @@
 (defn add-org [uuid role]
   (api/put root [uuid :orgs role] {}  #(get uuid) []))
 
+(defn active-org [uuid role]
+  (api/put root [uuid :orgs role] {:active true}  #(get uuid) []))
+
 (defn remove-org [uuid role]
   (api/delete root [uuid :orgs role] #(get uuid)))

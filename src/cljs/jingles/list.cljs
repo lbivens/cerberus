@@ -18,11 +18,11 @@
     (disj aset field)
     (conj aset field)))
 
-(defn search-field [suffix owner config]
+(defn search-field [suffix data]
   (let [field-id (str "filter-" suffix)]
     (i/input
-     {:type "text" :id field-id :value (om/get-state owner :filter)
-      :on-change (fn [] (om/set-state! owner :filter (val-by-id field-id)))})))
+     {:type "text" :id field-id :value (:filter data)
+      :on-change (fn [] (om/update! data :filter (val-by-id field-id)))})))
 
 (defn col-selector [data fields]
   (b/dropdown
@@ -87,12 +87,12 @@
        (do-sort elements (:fields config) sort)
        elements))))
 
-(defn mk-filter-field [owner state]
+(defn mk-filter-field [data]
   (fn [text]
-    (let [current (:filter state)]
+    (let [current (:filter data)]
       (if (empty? current)
-        (om/set-state! owner :filter text)
-        (om/set-state! owner :filter (str current " " text))))))
+        (om/update! data :filter (constantly text))
+        (om/update! data :filter (str current " " text))))))
 
 (defn view [data owner {:keys [config on-mount]}]
   (reify
@@ -110,14 +110,14 @@
             title (:title config)
             actions (:actions config)
             section (get-in data [root])
-            fields (get-in data [root :fields])
-            filter (get-in data [root :filter])
+            fields (:fields section)
+            filter (:filter section)
             expanded-fields (expand-fields config (keys fields))
             display-fields (used-fields expanded-fields fields)
             all-rows (pre-render
                       (vals (:elements section))
                       display-fields filter config (:sort section))
-            set-filter (mk-filter-field section state)]
+            set-filter (mk-filter-field section)]
         (d/div
          {:class "listview"}
          (d/h1
@@ -125,11 +125,11 @@
           title
           (d/div
            {:class (str  "filterbar pull-right " large)}
-           (search-field "list" owner config)
+           (search-field "list" section)
            (col-selector section expanded-fields)))
          (d/div
           {:class (str  "filterbar " small)}
-          (search-field "well" owner config)
+          (search-field "well" section)
           (col-selector section expanded-fields))
          (table/render section all-rows {:root root :actions actions :fields display-fields :set-filter set-filter :show fields})
          (well/well section all-rows {:root root :actions actions :set-filter set-filter :show fields}))))))

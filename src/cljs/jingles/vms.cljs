@@ -33,16 +33,17 @@
      :divider
      ["Delete" {:class (if locked "disabled")} #(vms/delete uuid)]]))
 
-(def config (mk-config
-             root "Machines" actions
-             :name {:title "Name" :key '(:config :alias) :order -10}
-             :cpu {:title "CPU" :key '(:config :cpu_cap) :type :percent}
-             :state {:title "State" :key :state :type :string}
-             :dataset {:title "Dataset" :type :string
-                       :key (partial api/get-sub-element :datasets :dataset
-                                     #(str (:name %) "-" (:version %)))}
-             :package {:title "Package" :type :string
-                       :key (partial api/get-sub-element :packages :package [:name])}))
+(def config
+  (mk-config
+   root "Machines" actions
+   :name {:title "Name" :key '(:config :alias) :order -10}
+   :cpu {:title "CPU" :key '(:config :cpu_cap) :type :percent}
+   :state {:title "State" :key :state :type :string}
+   :dataset {:title "Dataset" :type :string
+             :key (partial api/get-sub-element :datasets :dataset
+                           #(str (:name %) "-" (:version %)))}
+   :package {:title "Package" :type :string
+             :key (partial api/get-sub-element :packages :package [:name])}))
 
 (set-state! [root :fields] (initial-state config))
 

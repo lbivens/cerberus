@@ -14,7 +14,11 @@
 (defn actions [{uuid :uuid}]
   [["Delete" #(users/delete uuid)]])
 
-(def config (mk-config root "Users" actions))
+(def config (mk-config
+             root "Users" actions
+             :name {:title "Name" :key :name :order -10}
+             :org {:title "Organisation" :key :org :order -10}
+             ))
 
 (set-state! [root :fields] (initial-state config))
 

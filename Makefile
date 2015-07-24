@@ -1,5 +1,5 @@
 ui:
 	LEIN_ROOT=1 lein with-profile rel cljsbuild once
 
-package:
+package: ui
 	make -C rel/pkg package

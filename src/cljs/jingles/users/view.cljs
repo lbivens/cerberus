@@ -6,7 +6,7 @@
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.table :refer [table]]
    [om-bootstrap.panel :as p]
-   [om-bootstrap.grid :as g]
+   [om-bootstrap.grid :as g :refer [col]]
    [om-bootstrap.button :as b]
    [om-bootstrap.random :as r]
    [om-bootstrap.modal :as md]
@@ -17,8 +17,9 @@
    [jingles.metadata :as metadata]
    [jingles.permissions :as permissions]
    [jingles.view :as view]
-   [jingles.users.api :as users]
-   [jingles.users.api :refer [root]]
+   [jingles.users.api :as users :refer [root]]
+   [jingles.roles.api :as roles]
+   [jingles.orgs.api :as orgs]
    [jingles.state :refer [set-state!]]
    [jingles.fields :refer [fmt-bytes fmt-percent]]
    [jingles.validate :as validate]))
@@ -144,25 +145,90 @@
       (r/well
        {}
        (row
-        (g/col
+        (col
          {:md 4}
          (password-panel data owner state))
-        (g/col
+        (col
          {:md 4}
          (ssh-keys-panel data owner state))
-        (g/col
+        (col
          {:md 4}
          (mfa-panel)))))))
 
 
-(defn render-roles [app owner state]
-  "stub"
-  )
+(defn render-roles [app owner {:keys [root id]}]
+  (reify
+    om/IRenderState
+    (render-state [_ state]
+      (let [element (get-in app [root :elements id])
+            roles (get-in app [:roles :elements])
+            current-roles (sort (or (:roles element) []))]
+        (r/well
+         {}
+         (row
+          (col
+           {:xs 4}
+           (i/input
+            {:type "select" :id "role"}
+            (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) roles)))
+          (col
+           {:xs 1}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :onClick #(users/add-role  id (val-by-id "role"))
+             :disabled? (false? (:password-validate state))}
+            "Add")))
+         (row
+          (col
+           {}
+           (d/ul
+            (map
+             (fn [uuid]
+               (d/li
+                (d/a {href (str "#/roles/" uuid)} (get-in roles [uuid :name]))
+                     (b/button {:bs-size "xsmall"
+                                :className "pull-right"
+                                :onClick #(users/remove-role id uuid)}
+                               (r/glyphicon {:glyph "remove"}))))
+             current-roles)))))))))
 
-(defn render-orgs [app owner state]
-  "stub"
-  )
-
+(defn render-orgs [app owner {:keys [root id]}]
+  (reify
+    om/IRenderState
+    (render-state [_ state]
+      (let [element (get-in app [root :elements id])
+            orgs (get-in app [:orgs :elements])
+            current-orgs (sort (or (:orgs element) []))]
+        (r/well
+         {}
+         (row
+          (col
+           {:xs 4}
+           (i/input
+            {:type "select" :id "org"}
+            (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) orgs)))
+          (col
+           {:xs 1}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :onClick #(users/add-org  id (val-by-id "org"))
+             :disabled? (false? (:password-validate state))}
+            "Add")))
+         (row
+          (col
+           {}
+           (d/ul
+            (map
+             (fn [uuid]
+               (d/li
+                (d/a {href (str "#/orgs/" uuid)} (get-in orgs [uuid :name]))
+                     (b/button {:bs-size "xsmall"
+                                :className "pull-right"
+                                :onClick #(users/remove-org id uuid)}
+                               (r/glyphicon {:glyph "remove"}))))
+             current-orgs)))))))))
 
 (def sections
   {""          {:key  1 :fn #(om/build render-auth %2)  :title "Authentication"}
@@ -170,14 +236,21 @@
                 :fn #(om/build permissions/render (get-in %1 [root :elements (get-in %1 [root :selected])])
                                {:opts {:grant users/grant :revoke users/revoke}})
                 :title "Permissions"}
-   "roles"     {:key  3 :fn render-roles     :title "Roles"}
-   "orgs"      {:key  4 :fn render-orgs      :title "Orgs"}
+   "roles"     {:key  3 :fn #(om/build render-roles %1
+                                       {:opts {:id (get-in %1 [root :selected])
+                                               :root root}})     :title "Roles"}
+   "orgs"      {:key  4 :fn #(om/build render-orgs %1
+                                       {:opts {:id (get-in %1 [root :selected])
+                                               :root root}})    :title "Orgs"}
    "metadata"  {:key  6 :fn #(om/build metadata/render (get-in %1 [root :elements (get-in %1 [root :selected])]))  :title "Metadata"}})
 
 (def render
   (view/make
    root sections
-   #(users/get %2)
+   (fn [data uuid]
+     (roles/list data)
+     (orgs/list data)
+     (users/get uuid))
    {:password-validate false
     :add-ssh-modal false
     :key-name-validate false

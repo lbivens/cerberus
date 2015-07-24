@@ -40,3 +40,14 @@
   (api/delete root (concat [uuid :keys keyname])
               #(get uuid)))
 
+(defn add-role [uuid role]
+  (api/put root [uuid :roles role] {}  #(get uuid) []))
+
+(defn remove-role [uuid role]
+  (api/delete root [uuid :roles role] #(get uuid)))
+
+(defn add-org [uuid role]
+  (api/put root [uuid :orgs role] {}  #(get uuid) []))
+
+(defn remove-org [uuid role]
+  (api/delete root [uuid :orgs role] #(get uuid)))

@@ -1,5 +1,5 @@
 VERSION=0.7.0
-COMPONENT=fifo-jingles
+COMPONENT=fifo-cerberus
 
 include pkg.mk
 .PHONY: package prepare clean

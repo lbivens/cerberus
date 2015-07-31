@@ -1,4 +1,4 @@
-(defproject jingles "0.1.0-SNAPSHOT"
+(defproject cerberus "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -34,7 +34,7 @@
 
   :min-lein-version "2.5.1"
 
-  :uberjar-name "jingles.jar"
+  :uberjar-name "cerberus.jar"
 
   :cljsbuild {:builds {:app {:source-paths ["src/cljs"]
                              :compiler {:output-to     "resources/public/js/app.js"
@@ -56,7 +56,7 @@
                                   [weasel "0.6.0"]
                                   [leiningen "2.5.1"]]
 
-                   :repl-options {:init-ns jingles.server
+                   :repl-options {:init-ns cerberus.server
                                   :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
                    :plugins [[lein-figwheel "0.2.1-SNAPSHOT"]]

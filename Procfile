@@ -1,1 +1,1 @@
-web: java $JVM_OPTS -cp target/jingles.jar clojure.main -m jingles.server
+web: java $JVM_OPTS -cp target/cerberus.jar clojure.main -m jingles.server

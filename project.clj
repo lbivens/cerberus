@@ -9,8 +9,8 @@
 
   :test-paths ["spec/clj"]
 
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [ring "1.3.2"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
+                 [ring "1.4.0"]
                  [ring/ring-defaults "0.1.5"]
                  [compojure "1.3.4"]
                  [enlive "1.1.5"]
@@ -20,7 +20,7 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.match "0.2.2"]
                  ;; ClojureScript related dependencies
-                 [org.clojure/clojurescript "0.0-3148"]
+                 [org.clojure/clojurescript "1.7.58"]
                  [org.omcljs/om "0.8.8"]
                  [com.lucasbradstreet/instaparse-cljs "1.3.5.1"]
                  ;;[cljsjs/react-with-addons "0.12.2-4"]

@@ -20,7 +20,7 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.match "0.2.2"]
                  ;; ClojureScript related dependencies
-                 [org.clojure/clojurescript "1.7.58"]
+                 [org.clojure/clojurescript "1.7.107"]
                  [org.omcljs/om "0.9.0"]
                  [com.lucasbradstreet/instaparse-cljs "1.4.1.0"]
                  ;;[cljsjs/react-with-addons "0.12.2-4"]

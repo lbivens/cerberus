@@ -50,14 +50,11 @@
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
 
-                   :dependencies [[figwheel "0.2.5"]
-                                  [figwheel-sidecar "0.2.5"]
-                                  [com.cemerick/piggieback "0.1.5"]
-                                  [weasel "0.6.0"]
+                   :dependencies [[figwheel "0.3.7"]
+                                  [figwheel-sidecar "0.3.7"]
                                   [leiningen "2.5.1"]]
 
-                   :repl-options {:init-ns cerberus.server
-                                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+                   :repl-options {:init-ns cerberus.server}
 
                    :plugins [[lein-figwheel "0.2.1-SNAPSHOT"]]
 

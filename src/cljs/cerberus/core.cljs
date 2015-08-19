@@ -36,7 +36,7 @@
 
 (enable-console-print!)
 
-(def login-path "/api/0.2.0/oauth/token")
+(def login-path "/api/2/oauth/token")
 
 (defn login-fn []
   (go

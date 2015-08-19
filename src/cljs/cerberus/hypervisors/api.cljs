@@ -17,7 +17,8 @@
 
 (def get (partial api/get root))
 
-(def delete (partial api/delete root))
+(defn delete [uuid]
+  (api/delete root [uuid]))
 
 (defn rename [uuid name]
   (api/put root [uuid :config] {:alias name} api/get [root uuid]))

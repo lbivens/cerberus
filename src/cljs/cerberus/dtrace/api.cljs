@@ -16,4 +16,5 @@
 
 (def get (partial api/get root))
 
-(def delete (partial api/delete root))
+(defn delete [uuid]
+  (api/delete root [uuid]))

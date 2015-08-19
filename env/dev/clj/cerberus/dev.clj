@@ -1,8 +1,6 @@
 (ns cerberus.dev
   (:require [environ.core :refer [env]]
             [net.cgrand.enlive-html :refer [set-attr prepend append html]]
-            [cemerick.piggieback :as piggieback]
-            [weasel.repl.websocket :as weasel]
             [figwheel-sidecar.auto-builder :as fig-auto]
             [figwheel-sidecar.core :as fig]
             [clojurescript-build.auto :as auto]
@@ -16,11 +14,6 @@
      (set-attr :class "is-dev")
      (prepend (html [:script {:type "text/javascript" :src "/js/out/goog/base.js"}]))
      (append  (html [:script {:type "text/javascript"} "goog.require('cerberus.main')"]))))
-
-(defn browser-repl []
-  (let [repl-env (weasel/repl-env :ip "0.0.0.0" :port 9001)]
-    (piggieback/cljs-repl :repl-env repl-env)
-    (piggieback/cljs-eval repl-env '(in-ns 'cerberus.core) {})))
 
 (defn start-figwheel []
   (let [server (fig/start-server { :css-dirs ["resources/public/css"] })

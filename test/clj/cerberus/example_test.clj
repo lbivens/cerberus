@@ -1,4 +1,4 @@
-(ns jingles.example-test
+(ns cerberus.example-test
     (:require [clojure.test :refer :all]))
 
 (deftest example-passing-test

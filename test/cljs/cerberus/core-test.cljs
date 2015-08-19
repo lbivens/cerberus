@@ -1,4 +1,4 @@
-(ns jingles.core-test
+(ns cerberus.core-test
   (:require-macros [cljs.test :refer (is deftest testing)])
   (:require [cljs.test]))
 

@@ -9,24 +9,24 @@
 
   :test-paths ["spec/clj"]
 
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [ring "1.3.2"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
+                 [ring "1.4.0"]
                  [ring/ring-defaults "0.1.5"]
-                 [compojure "1.3.4"]
-                 [enlive "1.1.5"]
+                 [compojure "1.4.0"]
+                 [enlive "1.1.6"]
                  [tailrecursion/ring-proxy "2.0.0-SNAPSHOT"]
                  [environ "1.0.0"]
                  [cconf "1.1.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.match "0.2.2"]
                  ;; ClojureScript related dependencies
-                 [org.clojure/clojurescript "0.0-3148"]
-                 [org.omcljs/om "0.8.8"]
-                 [com.lucasbradstreet/instaparse-cljs "1.3.5.1"]
+                 [org.clojure/clojurescript "1.7.107"]
+                 [org.omcljs/om "0.9.0"]
+                 [com.lucasbradstreet/instaparse-cljs "1.4.1.0"]
                  ;;[cljsjs/react-with-addons "0.12.2-4"]
-                 [racehub/om-bootstrap "0.5.1"]
+                 [racehub/om-bootstrap "0.5.3"]
                  [secretary "1.2.3"]
-                 [cljs-http "0.1.35"]]
+                 [cljs-http "0.1.36"]]
 
   :plugins [[lein-cljsbuild "1.0.5"]
             [lein-environ "1.0.0"]
@@ -50,14 +50,11 @@
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
 
-                   :dependencies [[figwheel "0.2.5"]
-                                  [figwheel-sidecar "0.2.5"]
-                                  [com.cemerick/piggieback "0.1.5"]
-                                  [weasel "0.6.0"]
+                   :dependencies [[figwheel "0.3.7"]
+                                  [figwheel-sidecar "0.3.7"]
                                   [leiningen "2.5.1"]]
 
-                   :repl-options {:init-ns cerberus.server
-                                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+                   :repl-options {:init-ns cerberus.server}
 
                    :plugins [[lein-figwheel "0.2.1-SNAPSHOT"]]
 

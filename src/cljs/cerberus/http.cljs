@@ -12,7 +12,7 @@
   (clojure.string/join "/" (map #(if (keyword? %) (name %) (str %)) url)))
 
 (defn api [url]
-  (str "/api/0.2.0/" (mk-url (path-vec url))))
+  (str "/api/2/" (mk-url (path-vec url))))
 
 (defn default-headers []
   {"Accept" "application/json"})

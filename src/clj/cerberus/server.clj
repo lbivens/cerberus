@@ -1,6 +1,6 @@
 (ns cerberus.server
   (:require [clojure.java.io :as io]
-            [cerberus.dev :refer [is-dev? inject-devmode-html browser-repl start-figwheel start-less]]
+            [cerberus.dev :refer [is-dev? inject-devmode-html start-figwheel start-less]]
             [compojure.core :refer [GET defroutes]]
             [compojure.route :refer [resources]]
             [net.cgrand.enlive-html :refer [deftemplate]]

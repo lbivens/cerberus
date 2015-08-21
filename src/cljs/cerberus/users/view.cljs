@@ -20,6 +20,7 @@
    [cerberus.users.api :as users :refer [root]]
    [cerberus.roles.api :as roles]
    [cerberus.orgs.api :as orgs]
+   [cerberus.alert :as alert]
    [cerberus.state :refer [set-state!]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]
    [cerberus.validate :as validate]))
@@ -54,7 +55,9 @@
                               owner)})
       (b/button {:bs-style "primary"
                  :className "pull-right"
-                 :onClick #(users/changepass uuid (:password1-val state))
+                 :onClick #(do
+                             (alert/alert :success "Password changed")
+                             (users/changepass uuid (:password1-val state)))
                  :disabled? (false? (:password-validate state))}
                 "Change")))))
 
@@ -65,53 +68,57 @@
   (om/set-state! owner :add-ssh-modal false))
 
 (defn add-ssh-modal [uuid owner state]
-  (d/div { :style #js {:display (if (:add-ssh-modal state) "block" "none")} }
-         (md/modal
-          {:header (d/h4 "New SSH Public Key"
-                         (d/button {:type         "button"
-                                    :class        "close"
-                                    :aria-hidden  true
-                                    :on-click #(om/set-state! owner :add-ssh-modal false)}
-                                   "×"))
-           :close-button? false
-           :visible? true
-           :animate? false
-           :style #js {:display "block"}
-           :footer (d/div
-                    (b/button {:bs-style "success"
-                               :disabled? (false?
-                                           (and
-                                            (:key-name-validate state)
-                                            (:key-data-validate state)))
-                               :on-click #(submit-key uuid owner state)}
-                              "Add"))}
-          (d/form
-           (i/input {:type "text" :label "Name"
-                     :id "newsshkeyname"
-                     :value (:key-name-value state)
-                     :on-change  #(validate/nonempty
-                                   %
-                                   :key-name-validate
-                                   :key-name-value
-                                   owner)})
-           (i/input {:type "textarea" :label "Key"
-                     :id "newsshkey"
-                     :style #js {:height "8em"}
-                     :value (:key-data-value state)
-                     :on-change  #(validate/nonempty
-                                   %
-                                   :key-data-validate
-                                   :key-data-value
-                                   owner)})))))
+  (d/div
+   {:style {:display (if (:add-ssh-modal state) "block" "none")} }
+   (md/modal
+    {:header (d/h4 "New SSH Public Key"
+                   (d/button {:type         "button"
+                              :class        "close"
+                              :aria-hidden  true
+                              :on-click #(om/set-state! owner :add-ssh-modal false)}
+                             "×"))
+     :close-button? false
+     :visible? true
+     :animate? false
+     :style {:display "block"}
+     :footer (d/div
+              (b/button {:bs-style "success"
+                         :disabled? (false?
+                                     (and
+                                      (:key-name-validate state)
+                                      (:key-data-validate state)))
+                         :on-click #(submit-key uuid owner state)}
+                        "Add"))}
+    (d/form
+     (i/input
+      {:type "text" :label "Name"
+       :id "newsshkeyname"
+       :value (:key-name-value state)
+       :on-change  #(validate/nonempty
+                     %
+                     :key-name-validate
+                     :key-name-value
+                     owner)})
+     (i/input
+      {:type "textarea" :label "Key"
+       :id "newsshkey"
+       :style {:height "8em"}
+       :value (:key-data-value state)
+       :on-change  #(validate/nonempty
+                     %
+                     :key-data-validate
+                     :key-data-value
+                     owner)})))))
 
 (defn ssh-key-li [uuid key-name key-data]
-  (d/li {:class "list-group-item"}
-        (d/a {onClick #(println "clicked")}
-             key-name)
-        (b/button {:bs-size "xsmall"
-                   :className "pull-right"
-                   :onClick #(users/deletekey uuid key-name)}
-                  (r/glyphicon {:glyph "remove"}))))
+  (d/li
+   {:class "list-group-item"}
+   (d/a {onClick #(println "clicked")}
+        key-name)
+   (b/button {:bs-size "xsmall"
+              :className "pull-right"
+              :onClick #(users/deletekey uuid key-name)}
+             (r/glyphicon {:glyph "remove"}))))
 
 
 (defn ssh-keys-panel [data element state]
@@ -185,10 +192,10 @@
              (fn [uuid]
                (d/li
                 (d/a {href (str "#/roles/" uuid)} (get-in roles [uuid :name]))
-                     (b/button {:bs-size "xsmall"
-                                :className "pull-right"
-                                :onClick #(users/remove-role id uuid)}
-                               (r/glyphicon {:glyph "remove"}))))
+                (b/button {:bs-size "xsmall"
+                           :className "pull-right"
+                           :onClick #(users/remove-role id uuid)}
+                          (r/glyphicon {:glyph "remove"}))))
              current-roles)))))))))
 
 (defn render-orgs [app owner {:keys [root id]}]
@@ -233,26 +240,26 @@
              current-orgs)))))))))
 
 (def sections
-  {""          {:key  1 :fn #(om/build render-auth %2)  :title "Authentication"}
-   "perms"     {:key  2
-                :fn #(om/build permissions/render (get-in %1 [root :elements (get-in %1 [root :selected])])
-                               {:opts {:grant users/grant :revoke users/revoke}})
-                :title "Permissions"}
-   "roles"     {:key  3 :fn #(om/build render-roles %1
-                                       {:opts {:id (get-in %1 [root :selected])
-                                               :root root}})     :title "Roles"}
-   "orgs"      {:key  4 :fn #(om/build render-orgs %1
-                                       {:opts {:id (get-in %1 [root :selected])
-                                               :root root}})    :title "Orgs"}
-   "metadata"  {:key  6 :fn #(om/build metadata/render (get-in %1 [root :elements (get-in %1 [root :selected])]))  :title "Metadata"}})
+  {""         {:key  1 :fn #(om/build render-auth %2)  :title "Authentication"}
+   "perms"    {:key  2
+               :fn #(om/build permissions/render (get-in %1 [root :elements (get-in %1 [root :selected])])
+                              {:opts {:grant users/grant :revoke users/revoke}})
+               :title "Permissions"}
+   "roles"    {:key  3 :fn #(om/build render-roles %1
+                                      {:opts {:id (get-in %1 [root :selected])
+                                              :root root}})     :title "Roles"}
+   "orgs"     {:key  4 :fn #(om/build render-orgs %1
+                                      {:opts {:id (get-in %1 [root :selected])
+                                              :root root}})    :title "Orgs"}
+   "metadata" {:key  5 :fn #(om/build metadata/render (get-in %1 [root :elements (get-in %1 [root :selected])]))  :title "Metadata"}})
 
 (def render
   (view/make
    root sections
    (fn [data uuid]
-     (roles/list data)
+     (users/get uuid)
      (orgs/list data)
-     (users/get uuid))
+     (roles/list data))
    {:password-validate false
     :add-ssh-modal false
     :key-name-validate false

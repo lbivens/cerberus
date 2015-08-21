@@ -4,6 +4,7 @@
   (:require
    [om.core :as om :include-macros true]
    [cerberus.http :as http]
+   [cerberus.howl :as howl]
    [clojure.string :refer [join]]
    [cerberus.utils :refer [goto value-by-key]]
    [cerberus.state :refer [app-state path-vec set-state! delete-state!]]))
@@ -37,7 +38,9 @@
              elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
          (if (= 401 (:status resp))
            (check-login)
-           (om/transact! data [root :elements] (constantly elements))))))
+           (do
+             (doall (map #(howl/join %) elements))
+             (om/transact! data [root :elements] (constantly elements)))))))
   ([data root list-fields]
      (go
        (let [resp (<! (full-list (name root) list-fields))
@@ -45,7 +48,9 @@
              elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
          (if (= 401 (:status resp))
            (check-login)
-           (om/transact! data [root :elements] (constantly elements)))))))
+           (do
+             (doall (map howl/join (keys elements)))
+             (om/transact! data [root :elements] (constantly elements))))))))
 
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
@@ -56,11 +61,13 @@
      (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))]
        (callback resp))))
   ([root path data]
-   (post root path data (fn [resp]
-                          (if (:success resp)
-                            (let [body (:body resp)
-                                  uuid (:uuid body)]
-                              (set-state! [root :elements uuid] body)))))))
+   (post root path data
+         (fn [resp]
+           (if (:success resp)
+             (let [body (:body resp)
+                   uuid (:uuid body)]
+               (howl/join uuid)
+               (set-state! [root :elements uuid] body)))))))
 
 (defn put
   ([root path data]

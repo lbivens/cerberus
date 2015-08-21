@@ -14,7 +14,8 @@
   [["Delete" #(datasets/delete uuid)]])
 
 (def config (mk-config root "Datasets" actions
-                        :version {:title "Version" :key :version :type :string}))
+                       :version {:title "Version" :key :version :type :string}
+                       :imported {:title "Imported" :key :imported :type :percent-flt}))
 
 (set-state! [root :fields] (initial-state config))
 

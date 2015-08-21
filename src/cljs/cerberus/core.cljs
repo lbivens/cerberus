@@ -15,6 +15,7 @@
    [om-bootstrap.progress-bar :as pb]
    [cerberus.routing]
    [cerberus.http :as http]
+   [cerberus.alert :as alert]
 
    [cerberus.hypervisors :as hypervisors]
    [cerberus.datasets :as datasets]
@@ -29,6 +30,7 @@
    [cerberus.clients :as clients]
    [cerberus.config :as conf]
    [cerberus.add :as add]
+   [cerberus.howl :as howl]
 
    [cerberus.timers]
    [cerberus.utils :refer [goto val-by-id by-id a menu-items]]
@@ -49,7 +51,8 @@
         (let [e (:body response)
               token (e :access_token)
               expires-in (e :expires_in)]
-          (conf/login token expires-in))))))
+          (conf/login token expires-in)
+          (howl/init))))))
 
 (defn login [app]
   (r/well
@@ -67,6 +70,25 @@
     {:className "active"}
     {}))
 
+
+(defn max-level [alerts]
+  (fn [last next]
+    (match
+     [last next]
+     [:danger _]  :danger
+     [_ :danger]  :danger
+     [:warning _] :warning
+     [_ :warning] :warning
+     [:info _]    :info
+     [_ :info]    :info
+     [:success _] :success
+     [_ :success] :success
+     [:primary _] :primary
+     [_ :primary] :primary
+     [_ _]        :default))
+  :default
+  (map :type (vals alerts)))
+
 (defn nav-bar [data owner opts]
   (reify
     om/IDisplayName
@@ -81,32 +103,47 @@
         (n/nav-item {:key 1 :href "#/vms"} "Machines")
         (n/nav-item {:key 2 :href "#/datasets"} "Datasets")
         (n/nav-item {:key 3 :href "#/hypervisors"} "Hypervisors")
-        (b/dropdown {:key 4 :title "Configuration"}
-                    (menu-items
-                     ["Users" "#/users"]
-                     ["Roles"  "#/roles"]
-                     ["Organisations"  "#/orgs"]
-                     :divider
-                     ["Clients"  "#/clients"]
-                     :divider
-                     ["Packages" "#/packages"]
-                     :divider
-                     ["Networks" "#/networks"]
-                     ["IP Ranges" "#/ipranges"]
-                     #_["DTrace" "#/dtrace"]
-                     :divider
-                     ["Logout" #(conf/logout)]
-                     ["Logout & Reset UI" #(conf/clear)]))
+        (b/dropdown
+         {:key 4 :title "Configuration"}
+         (menu-items
+          ["Users" "#/users"]
+          ["Roles"  "#/roles"]
+          ["Organisations"  "#/orgs"]
+          :divider
+          ["Clients"  "#/clients"]
+          :divider
+          ["Packages" "#/packages"]
+          :divider
+          ["Networks" "#/networks"]
+          ["IP Ranges" "#/ipranges"]
+          #_["DTrace" "#/dtrace"]
+          :divider
+          ["Logout" #(conf/logout)]
+          ["Logout & Reset UI" #(conf/clear)]))
+        (let [alerts (:alerts data)]
+          (b/dropdown
+           {:key 5
+            :bs-style (max-level alerts)
+            :title (d/span "Notifications "
+                           (r/badge {} (count alerts)))}
+           (apply
+            menu-items
+            ["add" #(alert/raise :success "weeh")]
+            (map
+             (fn [[id alert]]
+               [(r/label {:bs-style (name (:type alert))} (:text alert)) #(alert/clear id)])
+             alerts))))
+
         ;;Removed this for now
         #_(n/nav-item {:key 5 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
-                    (pb/progress-bar {:min 0
-                                      :max (get-in data [:total-memory] 0)
-                                      :now (get-in data [:provisioned-memory] 0) :label "RAM"}))
+                      (pb/progress-bar {:min 0
+                                        :max (get-in data [:total-memory] 0)
+                                        :now (get-in data [:provisioned-memory] 0) :label "RAM"}))
         ;; Removed this for now
         #_(n/nav-item {:key 6 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
-                    (pb/progress-bar {:min 0
-                                      :max (get-in data [:disk-size] 0)
-                                      :now (get-in data [:disk-used] 0) :label "Disk"})))
+                      (pb/progress-bar {:min 0
+                                        :max (get-in data [:disk-size] 0)
+                                        :now (get-in data [:disk-used] 0) :label "Disk"})))
        ))))
 
 (defn main-view [data]
@@ -124,6 +161,15 @@
     :clients     (om/build clients/render data)
     (goto "/vms")))
 
+
+(defn render-alerts [[_ data] owner opts]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (r/alert
+       {:bs-style (name (:type data))}
+       (:text data)))))
+
 (defn main []
   (om/root
    (fn [app owner]
@@ -131,16 +177,36 @@
       (if (:token app)
         (d/div
          {:class (str "app " (if (get-in app [:add :maximized])  "add-open" "add-closed"))}
-         (om/build nav-bar (get-in app [:cloud :metrics]))
+         (om/build nav-bar app)
+
          (g/grid
           {}
           (g/row
            {}
            (g/col
-            {:xs 18 :md 12}
+            {:xs 12
+             :sm-offset 4 :sm 8
+             :md-offset 6 :md 6
+             :lg-offset 8 :lg 4}
+            (om/build-all render-alerts (:alerts app))))
+          #_(g/row
+             {}
+             (g/col
+              {:xs 12
+               :sm-offset 4 :sm 8
+               :md-offset 6 :md 6
+               :lg-offset 8 :lg 4}
+              ))
+          (g/row
+           {}
+           (g/col
+            {:xs 12}
             (main-view app))))
          (om/build add/render (get-in app [:add])))
         (do (goto)
             (login app)))))
    app-state
    {:target (by-id "app")}))
+
+;(alert/raise :warning "oops")
+

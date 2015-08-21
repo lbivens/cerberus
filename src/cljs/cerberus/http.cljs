@@ -43,4 +43,3 @@
   "Like #'request, but sets the :method and :url as appropriate."
   [url & [hdrs req]]
   (do-req cljs-http.client/delete url hdrs req))
-

@@ -4,6 +4,7 @@
   (:require
    [cerberus.api :as api]
    [cerberus.http :as http]
+   [cerberus.howl :as howl]
    [cerberus.utils :refer [initial-state make-event]]
    [cerberus.state :refer [set-state! update-state! app-state delete-state!]]))
 
@@ -15,7 +16,9 @@
 (defn list [data]
   (api/list data root list-fields))
 
-(def get (partial api/get root))
+(defn get [uuid]
+  (howl/join uuid)
+  (api/get root uuid))
 
 (defn metrics [uuid]
   (api/to-state [:metrics]
@@ -41,18 +44,12 @@
              {:action :reboot})))
 
 (defn snapshot [uuid comment]
-  (api/post root [uuid :snapshots]
-            {:comment comment}
-            (fn [resp]
-              (if (:success resp)
-                (let [snapshot (:body resp)]
-                  (update-state! [root :elements uuid :snapshots] assoc (:uuid snapshot) snapshot))))))
+  (api/post
+   root [uuid :snapshots]
+   {:comment comment}))
 
 (defn delete-snapshot [uuid snapshot]
-  (api/delete root [uuid :snapshots snapshot]
-              (fn [resp]
-                (if (:success resp)
-                  (delete-state! [root :elements uuid :snapshots snapshot])))))
+  (api/delete root [uuid :snapshots snapshot]))
 
 (defn restore-snapshot [uuid snapshot]
   (api/put root [uuid :snapshots snapshot] {:action "rollback"}
@@ -63,8 +60,7 @@
              opts
              (fn [resp]
                (if (:success resp)
-                 (let [backup (:body resp)]
-                   (update-state! [root :elements uuid :backups] assoc (:uuid backup) backup))))))
+                 (set-state! [root :elements uuid] (:body resp))))))
 
 (defn add-fw-rule [uuid rule]
   (api/post root [uuid :fw_rules] rule

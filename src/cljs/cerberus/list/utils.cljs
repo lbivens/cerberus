@@ -5,9 +5,9 @@
    [cerberus.utils :refer [make-event value-by-key]]))
 
 
-(def large "hidden-xs hidden-ms")
+(def large "hidden-xs hidden-sm")
 
-(def small "visible-xs-block visible-ms-block")
+(def small "visible-xs-block visible-sm-block")
 
 (defn show-field [{key :key formater :formater :as field} element]
   (let [txt (value-by-key key element)]

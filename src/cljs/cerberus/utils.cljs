@@ -30,9 +30,9 @@
 (defn val-by-id [id]
   (.-value (by-id id)))
 
-(defn make-event [fun]
+(defn make-event [f]
   (fn [event]
-    (fun)
+    (f)
     (.stopPropagation event)
     (.preventDefault event)))
 
@@ -52,6 +52,7 @@
     (list? key) (get-in element (vec key))
     (vector? key) (get-in element (vec key))
     :else ""))
+
 (defn row [& body]
   (g/row {} body))
 

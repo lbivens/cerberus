@@ -23,14 +23,16 @@
                  [org.clojure/clojurescript "1.7.107"]
                  [org.omcljs/om "0.9.0"]
                  [com.lucasbradstreet/instaparse-cljs "1.4.1.0"]
-                 ;;[cljsjs/react-with-addons "0.12.2-4"]
+                 [prismatic/om-tools "0.3.12"]
                  [racehub/om-bootstrap "0.5.3"]
                  [secretary "1.2.3"]
-                 [cljs-http "0.1.36"]]
+                 [clj-http "2.0.0"]
+                 [jarohen/chord "0.6.0"]
+                 [cljs-http "0.1.37"]]
 
-  :plugins [[lein-cljsbuild "1.0.5"]
+  :plugins [[lein-cljsbuild "1.0.6"]
             [lein-environ "1.0.0"]
-            [lein-less "1.7.3"]]
+            [lein-less "1.7.5"]]
 
   :min-lein-version "2.5.1"
 
@@ -56,7 +58,7 @@
 
                    :repl-options {:init-ns cerberus.server}
 
-                   :plugins [[lein-figwheel "0.2.1-SNAPSHOT"]]
+                   :plugins [[lein-figwheel "0.3.7"]]
 
                    :figwheel {:http-server-root "public"
                               :server-port 3449

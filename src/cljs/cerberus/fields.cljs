@@ -9,6 +9,9 @@
 (defn fmt-percent [p]
   (str p "%"))
 
+(defn fmt-percent-float [p]
+  (str (Math/round (* p 100)) "%"))
+
 (defn byte-suffix [type]
   (condp = type
     :b "B"
@@ -45,6 +48,7 @@
    type
    :uuid {:no-quick-filter true :class "uuid"}
    :percent {:formater fmt-percent}
+   :percent-flt {:formater fmt-percent-float}
    [:bytes size] {:formater (partial fmt-bytes size)}
    :else {}))
 

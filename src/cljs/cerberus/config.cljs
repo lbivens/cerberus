@@ -1,11 +1,14 @@
 (ns cerberus.config
   (:refer-clojure :exclude [get print])
   (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cerberus.http :as http]
-            [cerberus.api :as api]
-            [goog.net.cookies]
-            [cerberus.utils :refer [goto path-vec]]
-            [cerberus.state :refer [clear-state! app-state set-state! delete-state! update-state!]]))
+  (:require
+   [cerberus.http :as http]
+   [cerberus.api :as api]
+   [goog.net.cookies]
+   [cerberus.howl :as howl]
+
+   [cerberus.utils :refer [goto path-vec]]
+   [cerberus.state :refer [clear-state! app-state set-state! delete-state! update-state!]]))
 
 (enable-console-print!)
 
@@ -92,4 +95,5 @@
 (if-let [token (.get goog.net.cookies "token")]
   (do
     (set-state! :token token)
+    (howl/init)
     (load)))

@@ -6,7 +6,7 @@
    [cerberus.api :as api]
    [goog.net.cookies]
    [cerberus.howl :as howl]
-
+   [cerberus.debug :as dbg]
    [cerberus.utils :refer [goto path-vec]]
    [cerberus.state :refer [clear-state! app-state set-state! delete-state! update-state!]]))
 
@@ -53,8 +53,7 @@
 
 (defn clear []
   (go
-    (let [_ (pr (:user @app-state))
-          req (<! (http/delete (str "users/" (:user @app-state) "/metadata/cerberus")))]
+    (let [req (<! (http/delete (str "users/" (:user @app-state) "/metadata/cerberus")))]
       (logout))))
 
 (defn write! [path value]
@@ -88,7 +87,8 @@
     (api/delete-metadata :users uuid (concat [:cerberus] full-path))
     (update-state! (concat [:config] path) dissoc key)))
 
-(defn print [] (pr (get-in @app-state [:config])))
+(defn print []
+  (dbg/debug "[config] " (get-in @app-state [:config])))
 
 (defn user [] (get-in @app-state [:user]))
 

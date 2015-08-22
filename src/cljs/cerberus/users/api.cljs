@@ -17,7 +17,6 @@
   (api/list data root list-fields))
 
 (defn get [uuid]
-  (pr "get")
   (api/get root uuid))
 
 (defn delete [uuid]

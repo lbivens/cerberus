@@ -6,6 +6,7 @@
    [om-bootstrap.input :as i]
    [cerberus.api :as api]
    [cerberus.http :as http]
+   [cerberus.debug :as dbg]
    [cerberus.utils :refer [make-event val-by-id str->int]]))
 
 (defn default-validator [data-type]
@@ -38,14 +39,13 @@
                          path (concat [:data] path)
                          val (get-in data path)
                          validator (mk-validator field)]
-                     (pr data val)
                      (validator data val))) spec)]
 
     (every? identity results)))
 
 (defn validate-data! [data spec]
   (let [result (validate-data data spec)]
-    (pr "valid"  result data)
+    (dbg/debug "valid data:"  result data)
     (om/transact! data [:valid] (constantly result))))
 
 (defn input [data spec {id :id key :key validator :validator label :label type :type data-type :data-type
@@ -63,7 +63,6 @@
                                (assoc-in data data-path dv)
                                data)
                              view-path v)]
-                  (pr data-path dv view-path v data)
                   (om/transact! data view-path (constantly v))
                   (if key
                     (om/transact! data data-path (constantly  dv)))

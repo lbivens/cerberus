@@ -16,8 +16,7 @@
         ws (clojure.string/replace proto #"^http" "ws")
         host (.-hostname location)
         port (.-port location)]
-    (str ws "//" host ":" port))
-  "ws://192.168.1.41")
+    (str ws "//" host ":" port)))
 
 (def channel (atom))
 

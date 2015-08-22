@@ -14,20 +14,6 @@
 
 (def channel (atom))
 
-(defn send [msg]
-  (if-let [c @channel]
-    (go
-      (>! c msg))))
-
-(defn join [channel]
-  (if (not (empty? channel))
-    (send {:join channel})))
-
-(defn leave [channel]
-  (send {:leave channel}))
-
-(defn ping []
-  (send {:ping "ping"}))
 
 (defn handle-channel [channel message]
   (match
@@ -62,19 +48,29 @@
    [_]
    (dbg/warning "[howl] unknown message:" channel message)))
 
-(defn ws-loop [ws-channel]
+(defn ping [init]
+  (if-let [c @channel]
+    (go
+      (if (not (>! c {:ping "ping"}))
+        (init)))
+    (init)))
+
+(defn ws-loop [init ws-channel]
   (swap! channel (constantly ws-channel))
-  (js/setInterval ping 10000)
+  (js/setInterval #(ping init) 10000)
   (go
     (loop [c ws-channel]
       (let [{:keys [message]} (<! ws-channel)]
-        (match
-         [message]
-         [{:channel chan :message msg}] (handle-channel chan msg)
-         [{:pong _}] :ok
-         [{:ok _}] :ok
-         [_] (dbg/warning  "[howl] unknown event: " message)))
-      (recur c))))
+        (if (not message)
+          (init)
+          (do
+            (match
+             [message]
+             [{:channel chan :message msg}] (handle-channel chan msg)
+             [{:pong _}] :ok
+             [{:ok _}] :ok
+             [_] (dbg/warning  "[howl] unknown event: " message)))
+          (recur c))))))
 
 (defn init []
   (go
@@ -84,8 +80,20 @@
           (go
             (let [{:keys [ws-channel error]} (<! (ws-ch (str (ws/host) "/howl?fifo_ott=" token) {:format :json-kw}))]
               (if-not error
-                (ws-loop ws-channel)
+                (ws-loop init ws-channel)
                 ;(ws-authenticate ws-channel)
                 (dbg/error "[howl] ws error:" error)))))
         (dbg/error "[ott] error: " response)))))
 
+(defn send [msg]
+  (if-let [c @channel]
+    (go
+      (if (not (>! c msg))
+        (init)))
+    (init)))
+
+(defn join [channel]
+  (send {:join channel}))
+
+(defn leave [channel]
+  (send {:leave channel}))

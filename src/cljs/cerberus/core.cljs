@@ -173,8 +173,13 @@
 (defn main []
   (om/root
    (fn [app owner]
-     (om/component
-      (if (:token app)
+     (reify
+      om/IDisplayName
+      (display-name [_]
+        "Cerberus")
+      om/IRenderState
+      (render-state [_ state]
+        (if (:token app)
         (d/div
          {:class (str "app " (if (get-in app [:add :maximized])  "add-open" "add-closed"))}
          (om/build nav-bar app)
@@ -204,7 +209,7 @@
             (main-view app))))
          (om/build add/render (get-in app [:add])))
         (do (goto)
-            (login app)))))
+            (login app))))))
    app-state
    {:target (by-id "app")}))
 

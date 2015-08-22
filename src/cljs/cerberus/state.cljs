@@ -1,4 +1,6 @@
-(ns cerberus.state)
+(ns cerberus.state
+  (:require
+   [cerberus.debug :as dbg]))
 
 (def app-state (atom {:view :root :list []}))
 (def app-alerts (atom {}))
@@ -44,4 +46,4 @@
   (reset! app-state {}))
 
 (defn print-state []
-  (pr @app-state))
+  (dbg/debug @app-state))

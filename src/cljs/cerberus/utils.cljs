@@ -12,10 +12,10 @@
 
 (defn tr-color [e]
   (cond
-    (> (:raised e) 0) "danger"
+    (> (:raised    e) 0) "danger"
     (> (:confirmed e) 0) "warning"
-    (> (:cleared e) 0) "info"
-    :else "success"))
+    (> (:cleared   e) 0) "info"
+    :else                "success"))
 
 (defn goto [& page]
   (set! (.-hash js/location) (apply str "#" page)))

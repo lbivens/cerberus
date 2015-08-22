@@ -20,5 +20,4 @@
   (api/delete root [uuid]))
 
 (defn import [uuid]
-  (pr "impoting" uuid)
   (api/post root [] {"url" (str server "/" uuid)}))

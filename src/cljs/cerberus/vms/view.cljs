@@ -521,7 +521,6 @@
 
 
 (defn rule-target [state]
-  (pr state)
   (condp = (:target state)
     "all" "all"
     "ip" {:ip (:ip state)}
@@ -571,7 +570,6 @@
                     direction :direction filters :filters}]
   (let [target-str (str protocol "://" (render-target target))
         filters-str (render-filter filters)]
-    (pr filters-str)
     (row
      (d/span
       (if (= direction "inbound")

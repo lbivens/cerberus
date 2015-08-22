@@ -19,8 +19,6 @@
    [cerberus.state :refer [set-state!]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
-
-
 (defn render-home [app element]
   (pr-str element))
 
@@ -46,7 +44,6 @@
             element (get-in data [root :elements uuid])
             section (get-in data [root :section])
             key (get-in sections [section :key] 1)]
-        (pr section)
         (d/div
          {}
          (apply n/nav {:bs-style "tabs" :active-key key}
@@ -58,6 +55,5 @@
                  (sort-by (fn [[section data]] (:key data)) (seq sections))))
          (if-let [f (get-in sections [section :fn] )]
            (do
-             (pr element)
              (f data element))
            (goto (str "/dtrace/" uuid))))))))

@@ -18,3 +18,9 @@
 
 (defn delete [uuid]
   (api/delete root [uuid]))
+
+(defn add-iprange [uuid iprange]
+  (api/put root [uuid :ipranges iprange] {}  #(get uuid) []))
+
+(defn remove-iprange [uuid iprange]
+  (api/delete root [uuid :ipranges iprange] #(get uuid)))

@@ -15,7 +15,6 @@
         (str (name root) "detailc"))
       om/IWillMount
       (will-mount [_]
-        (pr (get-in data [root :selected]))
         (get data (get-in data [root :selected])))
       om/IInitState
       (init-state [_] init-state)

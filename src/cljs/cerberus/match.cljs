@@ -3,7 +3,8 @@
   (:require
    [cljs.core.match]
    [instaparse.core :as insta]
-   [cerberus.utils :refer [value-by-key str->int]]))
+   [cerberus.utils :refer [value-by-key str->int]]
+   [cerberus.debug :as dbg]))
 
 
 (defn re-match [filter-str]
@@ -80,7 +81,7 @@ str = <'\"'> #'([^\"]|\\.)+' <'\"'> | sym
    [:field field-name [:num field-match]]     (field field-name (eq-match (str->int field-match)))
    [:field field-name "~" [:num field-match]] (field field-name (re-match field-match))
    [:field field-name cmp val]                (field field-name ((cmp-fn cmp) (val-fn val)))
-   :else (pr "unknown:" q)))
+   :else (dbg/warning "unknown query:" q)))
 
 (defn simplify-query [q]
   (filter boolean (map simplify-query-element q)))

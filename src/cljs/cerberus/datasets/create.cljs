@@ -5,13 +5,13 @@
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.table :refer [table]]
    [cljs-http.client :as http]
+   [cerberus.debug :as dbg]
    [cerberus.state :refer [app-state set-state! update-state!]]
    [cerberus.create :as create]
    [cerberus.datasets.api :as datasets :refer [root]]))
 
 
 (defn submit [section data]
-  (pr section data)
   (doall
    (map datasets/import data)))
 
@@ -47,7 +47,7 @@
             (let [resp (<! (http/get "http://datasets.at/images" {:with-credentials? false :headers {"Accept" "datalication/json"}}))]
               (if (:success resp)
                 (om/transact! data :remote-datasets (constantly (:body resp)))
-                (pr "error: " resp)))))
+                (dbg/error "[datasets/import] error: " resp)))))
         (table
          {:striped? true :condensed? true :hover? true :responsive? true :id "remote-datasets"}
          (d/thead

@@ -8,7 +8,7 @@
    [om-bootstrap.random :as r]
 
    [om-bootstrap.grid :as g]
-
+   [cerberus.debug :as dbg]
    [cerberus.api :as api]
    [cerberus.config :as conf]
    [cerberus.utils :refer [goto]]
@@ -62,10 +62,10 @@
     (if (get-in data [:content :valid])
       (let [section (:section data)
             submit-fn (get-in add-submit [section] submit-default)]
-        (pr (:section data) "valid " values)
+        (dbg/debug "[add] valid values " (:section data) "valid " values)
         (if (submit-fn section values)
           (clear-add data)))
-      (pr "invalid " values))))
+      (deb/info "[add] invalid values " values))))
 
 (defn init-add [data section]
   (om/transact! data :section (constantly section))

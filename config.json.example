@@ -1,4 +1,3 @@
 {
-  "wiggle": "http://127.0.0.1/api",
-  "howl": "http://127.0.0.1/howl"
+  "proxy": "http://127.0.0.1/api",
 }

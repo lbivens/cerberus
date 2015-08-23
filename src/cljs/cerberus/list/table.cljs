@@ -84,12 +84,14 @@
       (cell-opt :style e)
       (cell-opt :class e)))
 
-(defn tbl-cell [set-filter {txt :text quick-filter :quick-filter :as e }]
+(defn tbl-cell [set-filter {txt :text quick-filter :quick-filter filter-txt :filter-text :as e }]
   (if quick-filter
     (d/td (cell-attrs e)
           (r/glyphicon {:glyph "pushpin"
                         :class "filterby"
-                        :on-click (make-event #(set-filter (str (name (:id e)) ":" txt)))}) " " txt)
+                        :on-click (make-event #(do
+                                                 (pr e)
+                                                 (set-filter (str (name (:id e)) ":" filter-txt))))}) " " txt)
     (d/td (cell-attrs e)
           txt)))
 

@@ -32,9 +32,10 @@
                (map
                 (fn [field]
                   (d/div
-                   (r/glyphicon {:glyph "pushpin"
+                   (if (:quick-filter field)
+                     (r/glyphicon {:glyph "pushpin"
                                    :class "filterby"
-                                   :on-click #(set-filter (str (name (:id field)) ":" (:text field)))})
+                                   :on-click #(set-filter (str (name (:id field)) ":" (:filter-text field)))}))
                    (d/span {:class "field-label"} (:title field) ":")
                    (d/span {:class "value"} (:text field))))
                 (:row data))))))

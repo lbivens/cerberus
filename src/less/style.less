@@ -69,7 +69,7 @@
 @headings-font-family:    inherit;
 @headings-font-weight:    400;
 @headings-line-height:    1.1;
-@headings-color:          #444;
+@headings-color:          #555;
 
 
 //== Iconography
@@ -878,6 +878,11 @@ main content bg: #xxxxxx
 /* Here’s how you comment CSS */
 
 /* ---------->>> GLOBAL <<<-----------*/
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    color: #555;
+}
+
 a {
     color: #48B4DE;
 }
@@ -895,6 +900,10 @@ a {
     height: 100%;
 }
 
+.navbar>.container .navbar-brand:hover, .navbar>.container-fluid .navbar-brand:hover {
+margin-left: -5px;
+}
+
 .navbar {
     border: none;
     -webkit-box-shadow: 0 1px 2px rgba(72, 180, 222, 1);
@@ -905,7 +914,6 @@ a {
   padding: 1px 5px;
   display: inline;
   border-radius: 50%;
-  
 }
 /* ----------- END NAVIGATION ------------*/
 
@@ -1067,7 +1075,7 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   color: #F0602B;
 }
 // add some space on table header names so they dont sit over filter icons
-.listview thead tr td a {
+.listview thead tr td + td a {
   /* text-align: start; */
   padding-left: 16px;
 }

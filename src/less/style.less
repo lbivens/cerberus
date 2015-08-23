@@ -881,13 +881,6 @@ main content bg: #xxxxxx
 /* ----------- END GLOBAL ------------*/
 
 /* ---------->>> NAVIGATION <<<-----------*/
-@media (min-width: 768px){
-.navbar-nav {
-    float: right;
-    margin: 0;
-  }
-}
-
 .navbar .navbar-collapse .dropdown .badge {
   padding: 1px 5px;
   display: inline;
@@ -897,9 +890,8 @@ main content bg: #xxxxxx
 /* ----------- END NAVIGATION ------------*/
 
 /* ---------->>> LISTVIEW <<<-----------*/
-
 .listview div.filterbar div.form-group {
-    width: 325px;
+    width: 298px;
     float: right;
     margin-bottom: 4px;
 }
@@ -909,7 +901,7 @@ main content bg: #xxxxxx
 }
 
 .listview div.filterbar div.btn-group {
-    float: right;
+    // float: right;
     margin-right: 10px;
 }
 /* ----------- END LISTVIEW ------------*/
@@ -1218,3 +1210,40 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
     border-radius: 2px;
     margin-left: 290px;
 }
+
+/* ---------->>> RESPONSIVE BREAKPOINTS <<<-----------*/
+
+/* Navigation */
+@media (min-width: 768px){
+.navbar-nav {
+    float: right;
+    margin: 0;
+  }
+}
+/* End Navigation */
+
+/* ListView */
+@media (max-width: 990px){
+
+.list-panel .field-label {
+    text-align: left;
+    padding-left: 10px;
+    width: 80px;
+  }
+
+}
+
+@media (max-width: 400px){
+
+.listview div.filterbar div.btn-group {
+    float: left;
+  }
+
+.listview div.filterbar div.form-group {
+    float: right;
+  }    
+
+}
+/* End ListView */
+
+/* ----------- END RESPONSIVE BREAKPOINTS ------------*/

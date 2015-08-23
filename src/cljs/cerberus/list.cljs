@@ -8,6 +8,7 @@
    [om-bootstrap.input :as i]
    [cerberus.match :as jmatch]
    [cerberus.state :refer [set-state! update-state!]]
+   [cerberus.debug :as dbg]
    [cerberus.list.table :as table]
    [cerberus.list.well :as well]
    [cerberus.list.utils :refer [show-field get-filter-field expand-fields large small]]
@@ -89,10 +90,7 @@
 
 (defn mk-filter-field [data]
   (fn [text]
-    (let [current (:filter data)]
-      (if (empty? current)
-        (om/update! data :filter (constantly text))
-        (om/update! data :filter (str current " " text))))))
+    (om/update! data :filter text)))
 
 (defn view [data owner {:keys [config on-mount]}]
   (reify

@@ -20,6 +20,7 @@
    [cerberus.view :as view]
    [cerberus.packages.api :as packages]
    [cerberus.state :refer [set-state!]]
+   [cerberus.fields :as fields]
    [cerberus.utils :refer [make-event menu-items]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
@@ -93,7 +94,7 @@
   (d/li {:class "list-group-item"} args))
 
 (defn render-network
-  [uuid
+  [uuid disabled
    {interface :interface
     tag       :nic_tag
     ip        :ip
@@ -110,15 +111,17 @@
         (b/button
          {:bs-style "warning"
           :class "pull-right"
-          :bs-size "xsmall"
+          :bs-size "small"
+          :disabled? disabled
           :on-click
-          #(vms/make-network-primary uuid mac)} "!"))
+          #(vms/make-network-primary uuid mac)} (r/glyphicon {:glyph "check"})))
       (b/button
        {:bs-style "primary"
         :class "pull-right"
-        :bs-size "xsmall"
+        :bs-size "small"
+        :disabled? disabled
         :on-click
-        #(vms/delete-network uuid mac)} "X")]
+        #(vms/delete-network uuid mac)} (r/glyphicon {:glyph "trash"}))]
      :list-group
      (d/ul {:class "list-group"}
            (group-li "Tag: "     tag)
@@ -133,39 +136,39 @@
     om/IRenderState
     (render-state [_ _]
       (let [data (get-in app [root :elements uuid])
-            nets (vals (get-in app [:networks :elements]))]
-        (let [networks (get-in data [:config :networks])
-              rows (partition 4 4 nil networks)]
-          (r/well
-           {}
-           (row
-            (g/col
-             {:xs 4}
-             (i/input
-              {:type "select" :include-empty true :id "net-add"}
-              (d/option)
-              (map #(d/option {:value (:uuid %)} (:name %)) nets)))
-            (g/col
-             {:xs 2}
-             (b/button {:bs-style "primary"
-                        :on-click #(vms/add-network uuid (val-by-id "net-add"))} "Add")))
-           (let [render-network (partial render-network uuid)]
-             (g/grid
-              nil
-              (map #(g/row nil (map render-network %)) rows)))))))))
+            nets (vals (get-in app [:networks :elements]))
+            disabled (not  (#{"stopped" "installed"} (:state data)))
+            networks (get-in data [:config :networks])
+            rows (partition 4 4 nil networks)
+            render-network (partial render-network uuid disabled)]
+        (r/well
+         {}
+         (row
+          (g/col
+           {:xs 4}
+           (i/input
+            {:type "select" :include-empty true :id "net-add"}
+            (d/option)
+            (map #(d/option {:value (:uuid %)} (:name %)) nets)))
+          (g/col
+           {:xs 2}
+           (b/button {:bs-style "primary"
+                      :disabled? disabled
+                      :on-click #(vms/add-network uuid (val-by-id "net-add"))} "Add")))
+         (map #(g/row nil (map render-network %)) rows))))))
 
-(defn cmp-vals [package cmp-package val]
+(defn cmp-vals [package cmp-package val fmt]
   (if-let [cmp-vap (cmp-package val)]
     (let [val (if package (package val) 0)
           diff (- cmp-vap val)]
       (cond
-        (> diff 0) [val " (+" diff ")"]
-        (< diff 0) [val " (" diff ")"]
-        :else [val]))
+        (> diff 0) [(fmt val) " (+" (fmt diff) ")"]
+        (< diff 0) [(fmt val) " (" (fmt diff) ")"]
+        :else [(fmt  val)]))
     [(if package (package val) 0)]))
 
-(defn apply-fmt [fmt v & rest]
-  (concat [(fmt v)] rest))
+(defn apply-fmt [fmt rest-fn]
+  (rest fmt))
 
 (defn render-package [app element]
   (let [current-package (:package element)
@@ -184,9 +187,9 @@
         {:header (if package (:name package) "custom")
          :list-group
          (d/ul {:class "list-group"}
-               (group-li "CPU: "    (apply apply-fmt fmt-percent (cmp-vals :cpu_cap)))
-               (group-li "Memory: " (apply apply-fmt (partial fmt-bytes :mb) (cmp-vals :ram)))
-               (group-li "Quota: "  (apply apply-fmt (partial fmt-bytes :gb) (cmp-vals :quota))))}))
+               (group-li "CPU: "    (cmp-vals :cpu_cap fmt-percent))
+               (group-li "Memory: " (cmp-vals :ram (partial fmt-bytes :mb)))
+               (group-li "Quota: "  (partial cmp-vals :quota (partial fmt-bytes :gb))))}))
       (g/col
        {:md 8}
        (table

@@ -6,8 +6,6 @@
 (defn warning [& args]
   (apply pr "[warning]" args))
 
-(defn info [& args]
-  (apply pr "[info]" args))
+(defn info [& args])
 
-(defn debug [& args]
-  (apply pr "[debug]" args))
+(defn debug [& args])

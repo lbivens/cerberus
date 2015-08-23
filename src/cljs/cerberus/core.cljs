@@ -97,7 +97,7 @@
     om/IRenderState
     (render-state [_ _]
       (n/navbar
-       {:brand (d/a {:href (str "#/")} "FiFo")}
+       {:brand (d/a {:href (str "#/")} (d/img {:src "imgs/fifo-logo.png" :alt "FiFo"}))}
        (n/nav
         {:collapsible? true}
         (n/nav-item {:key 1 :href "#/vms"} "Machines")

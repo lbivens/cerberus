@@ -38,6 +38,7 @@
    root "Machines" actions
    :name {:title "Name" :key '(:config :alias) :order -10}
    :cpu {:title "CPU" :key '(:config :cpu_cap) :type :percent}
+   :ram {:title "Memory" :key '(:config :ram) :type [:bytes :mb]}
    :state {:title "State" :key :state :type :string}
    :dataset {:title "Dataset" :type :string
              :key (partial api/get-sub-element :datasets :dataset

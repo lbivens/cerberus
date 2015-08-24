@@ -73,7 +73,8 @@
 
 //** AddView Text attributes.
 @addview-color:           #555;   
-
+@addview-color-active:    #C0E5F4;
+@addview-color-installed: #6ec071;
 
 //== Iconography
 //
@@ -1195,14 +1196,18 @@ div#add-view.add-open {
   padding-bottom: 50px;
 }
 
+#add-view #add-hdr .glyphicon {
+    padding: 4px;
+}
+
 #add-view ul.nav>li {
     background: none;
 }
 
 #add-view ul.nav>li:hover {
-    border-right: 2px solid @brand-primary;
-    background: none;
-    color: 2px solid;
+    // border-right: 2px solid @brand-primary;
+    background-color: @addview-color-active;
+    // color: 2px solid;
 }
 
 #add-view ul.nav>li:hover a {
@@ -1211,13 +1216,13 @@ div#add-view.add-open {
 }
 
 #add-view ul.nav>li.active  {
-    border-right: 2px solid @brand-primary;
-    background: none;
-    color: @brand-primary;
+    // border-right: 2px solid @brand-primary;
+    // background: none;
+    // color: @brand-primary;
 }
 
 #add-view ul.nav>li.success.active>a  {
-    background-color: @brand-required;
+    background-color: @addview-color-active;
     color: @addview-color;
     border-radius: 5px;
     border-style: dotted;
@@ -1229,7 +1234,7 @@ div#add-view.add-open {
 }
 
 #add-view ul.nav>li.success>a  {
-    background-color: @brand-required;
+    background-color: #fff;
     color: @addview-color;
     border-radius: 5px;
     border-style: dotted;
@@ -1241,7 +1246,7 @@ div#add-view.add-open {
 }
 
 #add-view ul.nav>li.danger>a  {
-    background-color: @brand-required;
+    background-color: #fff;
     color: @addview-color;
     border-radius: 5px;
     border-style: dotted;
@@ -1253,7 +1258,7 @@ div#add-view.add-open {
 }
 
 #add-view ul.nav>li.danger.active>a  {
-    background-color: @brand-required;
+    background-color: @addview-color-active;
     color: @addview-color;
     border-radius: 5px;
     border-style: dotted;
@@ -1262,6 +1267,10 @@ div#add-view.add-open {
     padding: 0px;
     margin-bottom: 10px;
     text-align: center;
+}
+
+#add-view .table>tbody>tr.active>td {
+    background-color: @addview-color-active;
 }
 
 #add-view .table {
@@ -1277,11 +1286,11 @@ div#add-view.add-open {
 }
 
 #remote-datasets tr.selected {
-    background-color: @brand-info;
+    background-color: @addview-color-active;
 }
 
 #remote-datasets tr.installed {
-    background-color: @brand-success;
+    background-color: @addview-color-installed;
 }
 
 

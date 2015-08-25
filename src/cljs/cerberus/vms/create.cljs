@@ -16,7 +16,7 @@
 (def spec-alias {:label "Alias" :id "vm-alias" :key [:config :alias]})
 
 (def spec-hostname {:label "Hostname" :id "vm-hostname" :key [:config  :hostname]
-                    :validator #(re-matches #"[a-zA-Z]+[.a-zA-Z0-9-]" (str %2))})
+                    :validator #(re-matches #"[a-zA-Z]+[.a-zA-Z0-9-]*" (str %2))})
 
 (def spec-dataset {:lable "Dataset" :key :dataset :validator #(not (empty? %2))})
 

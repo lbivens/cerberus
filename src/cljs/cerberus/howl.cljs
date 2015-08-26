@@ -13,7 +13,7 @@
 (def token-path "sessions/one_time_token")
 
 (def channel (atom))
-
+(def joined (atom #{}))
 
 (defn handle-channel [channel message]
   (match
@@ -49,28 +49,27 @@
    (dbg/warning "[howl] unknown message:" channel message)))
 
 (defn ping [init]
-  (if-let [c @channel]
-    (go
-      (if (not (>! c {:ping "ping"}))
-        (init)))
-    (init)))
+  (go
+    (if (not (>! @channel {:ping "ping"}))
+      (init))))
 
 (defn ws-loop [init ws-channel]
   (swap! channel (constantly ws-channel))
-  (js/setInterval #(ping init) 10000)
+  (js/clearInterval (.-howl js/window))
+  (set! (.-howl js/window) (js/setInterval #(ping init) 10000))
+  (doall (map #(go (>! @channel {:join %})) @joined))
   (go
-    (loop [c ws-channel]
-      (let [{:keys [message]} (<! ws-channel)]
-        (if (not message)
-          (init)
-          (do
-            (match
-             [message]
-             [{:channel chan :message msg}] (handle-channel chan msg)
-             [{:pong _}] :ok
-             [{:ok _}] :ok
-             [_] (dbg/warning  "[howl] unknown event: " message)))
-          (recur c))))))
+    (loop []
+      (if-let [m (<! @channel)]
+        (let [{:keys [message]} m]
+          (match
+           [message]
+           [{:channel chan :message msg}]  (handle-channel chan msg)
+           [{:pong _}] :ok
+           [{:ok _}] :ok
+           [_] (dbg/warning  "[howl] unknown event: " message))
+          (recur))
+        (init)))))
 
 (defn init []
   (go
@@ -93,7 +92,9 @@
     (init)))
 
 (defn join [channel]
+  (swap! joined conj channel)
   (send {:join channel}))
 
 (defn leave [channel]
+  (swap! joined disj channel)
   (send {:leave channel}))

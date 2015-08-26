@@ -6,6 +6,7 @@
    [om-bootstrap.table :refer [table]]
    [cljs-http.client :as http]
    [cerberus.debug :as dbg]
+   [cerberus.fields :as fields]
    [cerberus.state :refer [app-state set-state! update-state!]]
    [cerberus.create :as create]
    [cerberus.datasets.api :as datasets :refer [root]]))
@@ -52,7 +53,12 @@
          {:striped? true :condensed? true :hover? true :responsive? true :id "remote-datasets"}
          (d/thead
           (d/td "Name")
-          (d/td "Version"))
+          (d/td "Version")
+          (d/td "Published")
+          (d/td "Size")
+          ;(d/td "Age")
+          ;(d/td "Creator")
+          )
          (d/tbody
           (map
            (fn [{uuid :uuid :as e}]
@@ -60,4 +66,9 @@
               {:on-click #(om/transact! data (partial toggle-dataset uuid))
                :class  (if (installed? uuid) "installed" (if (picked? uuid) "selected" "not-selected"))}
               (d/td (:name e) " (" (type-name (:type e)) ")")
-              (d/td (:version e)))) datasets)))))))
+              (d/td (:version e))
+              (d/td (:published_at e))
+              (d/td (fields/fmt-bytes :b (get-in e [:files 0 :size])))
+              ;(d/td "Age")
+              ;(d/td "Creator")
+              )) datasets)))))))

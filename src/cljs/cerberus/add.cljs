@@ -65,7 +65,7 @@
         (dbg/debug "[add] valid values " (:section data) "valid " values)
         (if (submit-fn section values)
           (clear-add data)))
-      (deb/info "[add] invalid values " values))))
+      (dbg/info "[add] invalid values " values))))
 
 (defn init-add [data section]
   (om/transact! data :section (constantly section))
@@ -119,7 +119,10 @@
               (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
                     (add-title section)
                     (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add data)})
-                    (r/glyphicon {:glyph "ok" :class "pull-right" :on-click #(submit-add data)})))))
+                    (r/glyphicon {:glyph "ok"
+                                  :class (if (get-in data [:content :valid])
+                                           "pull-right valid"
+                                           "pull-right invalid") :on-click #(submit-add data)})))))
           (g/row
            {:id "add-content"}
            (if-let [create-view (add-renderer section)]

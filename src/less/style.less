@@ -20,7 +20,7 @@
 @brand-info:            #9C27B0;
 @brand-warning:         #ff9800;
 @brand-danger:          #e51c23;
-
+@brand-required:        #FFE4C4;
 
 //== Scaffolding
 //
@@ -69,8 +69,12 @@
 @headings-font-family:    inherit;
 @headings-font-weight:    400;
 @headings-line-height:    1.1;
-@headings-color:          #444;
+@headings-color:          #555;
 
+//** AddView Text attributes.
+@addview-color:           #555;   
+@addview-color-active:    #C0E5F4;
+@addview-color-installed: #6ec071;
 
 //== Iconography
 //
@@ -867,6 +871,119 @@
 //** Horizontal line color.
 @hr-border:                   @gray-lighter;
 
+/* Colour reference
+background: #xxxxx
+normal text: #xxxxx
+links: #xxxxxx
+headings: #xxxxx
+main content bg: #xxxxxx
+*/
+
+/* Here’s how you comment CSS */
+
+/* ---------->>> GLOBAL <<<-----------*/
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    color: #555;
+}
+
+a {
+    color: #48B4DE;
+}
+
+.alert.alert-success {
+    position: absolute;
+    z-index: 101;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    line-height: 2;
+    overflow: hidden;
+    background-color:rgba(37, 175, 90, 0.8); 
+}
+
+/* ----------- END GLOBAL ------------*/
+
+
+/* ---------->>> LOGIN-BOX <<<-----------*/
+#login-box.well {
+    text-align: center;
+}
+
+img.loginlogo {
+    padding-bottom: 24px;
+}
+/* ----------- END LOGIN-BOX ------------*/
+
+
+/* ---------->>> NAVIGATION <<<-----------*/
+
+.navbar-default {
+    background-color: #f9f9f9;
+}
+
+#home .navbar-brand>img {
+    display: inline;
+    margin: 0 10px;
+    height: 100%;
+}
+
+.navbar>.container .navbar-brand:hover, .navbar>.container-fluid .navbar-brand:hover {
+margin-left: -5px;
+}
+
+.navbar {
+    border: none;
+    -webkit-box-shadow: 0 1px 2px rgba(72, 180, 222, 1);
+    box-shadow: 0 1px 2px rgba(72, 180, 222, 1);
+}
+
+.navbar .navbar-collapse .dropdown .badge {
+  padding: 1px 5px;
+  display: inline;
+  border-radius: 50%;
+}
+/* ----------- END NAVIGATION ------------*/
+
+/* ---------->>> LISTVIEW <<<-----------*/
+.listview div.filterbar div.form-group {
+    width: 298px;
+    float: right;
+    margin-bottom: 4px;
+}
+
+.listview .table-hover>tbody>tr:hover {
+  cursor: pointer;
+}
+
+.listview div.filterbar div.btn-group {
+    // float: right;
+    margin-right: 10px;
+}
+/* ----------- END LISTVIEW ------------*/
+
+/* ---------->>> ADDVIEW <<<-----------*/
+
+#addview .has-error .help-block, .has-error .control-label, .has-error .radio, .has-error .checkbox, .has-error .radio-inline, .has-error .checkbox-inline, .has-error.radio label, .has-error.checkbox label, .has-error.radio-inline label, .has-error.checkbox-inline label {
+    // background-color: @brand-required;
+    color: @addview-color;
+    border-radius: 5px;
+    border-style: dotted;
+    border-width: thin;
+    border-color: firebrick;
+    padding: 0px;
+    margin-top: 9px;
+    text-align: center;
+}
+
+#add-view li.danger a {
+    background-color: @brand-required;
+}
+
+/* ----------- END ADDVIEW ------------*/
+
+
 
 //== Custom
 //
@@ -1009,7 +1126,7 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
   color: #F0602B;
 }
 // add some space on table header names so they dont sit over filter icons
-.listview thead tr td a {
+.listview thead tr td + td a {
   /* text-align: start; */
   padding-left: 16px;
 }
@@ -1039,13 +1156,13 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 
 // still to be commented
 #add-view {
-    -webkit-border-top-left-radius: 2px;
-    -webkit-border-top-right-radius: 2px;
-    -moz-border-top-left-radius: 2px;
-    -moz-border-top-right-radius: 2px;
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
-    background-color: #F5F5F5;
+    -webkit-border-top-left-radius: 16px;
+    -webkit-border-top-right-radius: 16px;
+    -moz-border-top-left-radius: 16px;
+    -moz-border-top-right-radius: 16px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    background-color: #F9F9F9;
     position: fixed;
     bottom: 0px;
     margin-left: auto;
@@ -1053,8 +1170,8 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
     left: 0px;
     right: 0px;
     color: #444444;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-    border-color: #dddddd;
+    -webkit-box-shadow: 0 3px 5px rgba(0,0,0,0.3),0 0 0 1px rgba(0,0,0,0.08);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.3),0 0 0 1px rgba(0,0,0,0.08);
 }
 
 #add-ctrl {
@@ -1086,8 +1203,26 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
     max-height: 300px;
 }
 #add-body .form-group .form-control {
-    background-color: rgb(235, 235, 235);
+    // background-color: rgb(235, 235, 235);
     color: #F0602B;
+}
+
+#add-body .has-error input:not([type=checkbox]), .has-error .form-control, .has-error input:not([type=checkbox]):focus, .has-error .form-control:focus {
+    -webkit-box-shadow: none;
+    box-shadow: inset 0 -1px 0 @addview-color;
+}
+
+#add-body .has-success input:not([type=checkbox]), .has-success .form-control, .has-success input:not([type=checkbox]):focus, .has-success .form-control:focus {
+    -webkit-box-shadow: none;
+    box-shadow: inset 0 -1px 0 @addview-color;
+}
+
+div#add-view.add-open {
+  padding-bottom: 50px;
+}
+
+#add-view #add-hdr .glyphicon {
+    padding: 4px;
 }
 
 #add-view ul.nav>li {
@@ -1095,9 +1230,9 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 }
 
 #add-view ul.nav>li:hover {
-    border-right: 2px solid @brand-primary;
-    background: none;
-    color: 2px solid;
+    // border-right: 2px solid @brand-primary;
+    background-color: @addview-color-active;
+    // color: 2px solid;
 }
 
 #add-view ul.nav>li:hover a {
@@ -1106,18 +1241,66 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 }
 
 #add-view ul.nav>li.active  {
-    border-right: 2px solid @brand-primary;
-    background: none;
-    color: @brand-primary;
+    // border-right: 2px solid @brand-primary;
+    // background: none;
+    // color: @brand-primary;
 }
 
 #add-view ul.nav>li.success.active>a  {
-    color: @brand-primary;
+    background-color: @addview-color-active;
+    // color: @addview-color;
+    // border-radius: 5px;
+    // border-style: dotted;
+    // border-width: thin;
+    // border-color: #4caf50;
+    // padding: 0px;
+    // margin-bottom: 10px;
+    // text-align: center;
 }
 
-#add-view ul.nav>li.danger>a  {
-    color: @brand-danger;
+#add-view ul.nav>li.success>a  {
+    background-color: #fff;
+    // color: @addview-color;
+    // border-radius: 5px;
+    // border-style: dotted;
+    // border-width: thin;
+    // border-color: #4caf50;
+    // padding: 0px;
+    // margin-bottom: 10px;
+    // text-align: center;
 }
+
+// #add-view ul.nav>li.danger>a  {
+//     background-color: #fff;
+//     color: @addview-color;
+//     border-radius: 5px;
+//     border-style: dotted;
+//     border-width: thin;
+//     border-color: firebrick;
+//     padding: 0px;
+//     margin-bottom: 10px;
+//     text-align: center;
+// }
+
+#add-view ul.nav>li.danger.active>a  {
+    background-color: @addview-color-active;
+    // color: @addview-color;
+    // border-radius: 5px;
+    // border-style: dotted;
+    // border-width: thin;
+    // border-color: firebrick;
+    // padding: 0px;
+    // margin-bottom: 10px;
+    // text-align: center;
+}
+
+#add-view .table>tbody>tr.active>td {
+    background-color: @addview-color-active;
+}
+
+// #add-view .table {
+//     margin-bottom: 0;
+// }
 
 // still to be commented
 .add-open #add-hrd .glyphicon-ok:hover,.glyphicon-remove:hover {
@@ -1128,11 +1311,11 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 }
 
 #remote-datasets tr.selected {
-    background-color: @brand-info;
+    background-color: @addview-color-active;
 }
 
 #remote-datasets tr.installed {
-    background-color: @brand-success;
+    background-color: @addview-color-installed;
 }
 
 
@@ -1146,8 +1329,9 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 }
 
 #vm-create-tabs li a{
-    color: black;
+    color: @addview-color;
 }
+
 #vm-create-tabs li.success {
     background-color: @brand-success;
 }
@@ -1172,3 +1356,40 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
     border-radius: 2px;
     margin-left: 290px;
 }
+
+/* ---------->>> RESPONSIVE BREAKPOINTS <<<-----------*/
+
+/* Navigation */
+@media (min-width: 768px){
+.navbar-nav {
+    float: right;
+    margin: 0;
+  }
+}
+/* End Navigation */
+
+/* ListView */
+@media (max-width: 990px){
+
+.list-panel .field-label {
+    text-align: left;
+    padding-left: 10px;
+    width: 80px;
+  }
+
+}
+
+@media (max-width: 400px){
+
+.listview div.filterbar div.btn-group {
+    float: left;
+  }
+
+.listview div.filterbar div.form-group {
+    float: right;
+  }    
+
+}
+/* End ListView */
+
+/* ----------- END RESPONSIVE BREAKPOINTS ------------*/

@@ -6,6 +6,8 @@
    [om-bootstrap.table :refer [table]]
    [cljs-http.client :as http]
    [cerberus.debug :as dbg]
+   [cerberus.global :as global]
+   [cerberus.fields :as fields]
    [cerberus.state :refer [app-state set-state! update-state!]]
    [cerberus.create :as create]
    [cerberus.datasets.api :as datasets :refer [root]]))
@@ -44,7 +46,7 @@
           (datasets/list data))
         (if (not datasets)
           (go
-            (let [resp (<! (http/get "http://datasets.at/images" {:with-credentials? false :headers {"Accept" "datalication/json"}}))]
+            (let [resp (<! (http/get (global/get "datasets" "http://datasets.at/images") {:with-credentials? false :headers {"Accept" "datalication/json"}}))]
               (if (:success resp)
                 (om/transact! data :remote-datasets (constantly (:body resp)))
                 (dbg/error "[datasets/import] error: " resp)))))
@@ -52,7 +54,12 @@
          {:striped? true :condensed? true :hover? true :responsive? true :id "remote-datasets"}
          (d/thead
           (d/td "Name")
-          (d/td "Version"))
+          (d/td "Version")
+          (d/td "Published")
+          (d/td "Size")
+          ;(d/td "Age")
+          ;(d/td "Creator")
+          )
          (d/tbody
           (map
            (fn [{uuid :uuid :as e}]
@@ -60,4 +67,9 @@
               {:on-click #(om/transact! data (partial toggle-dataset uuid))
                :class  (if (installed? uuid) "installed" (if (picked? uuid) "selected" "not-selected"))}
               (d/td (:name e) " (" (type-name (:type e)) ")")
-              (d/td (:version e)))) datasets)))))))
+              (d/td (:version e))
+              (d/td (:published_at e))
+              (d/td (fields/fmt-bytes :b (get-in e [:files 0 :size])))
+              ;(d/td "Age")
+              ;(d/td "Creator")
+              )) datasets)))))))

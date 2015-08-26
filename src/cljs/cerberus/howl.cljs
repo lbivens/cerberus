@@ -5,15 +5,24 @@
   (:require
    [chord.client :refer [ws-ch]]
    [cerberus.http :as http]
-   [cerberus.ws :as ws]
+   [cerberus.global :as global]
    [cerberus.state :refer [app-state set-state! delete-state!]]
    [cerberus.debug :as dbg]
    [cljs.core.async :refer [<! >! put! close!]]))
+
+(defn host []
+  (let [location (.-location js/window)
+        proto (.-protocol js/location)
+        ws (clojure.string/replace proto #"^http" "ws")
+        host (.-hostname location)
+        port (.-port location)]
+    (global/get "ws" (str ws "//" host ":" port))))
 
 (def token-path "sessions/one_time_token")
 
 (def channel (atom))
 
+(def joined (atom #{}))
 
 (defn handle-channel [channel message]
   (match
@@ -49,28 +58,27 @@
    (dbg/warning "[howl] unknown message:" channel message)))
 
 (defn ping [init]
-  (if-let [c @channel]
-    (go
-      (if (not (>! c {:ping "ping"}))
-        (init)))
-    (init)))
+  (go
+    (if (not (>! @channel {:ping "ping"}))
+      (init))))
 
 (defn ws-loop [init ws-channel]
   (swap! channel (constantly ws-channel))
-  (js/setInterval #(ping init) 10000)
+  (js/clearInterval (.-howl js/window))
+  (set! (.-howl js/window) (js/setInterval #(ping init) 10000))
+  (doall (map #(go (>! @channel {:join %})) @joined))
   (go
-    (loop [c ws-channel]
-      (let [{:keys [message]} (<! ws-channel)]
-        (if (not message)
-          (init)
-          (do
-            (match
-             [message]
-             [{:channel chan :message msg}] (handle-channel chan msg)
-             [{:pong _}] :ok
-             [{:ok _}] :ok
-             [_] (dbg/warning  "[howl] unknown event: " message)))
-          (recur c))))))
+    (loop []
+      (if-let [m (<! @channel)]
+        (let [{:keys [message]} m]
+          (match
+           [message]
+           [{:channel chan :message msg}]  (handle-channel chan msg)
+           [{:pong _}] :ok
+           [{:ok _}] :ok
+           [_] (dbg/warning  "[howl] unknown event: " message))
+          (recur))
+        (init)))))
 
 (defn init []
   (go
@@ -78,7 +86,7 @@
       (if (= 200 (:status response))
         (let [token (get-in response [:body :token])]
           (go
-            (let [{:keys [ws-channel error]} (<! (ws-ch (str (ws/host) "/howl?fifo_ott=" token) {:format :json-kw}))]
+            (let [{:keys [ws-channel error]} (<! (ws-ch (str (host) "/howl?fifo_ott=" token) {:format :json-kw}))]
               (if-not error
                 (ws-loop init ws-channel)
                 ;(ws-authenticate ws-channel)
@@ -93,7 +101,9 @@
     (init)))
 
 (defn join [channel]
+  (swap! joined conj channel)
   (send {:join channel}))
 
 (defn leave [channel]
+  (swap! joined disj channel)
   (send {:leave channel}))

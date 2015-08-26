@@ -38,18 +38,24 @@
 
 (defn fmt-bytes [type size]
   (if (not size)
-    "UNDEFINED"
+    "0"
     (if (and (> size 1024) (next-byte-type type))
       (fmt-bytes (next-byte-type type)  (/ size 1024))
       (str (clojure.string/replace (.toFixed size 2) #"\.?0*$" "") (byte-suffix type)))))
 
-(defn type-defaults [type]
+(defn int-ip [ip]
+  (reduce
+   #(+(* 255 %1 ) %2) 0
+   (map js/parseInt (clojure.string/split ip #"\."))))
+
+(defn type-defaults [type field]
   (match
    type
    :uuid {:no-quick-filter true :class "uuid"}
    :percent {:formater fmt-percent}
    :percent-flt {:formater fmt-percent-float}
    [:bytes size] {:formater (partial fmt-bytes size)}
+   :ip {:sort-key #(int-ip ((:key field) %))}
    :else {}))
 
 (def default-fields
@@ -64,8 +70,7 @@
         (assoc acc id (apply-defaults id (fields id))))
       {} (keys fields))))
   ([id {type :type :as field}]
-   (merge all-defaults (type-defaults type) (assoc field :id id))))
-
+   (merge all-defaults (type-defaults type field) (assoc field :id id))))
 
 (defn mk-config [root title actions & {:as fields}]
   (let [conf {:title title

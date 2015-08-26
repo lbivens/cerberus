@@ -39,7 +39,7 @@
          (if (= 401 (:status resp))
            (check-login)
            (do
-             (doall (map #(howl/join %) elements))
+             (doall (map #(howl/join %) (keys elements)))
              (om/transact! data [root :elements] (constantly elements)))))))
   ([data root list-fields]
      (go

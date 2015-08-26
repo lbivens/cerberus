@@ -33,11 +33,16 @@
      :divider
      ["Delete" {:class (if locked "disabled")} #(vms/delete uuid)]]))
 
+(defn get-ip [vm]
+  (:ip (first (filter (fn [{p :primary}] p) (get-in vm [:config :networks])))))
+
 (def config
   (mk-config
    root "Machines" actions
-   :name {:title "Name" :key '(:config :alias) :order -10}
-   :cpu {:title "CPU" :key '(:config :cpu_cap) :type :percent}
+   :name {:title "Name" :key [:config :alias] :order -10}
+   :cpu {:title "CPU" :key [:config :cpu_cap] :type :percent}
+   :ram {:title "Memory" :key [:config :ram] :type [:bytes :mb]}
+   :ip {:title "IP" :key get-ip :type :ip}
    :state {:title "State" :key :state :type :string}
    :dataset {:title "Dataset" :type :string
              :key (partial api/get-sub-element :datasets :dataset

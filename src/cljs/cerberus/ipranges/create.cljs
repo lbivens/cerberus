@@ -46,17 +46,17 @@
       "addnetworkc")
     om/IRenderState
     (render-state [_ _]
+      (om/update! data [:data :vlan] 0)
+      (om/update! data [:view :vlan] 0)
       (create/render
        data
        {:type :input :label "Name" :id "ipr-name" :key :name}
        {:type :input :label "NIC Tag" :id "ipr-tag" :key :tag}
        {:type :input :label "VLAN" :id "ipr-vlan" :key :vlan :data-type :integer
         :validator #(and
-                     (or
-                      (nil? %2)
-                      (not (js/isNaN  %2)))
+                     (not (nil? %2))
+                     (not (js/isNaN  %2))
                      (<= 0 %2 4096))}
-
        {:type :input :label "Subnet IP" :id "ipr-network" :key :network :validator valid-ip}
        {:type :input :label "Netmask" :id "ipr-netmask" :key :netmask :validator valid-ip}
        {:type :input :label "Gateway" :id "ipr-gateway" :key :gateway :validator valid-ip}

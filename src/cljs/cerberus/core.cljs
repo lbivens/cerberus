@@ -57,6 +57,8 @@
 (defn login [app]
   (r/well
    {:id "login-box"}
+   
+   (d/img {:className "loginlogo" :src "imgs/fifo-logo.png" :alt "FiFo"})
    (d/form
     nil
     (i/input {:type "text" :placeholder "Login" :id "login"})
@@ -97,7 +99,7 @@
     om/IRenderState
     (render-state [_ _]
       (n/navbar
-       {:brand (d/a {:href (str "#/")} "FiFo")}
+       {:brand (d/a {:href (str "#/")} (d/img {:src "imgs/fifo-logo.png" :alt "FiFo"}))}
        (n/nav
         {:collapsible? true}
         (n/nav-item {:key 1 :href "#/vms"} "Machines")
@@ -119,7 +121,8 @@
           #_["DTrace" "#/dtrace"]
           :divider
           ["Logout" #(conf/logout)]
-          ["Logout & Reset UI" #(conf/clear)]))
+          ;;["Logout & Reset UI" #(conf/clear)]
+          ))
         (let [alerts (:alerts data)]
           (b/dropdown
            {:key 5
@@ -174,44 +177,45 @@
   (om/root
    (fn [app owner]
      (reify
-      om/IDisplayName
-      (display-name [_]
-        "Cerberus")
-      om/IRenderState
-      (render-state [_ state]
-        (if (:token app)
-        (d/div
-         {:class (str "app " (if (get-in app [:add :maximized])  "add-open" "add-closed"))}
-         (om/build nav-bar app)
+       om/IDisplayName
+       (display-name [_]
+         "Cerberus")
+       om/IRenderState
+       (render-state [_ state]
+         (if (:token app)
+           (d/div
+            {:class (str "app " (if (get-in app [:add :maximized])  "add-open" "add-closed"))}
+            (om/build nav-bar app)
 
-         (g/grid
-          {}
-          (g/row
-           {}
-           (g/col
-            {:xs 12
-             :sm-offset 4 :sm 8
-             :md-offset 6 :md 6
-             :lg-offset 8 :lg 4}
-            (om/build-all render-alerts (:alerts app))))
-          #_(g/row
+            (g/grid
              {}
-             (g/col
-              {:xs 12
-               :sm-offset 4 :sm 8
-               :md-offset 6 :md 6
-               :lg-offset 8 :lg 4}
-              ))
-          (g/row
-           {}
-           (g/col
-            {:xs 12}
-            (main-view app))))
-         (om/build add/render (get-in app [:add])))
-        (do (goto)
-            (login app))))))
+             (g/row
+              {}
+              (g/col
+               {:xs 12
+                :sm-offset 4 :sm 8
+                :md-offset 6 :md 6
+                :lg-offset 8 :lg 4}
+               (om/build-all render-alerts (:alerts app))))
+             #_(g/row
+                {}
+                (g/col
+                 {:xs 12
+                  :sm-offset 4 :sm 8
+                  :md-offset 6 :md 6
+                  :lg-offset 8 :lg 4}
+                 ))
+             (g/row
+              {}
+              (g/col
+               {:xs 12}
+               (main-view app))))
+            (om/build add/render (get-in app [:add])))
+           (do (goto)
+               (login app))))))
    app-state
    {:target (by-id "app")}))
 
-;(alert/raise :warning "oops")
+;;(alert/raise :warning "oops")
 
+(pr "global: " (conf/global)) 

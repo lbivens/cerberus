@@ -21,7 +21,7 @@
   (api/get root uuid))
 
 (defn metrics [uuid]
-  (api/to-state [:metrics]
+  (api/to-state [root :elements uuid :metrics]
                 (http/get [root uuid :metrics])))
 
 (defn delete [uuid]

@@ -63,6 +63,14 @@
     (set-state! (vec (concat [:config] path)) value)
     value))
 
+(defn global
+  ([key dflt]
+   (get-in (js->clj js/Config) [key] dflt))
+  ([key]
+   (get-in (js->clj js/Config) [key]))
+  ([]
+   (js->clj js/Config)))
+
 (defn get
   ([path default]
    (let [path (path-vec path)

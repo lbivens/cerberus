@@ -7,4 +7,4 @@
         host (.-hostname location)
         port (.-port location)]
     (str ws "//" host ":" port))
-  "ws://192.168.1.41")
+  "ws://10.1.1.180")

@@ -57,6 +57,8 @@
 (defn login [app]
   (r/well
    {:id "login-box"}
+   
+   (d/img {:className "loginlogo" :src "imgs/fifo-logo.png" :alt "FiFo"})
    (d/form
     nil
     (i/input {:type "text" :placeholder "Login" :id "login"})

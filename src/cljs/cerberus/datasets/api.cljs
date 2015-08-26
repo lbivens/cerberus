@@ -5,11 +5,12 @@
    [om.core :as om :include-macros true]
    [cerberus.api :as api]
    [cerberus.http :as http]
+   [cerberus.global :as global]
    [cerberus.state :refer [set-state!]]))
 
 (def root :datasets)
 
-(def server "http://datasets.at/images")
+(def server (global/get "datasets" "http://datasets.at/images"))
 
 (defn list [data]
   (api/list data root))

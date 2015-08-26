@@ -6,6 +6,7 @@
    [om-bootstrap.table :refer [table]]
    [cljs-http.client :as http]
    [cerberus.debug :as dbg]
+   [cerberus.global :as global]
    [cerberus.fields :as fields]
    [cerberus.state :refer [app-state set-state! update-state!]]
    [cerberus.create :as create]
@@ -45,7 +46,7 @@
           (datasets/list data))
         (if (not datasets)
           (go
-            (let [resp (<! (http/get "http://datasets.at/images" {:with-credentials? false :headers {"Accept" "datalication/json"}}))]
+            (let [resp (<! (http/get (global/get "datasets" "http://datasets.at/images") {:with-credentials? false :headers {"Accept" "datalication/json"}}))]
               (if (:success resp)
                 (om/transact! data :remote-datasets (constantly (:body resp)))
                 (dbg/error "[datasets/import] error: " resp)))))

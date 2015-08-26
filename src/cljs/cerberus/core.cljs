@@ -216,4 +216,6 @@
    app-state
    {:target (by-id "app")}))
 
-                                        ;(alert/raise :warning "oops")
+;;(alert/raise :warning "oops")
+
+(pr "global: " (conf/global)) 

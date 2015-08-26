@@ -5,14 +5,23 @@
   (:require
    [chord.client :refer [ws-ch]]
    [cerberus.http :as http]
-   [cerberus.ws :as ws]
+   [cerberus.global :as global]
    [cerberus.state :refer [app-state set-state! delete-state!]]
    [cerberus.debug :as dbg]
    [cljs.core.async :refer [<! >! put! close!]]))
 
+(defn host []
+  (let [location (.-location js/window)
+        proto (.-protocol js/location)
+        ws (clojure.string/replace proto #"^http" "ws")
+        host (.-hostname location)
+        port (.-port location)]
+    (global/get "ws" (str ws "//" host ":" port))))
+
 (def token-path "sessions/one_time_token")
 
 (def channel (atom))
+
 (def joined (atom #{}))
 
 (defn handle-channel [channel message]
@@ -77,7 +86,7 @@
       (if (= 200 (:status response))
         (let [token (get-in response [:body :token])]
           (go
-            (let [{:keys [ws-channel error]} (<! (ws-ch (str (ws/host) "/howl?fifo_ott=" token) {:format :json-kw}))]
+            (let [{:keys [ws-channel error]} (<! (ws-ch (str (host) "/howl?fifo_ott=" token) {:format :json-kw}))]
               (if-not error
                 (ws-loop init ws-channel)
                 ;(ws-authenticate ws-channel)

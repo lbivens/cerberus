@@ -57,7 +57,6 @@
                      (not (nil? %2))
                      (not (js/isNaN  %2))
                      (<= 0 %2 4096))}
-
        {:type :input :label "Subnet IP" :id "ipr-network" :key :network :validator valid-ip}
        {:type :input :label "Netmask" :id "ipr-netmask" :key :netmask :validator valid-ip}
        {:type :input :label "Gateway" :id "ipr-gateway" :key :gateway :validator valid-ip}

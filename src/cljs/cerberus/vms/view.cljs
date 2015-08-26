@@ -643,6 +643,14 @@
           (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
             (map (partial render-rule (:uuid data)) rules)))))))))
 
+(defn max-metric [[_ points]]
+  (apply max points))
+
+(defn  normalize-metric [max [name points]]
+  (if (= max 0)
+    [name points]
+    [name (map #(* (/ (- max  %) max) 100) points)]))
+
 
 (defn point-view
   [[name lines] owner]
@@ -659,6 +667,19 @@
           :height "160px"
           :viewBox "0 0 180 100"
           :style { :background "none" } }
+         (let [max (apply max (map max-metric lines))]
+           (d/polyline
+             {:key 0
+              :points (str "0,0 0,100")
+              :style {:stroke       "red"; "#95D4EC"
+                      :stroke-width "1"
+                      :fill         "none"}}))
+         (d/polyline
+          {:key 1
+           :points (str "120,100 0,100")
+           :style {:stroke       "red";"#95D4EC"
+                   :stroke-width "1"
+                   :fill         "none"}})
          (map
           (fn [[line points]]
             (d/polyline
@@ -701,13 +722,6 @@
 
    [_] acc))
 
-(defn max-metric [[_ points]]
-  (apply max points))
-
-(defn  normalize-metric [max [name points]]
-  (if (= max 0)
-    [name points]
-    [name (map #(* (/ (- max  %) max) 100) points)]))
 
 (defn normalize-metrics [[name metrics]]
   (let [max (apply max (map max-metric metrics))]

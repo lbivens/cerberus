@@ -4,32 +4,37 @@
 
 Java 1.7 or higher
 
-    http://download.oracle.com/otn-pub/java/jdk/8u40-b27/jdk-8u40-macosx-x64.dmg
-    install
-    sudo rm -rf /System/Library/Java/JavaVirtualMachines/1.6.0.jdk
-
+```bash
+http://download.oracle.com/otn-pub/java/jdk/8u40-b27/jdk-8u40-macosx-x64.dmg
+install
+sudo rm -rf /System/Library/Java/JavaVirtualMachines/1.6.0.jdk
+```
 
 ##To Start on local machine
 
-        brew install leiningen
-        git clone https://github.com/project-fifo/cerberus.git
-        cd cerberus
-        cp config.json.example config.json
-        vi config.json
-        lein repl
-        cerberus.server=> (run)
-
+```bash
+brew install leiningen
+git clone https://github.com/project-fifo/cerberus.git
+cd cerberus
+cp config.json.example config.json
+cp resources/public/config/config.js.example resources/public/config/s
+vi config.json
+lein repl
+cerberus.server=> (run)
+```
 
 
 snarl-admin init default dev users admin admin
 
 ##Upgrade
 
-        rm -rf ~/.m2
-        git pull
-        lein upgrade
-        lein repl
-        cerberus.server=> (run)
+```bash
+rm -rf ~/.m2
+git pull
+lein upgrade
+lein repl
+cerberus.server=> (run)
+```
 
 ##Overview
 

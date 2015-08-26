@@ -1,4 +1,5 @@
 (ns cerberus.vms.view
+  (:require-macros [cljs.core.match.macros :refer [match]])
   (:require
    [clojure.string :as cstr]
    [om.core :as om :include-macros true]
@@ -19,7 +20,7 @@
    [cerberus.networks.api :as networks]
    [cerberus.view :as view]
    [cerberus.packages.api :as packages]
-   [cerberus.state :refer [set-state!]]
+   [cerberus.state :refer [app-state set-state!]]
    [cerberus.fields :as fields]
    [cerberus.utils :refer [make-event menu-items]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
@@ -490,11 +491,11 @@
     (render-state [_ _]
       (if (= (:protocol data) "icmp")
         (apply select :icmp-type "Type" parent data
-                {:on-change #(om/set-state! parent :icmp-code "0")}
-                (map
-                 (fn [[id obj]]
-                   (d/option {:value id} (str (:name obj) " (" id ")")))
-                 (sort-by #(str->int (first %)) icmp)))))))
+               {:on-change #(om/set-state! parent :icmp-code "0")}
+               (map
+                (fn [[id obj]]
+                  (d/option {:value id} (str (:name obj) " (" id ")")))
+                (sort-by #(str->int (first %)) icmp)))))))
 
 (defn icmp-codes [{id :id name :name} owner]
   (reify
@@ -511,11 +512,11 @@
       (if  (= (:protocol data) "icmp")
         (if-let [codes (get-in icmp [(:icmp-type data) :codes])]
           (apply select :icmp-code "Code" parent data {}
-                  (om/build-all
-                   icmp-codes
-                   (map (fn [[id name]] {:id id :name name})
-                        (sort-by #(str->int (first %)) codes))
-                   {:key :id})))))))
+                 (om/build-all
+                  icmp-codes
+                  (map (fn [[id name]] {:id id :name name})
+                       (sort-by #(str->int (first %)) codes))
+                  {:key :id})))))))
 
 (defn action-select [owner state]
   (select :action "Action" owner state {}
@@ -532,7 +533,7 @@
 (defn rule-filter [state]
   (if (= (:protocol state) "icmp")
     [{:type (str->int (:icmp-type state))
-       :code (str->int (:icmp-code state))}]
+      :code (str->int (:icmp-code state))}]
     (if (:all-ports state)
       "all"
       (map str->int (cstr/split (:ports state) #"[, ]+") ))))
@@ -587,7 +588,7 @@
          (if (= "allow" action)
            (r/glyphicon {:glyph "transfer"})
            (r/glyphicon {:glyph "fire"})) " "
-         target-str ":" filters-str)))
+           target-str ":" filters-str)))
      (b/button
       {:bs-style "warning"
        :bs-size "xsmall"
@@ -625,9 +626,9 @@
                     :react-key "icmp-code"})
          (action-select owner state)))
        (row (b/button
-          {:bs-style "primary"
-           :on-click #(add-rule state)}
-          "add"))
+             {:bs-style "primary"
+              :on-click #(add-rule state)}
+             "add"))
        (row
         (g/col
          {:xs 12 :md 6}
@@ -642,16 +643,72 @@
           (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
             (map (partial render-rule (:uuid data)) rules)))))))))
 
-(defn nice-metrics [metrics]
-  (reduce #(assoc %1 (:n %2) (:v %2)) metrics))
 
+(defn point-view
+  [[name lines] owner]
+  (reify
+    om/IRender
+    (render [this]
+      (g/col
+       {:md 6 :lg 4
+        :style {:text-align "center"}}
+       (p/panel
+        {:header name}
+        (d/svg
+         {:width  "300px"
+          :height "160px"
+          :viewBox "0 0 180 100"
+          :style { :background "none" } }
+         (map
+          (fn [[line points]]
+            (d/polyline
+             {:key line
+              :points (apply str (map-indexed (fn [a b] (str (* a 2) "," b " ")) points))
+              :style {:stroke       "#95D4EC"
+                      :stroke-width "1"
+                      :fill         "none"}}))
+          lines)))))))
+
+
+(defn process-metric [{name :n points :v}]
+  {:name (clojure.string/split name #"-")
+   :points points})
+
+(defn build-metric [acc {name :name points :points}]
+  (match
+   [name]
+   [["cpu" sub-metric]]
+   (assoc-in acc ["CPU" sub-metric] points)
+
+   [["memory" sub-metric]]
+   (assoc-in acc ["Memory" sub-metric] points)
+
+   [["swap" sub-metric]]
+   (assoc-in acc ["Swap" sub-metric] points)
+
+   [["net" direction "kb" nic]]
+   (assoc-in acc [(str nic " throughput") direction] points)
+
+   [["net" direction "ops" nic]]
+   (assoc-in acc [(str nic " OPs") direction] points)
+
+   [["zfs" direction "kb"]]
+   (assoc-in acc ["ZFS throughput" direction] points)
+
+   [["zfs" direction "ops"]]
+   (assoc-in acc ["ZFS OPs" direction] points)
+
+   [_] acc))
 (defn render-metrics [data owner opts]
   (reify
     om/IRenderState
     (render-state [_ _]
       (r/well
        {}
-       (pr-str (nice-metrics (:metrics data)))))))
+       (g/row
+        {}
+        (let [metrics (reduce build-metric {}  (map process-metric (:metrics data)))]
+          (om/build-all point-view metrics)))))))
 
 (defn b [f]
   #(om/build f %2))
@@ -664,7 +721,7 @@
    "package"   {:key  3 :fn render-package   :title "Package"}
    "snapshots" {:key  4 :fn (b render-snapshots) :title "Snapshot"}
    "backups"   {:key  5 :fn (b render-backups)   :title "Backups"}
-   "services"  {:key  6 :fn #(om/build services/render %2   {:opts {:action vms/service-action}})  :title "Services"}
+   "services"  {:key  6 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
    "logs"      {:key  7 :fn (b render-logs)      :title "Logs"}
    "fw-rules"  {:key  8 :fn (b render-fw-rules)  :title "Firewall"}
    "metrics"   {:key  9 :fn (b render-metrics)   :title "Metrics"}
@@ -681,15 +738,22 @@
     (js/clearInterval @timer))
   (reset! timer nil))
 
+(defn tick [uuid]
+  (if (and
+       (= (get-in @app-state [root :selected]) uuid)
+       (= (:section @app-state) :vms))
+    (vms/metrics uuid)
+    (stop-timer!)))
+
 (defn start-timer! [uuid]
   (stop-timer!)
-  (reset! timer (js/setInterval #(vms/metrics uuid) 1000)))
+  (reset! timer (js/setInterval #(tick uuid) 1000)))
 
 (def render
   (view/make
    root sections
    (fn [data uuid]
      ;;TODO: Make sure to re-enable this!
-     #_(start-timer! (get-in data [root :selected]))
+     (start-timer! (get-in data [root :selected]))
      (networks/list data)
      (vms/get uuid))))

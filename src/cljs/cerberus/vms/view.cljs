@@ -650,7 +650,7 @@
     om/IRender
     (render [this]
       (g/col
-       {:md 6 :lg 4
+       {:xs 12 :sm 6 :md 4 :lg 3
         :style {:text-align "center"}}
        (p/panel
         {:header name}
@@ -677,6 +677,7 @@
 (defn build-metric [acc {name :name points :points}]
   (match
    [name]
+
    [["cpu" sub-metric]]
    (assoc-in acc ["CPU" sub-metric] points)
 
@@ -699,6 +700,19 @@
    (assoc-in acc ["ZFS OPs" direction] points)
 
    [_] acc))
+
+(defn max-metric [[_ points]]
+  (apply max points))
+
+(defn  normalize-metric [max [name points]]
+  (if (= max 0)
+    [name points]
+    [name (map #(* (/ (- max  %) max) 100) points)]))
+
+(defn normalize-metrics [[name metrics]]
+  (let [max (apply max (map max-metric metrics))]
+    [name  (map (partial normalize-metric max) metrics)]))
+
 (defn render-metrics [data owner opts]
   (reify
     om/IRenderState
@@ -707,7 +721,7 @@
        {}
        (g/row
         {}
-        (let [metrics (reduce build-metric {}  (map process-metric (:metrics data)))]
+        (let [metrics (map normalize-metrics (reduce build-metric {}  (map process-metric (:metrics data))))]
           (om/build-all point-view metrics)))))))
 
 (defn b [f]

@@ -46,15 +46,15 @@
 (defn validate-data! [data spec]
   (let [result (validate-data data spec)]
     (dbg/debug "valid data:"  result data)
-    (om/transact! data [:valid] (constantly result))))
+    (om/update! data [:valid] result)))
 
 (defn input [data spec {id :id key :key validator :validator label :label type :type data-type :data-type
-                        unit :unit options :options optional :optional
+                        unit :unit options :options optional :optional default :default
                         :or {data-type :string type :input} :as field}]
   (let [data-path (concat [:data] (if (vector? key) key [key]))
         view-path (concat [:view] (if (vector? key) key [key]))
         validator (mk-validator field)
-        val (get-in data view-path "")
+        val (get-in data view-path)
         data-val (get-in data data-path)
         set-fn #(let [v (val-by-id id)
                       dv (to-dt data-type v)
@@ -63,9 +63,9 @@
                                (assoc-in data data-path dv)
                                data)
                              view-path v)]
-                  (om/transact! data view-path (constantly v))
+                  (om/update! data view-path v)
                   (if key
-                    (om/transact! data data-path (constantly  dv)))
+                    (om/update! data data-path dv))
                   (validate-data! data' spec))]
     (i/input {:type type :label label
               :label-classname "col-xs-1"

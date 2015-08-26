@@ -121,7 +121,8 @@
           #_["DTrace" "#/dtrace"]
           :divider
           ["Logout" #(conf/logout)]
-          ["Logout & Reset UI" #(conf/clear)]))
+          ;;["Logout & Reset UI" #(conf/clear)]
+          ))
         (let [alerts (:alerts data)]
           (b/dropdown
            {:key 5

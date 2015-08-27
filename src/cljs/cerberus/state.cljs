@@ -43,7 +43,10 @@
   (set-state! [:add :view-section] section))
 
 (defn clear-state! []
-  (reset! app-state {}))
+  (delete-state! :token)
+  (doall
+   (map #(if (get-in @app-state [% :elements])
+           (delete-state! [% :elements]))) (keys @app-state)))
 
 (defn print-state []
   (dbg/debug @app-state))

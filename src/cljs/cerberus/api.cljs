@@ -10,9 +10,8 @@
    [cerberus.state :refer [app-state path-vec set-state! delete-state!]]))
 
 (defn check-login []
-  (do
-    (set-state! :token false)
-    (goto)))
+  (set-state! :token false)
+  (goto))
 
 (defn to-state
   ([state-path req]

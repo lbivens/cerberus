@@ -87,7 +87,7 @@
            (map
             (fn [{date :date log :log}]
               (d/tr
-               (d/td (str (js/Date. date)))
+               (d/td (str (js/Date. (/ date 1000))))
                (d/td log)))
             logs))))))))
 
@@ -778,10 +778,37 @@
   (reset! timer (js/setInterval #(tick uuid) 1000)))
 
 (def render
-  (view/make
-   root sections
-   (fn [data uuid]
-     ;;TODO: Make sure to re-enable this!
-     (start-timer! (get-in data [root :selected]))
-     (networks/list data)
-     (vms/get uuid))))
+  (fn render [data owner opts]
+    (reify
+      om/IDisplayName
+      (display-name [_]
+        "vmsdetailc")
+      om/IWillMount
+      (will-mount [_]
+        (let [uuid (get-in data [root :selected])]
+          ;;TODO: Make sure to re-enable this!
+          (start-timer! uuid)
+          (networks/list data)
+          (vms/get uuid)))
+      om/IWillUnmount
+      (will-unmount [_]
+        (stop-timer!))
+      om/IRenderState
+      (render-state [_ state]
+        (let [uuid (get-in data [root :selected])
+              element (get-in data [root :elements uuid])
+              section (get-in data [root :section])
+              key (get-in sections [section :key] 1)
+              base (str "/" (name root) "/" uuid)]
+          (d/div
+           {}
+           (apply n/nav {:bs-style "tabs" :active-key key}
+                  (map
+                   (fn [[section data]]
+                     (n/nav-item {:key (:key data)
+                                  :href (str "#" base (if (empty? section) "" (str "/" section)))}
+                                 (:title data)))
+                   (sort-by (fn [[section data]] (:key data)) sections)))
+           (if-let [f (get-in sections [section :fn] )]
+             (f data element)
+             (goto base))))))))

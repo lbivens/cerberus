@@ -87,7 +87,7 @@
            (map
             (fn [{date :date log :log}]
               (d/tr
-               (d/td (str (js/Date. date)))
+               (d/td (str (js/Date. (/ date 1000))))
                (d/td log)))
             logs))))))))
 

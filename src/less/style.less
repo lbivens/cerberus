@@ -72,7 +72,7 @@
 @headings-color:          #555;
 
 //** AddView Text attributes.
-@addview-color:           #555;   
+@addview-color:           #555;
 @addview-color-active:    #C0E5F4;
 @addview-color-installed: #6ec071;
 
@@ -883,12 +883,19 @@ main content bg: #xxxxxx
 
 /* ---------->>> GLOBAL <<<-----------*/
 
+@fifo-light:           #95D4EC;
+@fifo-medium:          #75B8E4;
+@fifo-dark:            #48B4DE;
+@fifo-grey:            #6C6D71;
+
+
+
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     color: #555;
 }
 
 a {
-    color: #48B4DE;
+    color: @fifo-dark;
 }
 
 /* ----------- END GLOBAL ------------*/
@@ -1319,8 +1326,6 @@ div#add-view.add-open {
     background-color: @addview-color-installed;
 }
 
-
-
 .list-panel .field-label {
     width: 120px;
     display: inline-block;
@@ -1365,7 +1370,7 @@ div#add-view.add-open {
 
 #login-box {
     margin: 100px auto 10px;
-  }      
+}
 
 }
 
@@ -1381,17 +1386,17 @@ div#add-view.add-open {
 
 #login-box {
     margin: 10px auto 10px;
-  }      
+}
 
 }
 
 
-/* Custom, iPhone Retina */ 
+/* Custom, iPhone Retina */
 @media only screen and (min-width : 320px) {
-    
+
 }
 
-/* Extra Small Devices, Phones */ 
+/* Extra Small Devices, Phones */
 @media only screen and (min-width : 480px) {
 
 }
@@ -1420,3 +1425,43 @@ div#add-view.add-open {
 
 
 /* ----------- END RESPONSIVE BREAKPOINTS ------------*/
+
+
+/*  ----------- OMG graphs  ----------- */
+
+svg.omg {
+    background: none;
+    width: 300px;
+    height: 180px;
+}
+
+svg.omg > text.label {
+    fill: @fifo-grey;
+    font-size: 0.5em;
+}
+
+svg.omg > polyline {
+    stroke-width: 1px;
+}
+
+svg.omg > polyline.axis {
+    stroke: @fifo-grey;
+}
+
+svg.omg > polyline.graph {
+    stroke: @fifo-light;
+    stroke-width: 1px;
+}
+
+svg.omg > polyline.graph-1 {
+    stroke: @addview-color-active;
+    stroke-width: 1px;
+}
+
+svg.omg > polyline.graph-2 {
+    stroke: @fifo-dark;
+    stroke-width: 1px;
+}
+
+/*  ----------- END OMG graphs  ----------- */
+

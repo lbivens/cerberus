@@ -6,7 +6,7 @@
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.input :as i]
    [om-bootstrap.random :as r]
-
+   [om-bootstrap.button :as b]
    [om-bootstrap.grid :as g]
    [cerberus.debug :as dbg]
    [cerberus.api :as api]
@@ -93,9 +93,10 @@
            :else (if addable
                    (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click #(init-add data view-section)}))))
          (g/col
-          {:xs 1 :xs-offset 4 :style {:text-align "right"}}
+          {:class "addicons"}
+          (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add data)})
           (if (and addable maximized (not (:stash data)))
-            (r/glyphicon {:glyph "cloud-upload" :id "add-stash-btn" :on-click
+            (r/glyphicon {:glyph "cloud-upload" :class "pull-right" :id "add-stash-btn" :on-click
                           #(let [add (conf/get [:add])]
                              (conf/delete! :add)
                              (conf/write! [:stash] add)
@@ -116,13 +117,17 @@
            (if-let [create-view (add-renderer section)]
              (g/col
               {:md 12 :style {:text-align "center"}}
-              (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
+              (d/h4
                     (add-title section)
-                    (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add data)})
-                    (r/glyphicon {:glyph "ok"
+                    (b/toolbar {}
+                      (b/button { :bs-style "primary" 
                                   :class (if (get-in data [:content :valid])
-                                           "pull-right valid"
-                                           "pull-right invalid") :on-click #(submit-add data)})))))
+                                           "pull-right createbutton valid"
+                                           "pull-right createbutton invalid")
+                                  :disabled? (if (get-in data [:content :valid])
+                                           false
+                                           true)          
+                                  :on-click #(submit-add data)} "Start Process"))))))
           (g/row
            {:id "add-content"}
            (if-let [create-view (add-renderer section)]

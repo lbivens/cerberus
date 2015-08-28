@@ -7,11 +7,14 @@
    [cerberus.state :refer [delete-state! set-state!]]))
 
 
-(defn clear [id]
-  (delete-state! [:alerts id]))
+(defn clear [alert]
+  (match
+   [alert]
+   [{:id id}] (delete-state! [:alerts id])
+   [id] (delete-state! [:alerts id])))
 
 (defn raise [type text]
   (let [id (str "alert-" (Math/round (* 10000000 (rand))))]
-    (js/setTimeout #(set-state! [:alerts id :overlay] false) 1000)
-    (js/setTimeout #(clear id) 10000)
+    ;(js/setTimeout #(set-state! [:alerts id :overlay] false) 1000)
+    ;(js/setTimeout #(clear id) 10000)
     (set-state! [:alerts id] {:id id :overlay true :type type :text text})))

@@ -34,6 +34,7 @@
 
    [cerberus.timers]
    [cerberus.utils :refer [goto val-by-id by-id a menu-items]]
+   [cerberus.list.utils :refer [large small]]
    [cerberus.state :refer [app-state set-state!]]))
 
 (enable-console-print!)
@@ -57,7 +58,7 @@
 (defn login [app]
   (r/well
    {:id "login-box"}
-   
+
    (d/img {:className "loginlogo" :src "imgs/fifo-logo.png" :alt "FiFo"})
    (d/form
     nil
@@ -131,7 +132,6 @@
                            (r/badge {} (count alerts)))}
            (apply
             menu-items
-            ["add" #(alert/raise :success "weeh")]
             (map
              (fn [[id alert]]
                [(r/label {:bs-style (name (:type alert))} (:text alert)) #(alert/clear id)])
@@ -165,13 +165,13 @@
     (goto "/vms")))
 
 
-(defn render-alerts [[_ data] owner opts]
+(defn render-alerts [[id alert] owner opts]
   (reify
     om/IRenderState
     (render-state [_ _]
       (r/alert
-       {:bs-style (name (:type data))}
-       (:text data)))))
+       {:bs-style (name (:type alert))}
+       (:text alert) (d/span {:on-click #(alert/clear id) :class "pull-right"} "x")))))
 
 (defn main []
   (om/root
@@ -186,25 +186,18 @@
            (d/div
             {:class (str "app " (if (get-in app [:add :maximized])  "add-open" "add-closed"))}
             (om/build nav-bar app)
-
+            (d/div
+             {:class large
+              :style {:position "absolute" :z-index 10
+                      :right 20 :width 300}}
+             (om/build-all render-alerts (:alerts app)))
             (g/grid
              {}
              (g/row
-              {}
+              {:class small}
               (g/col
-               {:xs 12
-                :sm-offset 4 :sm 8
-                :md-offset 6 :md 6
-                :lg-offset 8 :lg 4}
+               {:xs 12}
                (om/build-all render-alerts (:alerts app))))
-             #_(g/row
-                {}
-                (g/col
-                 {:xs 12
-                  :sm-offset 4 :sm 8
-                  :md-offset 6 :md 6
-                  :lg-offset 8 :lg 4}
-                 ))
              (g/row
               {}
               (g/col
@@ -215,7 +208,3 @@
                (login app))))))
    app-state
    {:target (by-id "app")}))
-
-;;(alert/raise :warning "oops")
-
-(pr "global: " (conf/global)) 

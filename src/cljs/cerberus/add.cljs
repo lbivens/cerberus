@@ -106,13 +106,16 @@
                    (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click #(init-add data view-section)}))))
          (g/col
           {:class "addicons"}
-          (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add data)})
-          (if (and addable maximized (not (:stash data)))
-            (r/glyphicon {:glyph "cloud-upload" :class "pull-right" :id "add-stash-btn" :on-click
-                          #(let [add (conf/get [:add])]
-                             (conf/delete! :add)
-                             (conf/write! [:stash] add)
-                             (init-add data view-section))}))))))))
+          (if (not (nil? maximized))
+            (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add data)}))
+          (if (and maximized (not (:stash data)))
+            (r/glyphicon
+             {:glyph "cloud-upload" :class "pull-right" :id "add-stash-btn"
+              :on-click
+              #(let [add (conf/get [:add])]
+                 (conf/delete! :add)
+                 (conf/write! [:stash] add)
+                 (init-add data view-section))}))))))))
 
 (defn add-body [data owner opts]
   (reify

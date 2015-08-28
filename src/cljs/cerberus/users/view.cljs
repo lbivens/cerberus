@@ -30,36 +30,38 @@
     (p/panel
      {:header (d/h3 "Change Password")}
      (d/form
+      (i/input
+       {:type "password" :label "New Password"
+        :id "changepass1"
+        :value (:password1-val state)
+        :on-change  #(validate/match
+                      %
+                      (val-by-id  "changepass2")
+                      :password-validate
+                      :password1-val
+                      owner)})
 
-      (i/input {:type "password" :label "New Password"
-                :id "changepass1"
-                :value (:password1-val state)
-                :on-change  #(validate/match
-                              %
-                              (val-by-id  "changepass2")
-                              :password-validate
-                              :password1-val
-                              owner)})
-
-      (i/input {:type "password" :label "Confirm"
-                :id "changepass2"
-                :value (:password2-val state)
-                :bs-style (if (or (:password-validate state)
-                                  (blank? (:password2-val state)))
-                            nil "error")
-                :on-change  #(validate/match
-                              %
-                              (val-by-id  "changepass1")
-                              :password-validate
-                              :password2-val
-                              owner)})
-      (b/button {:bs-style "primary"
-                 :className "pull-right"
-                 :onClick #(do
-                             (alert/raise :success "Password changed")
-                             (users/changepass uuid (:password1-val state)))
-                 :disabled? (false? (:password-validate state))}
-                "Change")))))
+      (i/input
+       {:type "password" :label "Confirm"
+        :id "changepass2"
+        :value (:password2-val state)
+        :bs-style (if (or (:password-validate state)
+                          (blank? (:password2-val state)))
+                    nil "error")
+        :on-change  #(validate/match
+                      %
+                      (val-by-id  "changepass1")
+                      :password-validate
+                      :password2-val
+                      owner)})
+      (b/button
+       {:bs-style "primary"
+        :className "pull-right"
+        :onClick #(do
+                    (alert/raise :success "Password changed")
+                    (users/changepass uuid (:password1-val state)))
+        :disabled? (false? (:password-validate state))}
+       "Change")))))
 
 (defn clean-key [owner]
   (om/set-state! owner :key-name-value "")
@@ -94,18 +96,7 @@
                          :on-click #(submit-key uuid owner state)}
                         "Add"))}
     (d/form
-     (i/input
-      {:type "text" :label "Name"
-       :id "newsshkeyname"
-       :value (:key-name-value state)
-       :on-change
-       #(do
-          (om/set-state! owner :ssh-key-name-edited true)
-          (validate/nonempty
-           %
-           :key-name-validate
-           :key-name-value
-           owner))})
+
      (i/input
       {:type "textarea" :label "Key"
        :id "newsshkey"
@@ -118,10 +109,22 @@
              owner :key-name-value
              (last (clojure.string/split (val-by-id "newsshkey") #" "))))
           (validate/nonempty
-               %
-               :key-data-validate
-               :key-data-value
-               owner))})))))
+           %
+           :key-data-validate
+           :key-data-value
+           owner))})
+     (i/input
+      {:type "text" :label "Name"
+       :id "newsshkeyname"
+       :value (:key-name-value state)
+       :on-change
+       #(do
+          (om/set-state! owner :ssh-key-name-edited true)
+          (validate/nonempty
+           %
+           :key-name-validate
+           :key-name-value
+           owner))})))))
 
 (defn ssh-key-li [uuid key-name key-data]
   (d/li

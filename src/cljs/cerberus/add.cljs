@@ -47,6 +47,18 @@
    :dtrace   "Create DTrace Script"
    :datasets "Import Dataset"})
 
+(def submit-text
+  {:vms      "Create"
+   :users    "Add User"
+   :roles    "Add Role"
+   :orgs     "Add Organisation"
+   :clients  "add Client"
+   :packages "Add Package"
+   :networks "Add Network"
+   :ipranges "Add IP-Range"
+   :dtrace   "Add DTrace Script"
+   :datasets "Import Dataset"})
+
 (def add-submit
   {:datasets datasets/submit})
 
@@ -118,16 +130,17 @@
              (g/col
               {:md 12 :style {:text-align "center"}}
               (d/h4
-                    (add-title section)
-                    (b/toolbar {}
-                      (b/button { :bs-style "primary" 
-                                  :class (if (get-in data [:content :valid])
-                                           "pull-right createbutton valid"
-                                           "pull-right createbutton invalid")
-                                  :disabled? (if (get-in data [:content :valid])
-                                           false
-                                           true)          
-                                  :on-click #(submit-add data)} "Start Process"))))))
+               (add-title section)
+               (b/toolbar
+                {}
+                (b/button
+                 {:bs-style "primary"
+                  :class (str "pull-right createbutton"
+                              (if (get-in data [:content :valid])
+                                " valid"
+                                " invalid"))
+                  :disabled? (get-in data [:content :valid])
+                  :on-click #(submit-add data)} (submit-text section)))))))
           (g/row
            {:id "add-content"}
            (if-let [create-view (add-renderer section)]

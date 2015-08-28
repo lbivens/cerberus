@@ -56,16 +56,20 @@
       (b/button {:bs-style "primary"
                  :className "pull-right"
                  :onClick #(do
-                             (alert/alert :success "Password changed")
+                             (alert/raise :success "Password changed")
                              (users/changepass uuid (:password1-val state)))
                  :disabled? (false? (:password-validate state))}
                 "Change")))))
 
-(defn submit-key [uuid owner state]
-  (users/addkey uuid (:key-name-value state) (:key-data-value state))
+(defn clean-key [owner]
   (om/set-state! owner :key-name-value "")
   (om/set-state! owner :key-data-value "")
-  (om/set-state! owner :add-ssh-modal false))
+  (om/set-state! owner :add-ssh-modal false)
+  (om/set-state! owner :ssh-key-name-edited false))
+
+(defn submit-key [uuid owner state]
+  (users/addkey uuid (:key-name-value state) (:key-data-value state))
+  (clean-key owner))
 
 (defn add-ssh-modal [uuid owner state]
   (d/div
@@ -75,7 +79,7 @@
                    (d/button {:type         "button"
                               :class        "close"
                               :aria-hidden  true
-                              :on-click #(om/set-state! owner :add-ssh-modal false)}
+                              :on-click #(clean-key owner)}
                              "×"))
      :close-button? false
      :visible? true
@@ -94,21 +98,30 @@
       {:type "text" :label "Name"
        :id "newsshkeyname"
        :value (:key-name-value state)
-       :on-change  #(validate/nonempty
-                     %
-                     :key-name-validate
-                     :key-name-value
-                     owner)})
+       :on-change
+       #(do
+          (om/set-state! owner :ssh-key-name-edited true)
+          (validate/nonempty
+           %
+           :key-name-validate
+           :key-name-value
+           owner))})
      (i/input
       {:type "textarea" :label "Key"
        :id "newsshkey"
        :style {:height "8em"}
        :value (:key-data-value state)
-       :on-change  #(validate/nonempty
-                     %
-                     :key-data-validate
-                     :key-data-value
-                     owner)})))))
+       :on-change
+       #(do
+          (if (not (:ssh-key-name-edited state))
+            (om/set-state!
+             owner :key-name-value
+             (last (clojure.string/split (val-by-id "newsshkey") #" "))))
+          (validate/nonempty
+               %
+               :key-data-validate
+               :key-data-value
+               owner))})))))
 
 (defn ssh-key-li [uuid key-name key-data]
   (d/li

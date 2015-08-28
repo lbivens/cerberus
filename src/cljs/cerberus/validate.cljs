@@ -5,17 +5,17 @@
    [cerberus.utils :refer [val-by-id]]))
 
 (defn match [event match validation-key value-key owner]
-  (let [newValue (val-by-id  (.. event -target -id))]
-    (if (and (= newValue match)
+  (let [new-value (val-by-id  (.. event -target -id))]
+    (if (and (= new-value match)
              (not (blank? match))
-             (not (blank? newValue)))
+             (not (blank? new-value)))
       (om/set-state! owner validation-key true)
       (om/set-state! owner validation-key false))
-    (om/set-state! owner value-key newValue)))
+    (om/set-state! owner value-key new-value)))
 
 (defn nonempty [event validation-key value-key owner]
-  (let [newValue (val-by-id  (.. event -target -id))]
-    (if (not (blank? newValue))
+  (let [new-value (val-by-id  (.. event -target -id))]
+    (if (not (blank? new-value))
       (om/set-state! owner validation-key true)
       (om/set-state! owner validation-key false))
-    (om/set-state! owner value-key newValue)))
+    (om/set-state! owner value-key new-value)))

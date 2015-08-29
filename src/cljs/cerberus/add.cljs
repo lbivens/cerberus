@@ -137,8 +137,8 @@
                     (b/toolbar {}
                       (b/button { :bs-style "primary" 
                                   :class (if (get-in data [:content :valid])
-                                           "pull-right createbutton valid"
-                                           "pull-right createbutton invalid")
+                                           "createbutton valid"
+                                           "createbutton invalid")
                                   :disabled? (if (get-in data [:content :valid])
                                            false
                                            true)          

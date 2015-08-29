@@ -67,7 +67,7 @@
 
 (defn clear-add [data]
   (let [section (:view-section data)]
-    (om/transact! data  (constantly {:view-section section}))))
+    (om/update! data {:view-section section})))
 
 (defn submit-add [data]
   (let [values (get-in data [:content :data])]
@@ -80,9 +80,9 @@
       (dbg/info "[add] invalid values " values))))
 
 (defn init-add [data section]
-  (om/transact! data :section (constantly section))
-  (om/transact! data :content (constantly {}))
-  (om/transact! data :maximized (constantly true)))
+  (om/update! data :section section)
+  (om/update! data :content {})
+  (om/update! data :maximized true))
 
 (defn add-btn [data owner opts]
   (reify
@@ -100,8 +100,8 @@
           {:xs 2 :xs-offset 5 :style {:text-align "center"}}
           (match
            maximized
-           true (r/glyphicon {:glyph "menu-down" :on-click #(om/transact! data :maximized (constantly false))})
-           false (r/glyphicon {:glyph "menu-up" :on-click #(om/transact! data :maximized (constantly true))})
+           true (r/glyphicon {:glyph "menu-down" :on-click #(om/update! data :maximized false)})
+           false (r/glyphicon {:glyph "menu-up" :on-click #(om/update! data :maximized true)})
            :else (if addable
                    (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click #(init-add data view-section)}))))
          (g/col
@@ -133,16 +133,14 @@
              (g/col
               {:md 12 :style {:text-align "center"}}
               (d/h4
-                    (add-title section)
-                    (b/toolbar {}
-                      (b/button { :bs-style "primary" 
-                                  :class (if (get-in data [:content :valid])
-                                           "pull-right createbutton valid"
-                                           "pull-right createbutton invalid")
-                                  :disabled? (if (get-in data [:content :valid])
-                                           false
-                                           true)          
-                                  :on-click #(submit-add data)} (submit-text section)))))))
+               (add-title section)
+               (b/toolbar {}
+                          (b/button { :bs-style "primary"
+                                     :class (if (get-in data [:content :valid])
+                                              "pull-right createbutton valid"
+                                              "pull-right createbutton invalid")
+                                     :disabled? (not (get-in data [:content :valid]))
+                                     :on-click #(submit-add data)} (submit-text section)))))))
           (g/row
            {:id "add-content"}
            (if-let [create-view (add-renderer section)]

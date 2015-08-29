@@ -36,15 +36,15 @@
    :datasets datasets/render})
 
 (def add-title
-  {:vms      "Create VM"
-   :users    "Create User"
-   :roles    "Create Role"
-   :orgs     "Create Organisation"
-   :clients  "Create Client"
-   :packages "Create Package"
-   :networks "Create Network"
-   :ipranges "Create IP-Range"
-   :dtrace   "Create DTrace Script"
+  {:vms      "New Machine"
+   :users    "New User"
+   :roles    "New Role"
+   :orgs     "New Organisation"
+   :clients  "New Client"
+   :packages "New Package"
+   :networks "New Network"
+   :ipranges "New IP-Range"
+   :dtrace   "New DTrace Script"
    :datasets "Import Dataset"})
 
 (def submit-text
@@ -57,7 +57,7 @@
    :networks "Add Network"
    :ipranges "Add IP-Range"
    :dtrace   "Add DTrace Script"
-   :datasets "Import Dataset"})
+   :datasets "Import"})
 
 (def add-submit
   {:datasets datasets/submit})

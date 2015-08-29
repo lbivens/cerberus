@@ -35,11 +35,10 @@
         :id "changepass1"
         :value (:password1-val state)
         :on-change  #(validate/match
-                      %
                       (val-by-id  "changepass2")
                       :password-validate
                       :password1-val
-                      owner)})
+                      owner %)})
 
       (i/input
        {:type "password" :label "Confirm"
@@ -49,11 +48,10 @@
                           (blank? (:password2-val state)))
                     nil "error")
         :on-change  #(validate/match
-                      %
                       (val-by-id  "changepass1")
                       :password-validate
                       :password2-val
-                      owner)})
+                      owner %)})
       (b/button
        {:bs-style "primary"
         :className "pull-right"
@@ -70,49 +68,49 @@
   (om/set-state! owner :ssh-key-name-edited false))
 
 (defn submit-key [uuid owner state]
-  (users/addkey uuid (:key-name-value state) (:key-data-value state))
+  (users/add-sshkey uuid (:key-name-value state) (:key-data-value state))
   (clean-key owner))
+
+(defn change-key [state owner event]
+  (if (not (:ssh-key-name-edited state))
+    (om/set-state!
+     owner :key-name-value
+     (last (clojure.string/split (val-by-id "newsshkey") #" "))))
+  (validate/nonempty
+   :key-data-validate
+   :key-data-value
+   owner event))
 
 (defn add-ssh-modal [uuid owner state]
   (d/div
    {:style {:display (if (:add-ssh-modal state) "block" "none")} }
    (md/modal
-    {:header (d/h4 "New SSH Public Key"
-                   (d/button {:type         "button"
-                              :class        "close"
-                              :aria-hidden  true
-                              :on-click #(clean-key owner)}
-                             "×"))
+    {:header (d/h4
+              "New SSH Public Key"
+              (d/button {:type         "button"
+                         :class        "close"
+                         :aria-hidden  true
+                         :on-click #(clean-key owner)}
+                        "×"))
      :close-button? false
      :visible? true
      :animate? false
      :style {:display "block"}
      :footer (d/div
               (b/button {:bs-style "success"
-                         :disabled? (false?
+                         :disabled? (not
                                      (and
                                       (:key-name-validate state)
                                       (:key-data-validate state)))
                          :on-click #(submit-key uuid owner state)}
                         "Add"))}
     (d/form
-
      (i/input
       {:type "textarea" :label "Key"
        :id "newsshkey"
        :style {:height "8em"}
        :value (:key-data-value state)
-       :on-change
-       #(do
-          (if (not (:ssh-key-name-edited state))
-            (om/set-state!
-             owner :key-name-value
-             (last (clojure.string/split (val-by-id "newsshkey") #" "))))
-          (validate/nonempty
-           %
-           :key-data-validate
-           :key-data-value
-           owner))})
+       :on-change (partial change-key state owner)})
      (i/input
       {:type "text" :label "Name"
        :id "newsshkeyname"
@@ -121,10 +119,49 @@
        #(do
           (om/set-state! owner :ssh-key-name-edited true)
           (validate/nonempty
-           %
            :key-name-validate
            :key-name-value
-           owner))})))))
+           owner %))})))))
+
+(defn clean-yubi [owner]
+  (om/set-state! owner :yubi-value "")
+  (om/set-state! owner :add-yubi-modal false))
+
+(defn submit-yubi [uuid owner state]
+  (users/add-yubikey uuid (:yubi-value state))
+  (clean-yubi owner))
+
+(defn add-yubi-modal [uuid owner state]
+  (d/div
+   {:style {:display (if (:add-yubi-modal state) "block" "none")} }
+   (md/modal
+    {:header (d/h4
+              "Register YubiKey"
+              (d/button {:type         "button"
+                         :class        "close"
+                         :aria-hidden  true
+                         :on-click #(clean-yubi owner)}
+                        "×"))
+     :close-button? false
+     :visible? true
+     :animate? false
+     :style {:display "block"}
+     :footer (d/div
+              (b/button {:bs-style "success"
+                         :disabled? (not
+                                     (:yubi-validate state))
+                         :on-click #(submit-yubi uuid owner state)}
+                        "Add"))}
+    (d/form
+     (i/input
+      {:type "text" :label "Key"
+       :id "newyubikey"
+       :value (:yubi-value state)
+       :on-change
+       #(validate/nonempty
+         :yubi-validate
+         :yubi-value
+         owner %)})))))
 
 (defn ssh-key-li [uuid key-name key-data]
   (d/li
@@ -133,9 +170,8 @@
         key-name)
    (b/button {:bs-size "xsmall"
               :className "pull-right"
-              :onClick #(users/deletekey uuid key-name)}
+              :onClick #(users/delete-sshkey uuid key-name)}
              (r/glyphicon {:glyph "remove"}))))
-
 
 (defn ssh-keys-panel [data element state]
   (let [uuid (:uuid data)
@@ -151,14 +187,38 @@
                                 (map (fn [[key-name key-data]]
                                        [(ssh-key-li
                                          uuid
-                                         (clojure.string/replace (str key-name) #"^:" "")
+                                         (name key-name)
                                          key-data)])
                                      ssh-keys ))})
      (add-ssh-modal uuid element state))))
 
-(defn mfa-panel []
-  (p/panel {:header (d/h3 "Yubi Keys")}
-           "stub"))
+(defn yubi-key-li [uuid key-name]
+  (d/li
+   {:class "list-group-item"}
+   (d/a {onClick #(println "clicked")}
+        key-name)
+   (b/button {:bs-size "xsmall"
+              :className "pull-right"
+              :onClick #(users/delete-yubikey uuid key-name)}
+             (r/glyphicon {:glyph "remove"}))))
+
+(defn mfa-panel [data element state]
+  (let [uuid (:uuid data)
+        yubi-keys (:yubikeys data)]
+    (d/div
+     (p/panel {:header (d/h3 "Yubi Keys"
+                             (b/button {;:bs-style "primary"
+                                        :bs-size "xsmall"
+                                        :className "pull-right"
+                                        :onClick #(om/set-state! element :add-yubi-modal true)}
+                                       (r/glyphicon {:glyph "plus"})))
+               :list-group(d/ul {:class "list-group"}
+                                (map (fn [key-id]
+                                       [(yubi-key-li
+                                         uuid
+                                         key-id)])
+                                     yubi-keys ))})
+     (add-yubi-modal uuid element state))))
 
 (defn render-auth [data owner opts]
   (reify
@@ -175,8 +235,7 @@
          (ssh-keys-panel data owner state))
         (col
          {:md 4}
-         (mfa-panel)))))))
-
+         (mfa-panel  data owner state)))))))
 
 (defn render-roles [app owner {:keys [root id]}]
   (reify

@@ -34,12 +34,20 @@
   (api/delete root (concat [uuid :permissions] perm)
            #(get uuid)))
 
-(defn addkey [uuid keyname keydata]
+(defn add-sshkey [uuid keyname keydata]
   (api/put root [uuid :keys] {keyname keydata} api/get [root uuid])
   (println "SSH KEY ADDED. TODO Alert"))
 
-(defn deletekey [uuid keyname]
-  (api/delete root (concat [uuid :keys keyname])
+(defn add-yubikey [uuid keyid]
+  (api/put root [uuid :yubikeys] {:otp keyid} api/get [root uuid])
+  (println "SSH KEY ADDED. TODO Alert"))
+
+(defn delete-sshkey [uuid key-name]
+  (api/delete root (concat [uuid :keys key-name])
+              #(get uuid)))
+
+(defn delete-yubikey [uuid key-id]
+  (api/delete root (concat [uuid :yubikeys key-id])
               #(get uuid)))
 
 (defn add-role [uuid role]

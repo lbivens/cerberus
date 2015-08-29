@@ -25,7 +25,8 @@
        "Netmask: " (:netmask data) (d/br)
        "VLAN: " (:vlan data) (d/br)
        "TAG: " (:tag data) (d/br)
-       (pr-str data)))))
+       "Free: " (count (:free data)) (d/br)
+       "Used: " (count (:used data)) (d/br)))))
 
 (defn render-ips [data owner opts]
   (reify

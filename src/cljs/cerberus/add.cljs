@@ -138,7 +138,7 @@
                 {}
                 (b/button
                  {:bs-style "primary"
-                  :class (str "pull-right createbutton"
+                  :class (str "createbutton"
                               (if (get-in data [:content :valid])
                                 " valid"
                                 " invalid"))

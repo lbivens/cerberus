@@ -1221,7 +1221,9 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 }
 
 #add-view #add-hdr button.createbutton {
-    margin-right: 5px;
+    margin-right: 10px;
+    margin-bottom: 15px;
+    float: right;
 }
 
 
@@ -1363,6 +1365,44 @@ div#add-view.add-open {
     margin-left: 290px;
 }
 
+/*  ----------- OMG graphs  ----------- */
+
+svg.omg {
+    background: none;
+    width: 300px;
+    height: 180px;
+}
+
+svg.omg > text.label {
+    fill: @fifo-grey;
+    font-size: 0.5em;
+}
+
+svg.omg > polyline {
+    stroke-width: 1px;
+}
+
+svg.omg > polyline.axis {
+    stroke: @fifo-grey;
+}
+
+svg.omg > polyline.line {
+    stroke: @fifo-light;
+    stroke-width: 1px;
+}
+
+svg.omg > polyline.line-1 {
+    stroke: @addview-color-active;
+    stroke-width: 1px;
+}
+
+svg.omg > polyline.line-2 {
+    stroke: @fifo-dark;
+    stroke-width: 1px;
+}
+
+/*  ----------- END OMG graphs  ----------- */
+
 /* ---------->>> RESPONSIVE BREAKPOINTS <<<-----------*/
 
 
@@ -1370,6 +1410,13 @@ div#add-view.add-open {
 
 #login-box {
     margin: 100px auto 10px;
+}
+
+#add-view #add-hdr button.createbutton {
+    margin-right: 0;
+    margin-top: 20px;
+    float: none;
+    text-align: center;
 }
 
 }
@@ -1427,41 +1474,5 @@ div#add-view.add-open {
 /* ----------- END RESPONSIVE BREAKPOINTS ------------*/
 
 
-/*  ----------- OMG graphs  ----------- */
 
-svg.omg {
-    background: none;
-    width: 300px;
-    height: 180px;
-}
-
-svg.omg > text.label {
-    fill: @fifo-grey;
-    font-size: 0.5em;
-}
-
-svg.omg > polyline {
-    stroke-width: 1px;
-}
-
-svg.omg > polyline.axis {
-    stroke: @fifo-grey;
-}
-
-svg.omg > polyline.line {
-    stroke: @fifo-light;
-    stroke-width: 1px;
-}
-
-svg.omg > polyline.line-1 {
-    stroke: @addview-color-active;
-    stroke-width: 1px;
-}
-
-svg.omg > polyline.line-2 {
-    stroke: @fifo-dark;
-    stroke-width: 1px;
-}
-
-/*  ----------- END OMG graphs  ----------- */
 

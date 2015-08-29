@@ -46,6 +46,8 @@
     (let [req-body {:grant_type "password"
                     :username (val-by-id "login")
                     :password (val-by-id "password")}
+          req-body (if-let [otp (val-by-id "yubikey")]
+                     (if (not (empty? otp)) (assoc req-body :fifo_otp otp) req-body) req-body)
           response (<! (httpc/post login-path {:form-params req-body
                                                :accept "application/json"}))]
       (if (= 200 (:status response))
@@ -64,6 +66,8 @@
     nil
     (i/input {:type "text" :placeholder "Login" :id "login"})
     (i/input {:type "password" :placeholder "Password" :id "password"
+              :on-key-up #(if (= (.-keyCode  %) 13) (login-fn))})
+    (i/input {:type "text" :placeholder "YubiKey" :id "yubikey"
               :on-key-up #(if (= (.-keyCode  %) 13) (login-fn))})
     (b/button {:bs-style "primary"
                :on-click login-fn} "Login"))))

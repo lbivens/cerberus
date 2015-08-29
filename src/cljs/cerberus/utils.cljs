@@ -28,7 +28,8 @@
   (. js/document (getElementById id)))
 
 (defn val-by-id [id]
-  (.-value (by-id id)))
+  (if-let [e (by-id id)]
+    (.-value e)))
 
 (defn make-event [f]
   (fn [event]

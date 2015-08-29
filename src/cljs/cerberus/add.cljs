@@ -133,17 +133,16 @@
              (g/col
               {:md 12 :style {:text-align "center"}}
               (d/h4
-               (add-title section)
-               (b/toolbar
-                {}
-                (b/button
-                 {:bs-style "primary"
-                  :class (str "createbutton"
-                              (if (get-in data [:content :valid])
-                                " valid"
-                                " invalid"))
-                  :disabled? (get-in data [:content :valid])
-                  :on-click #(submit-add data)} (submit-text section)))))))
+                    (add-title section)
+                    (b/toolbar {}
+                      (b/button { :bs-style "primary" 
+                                  :class (if (get-in data [:content :valid])
+                                           "pull-right createbutton valid"
+                                           "pull-right createbutton invalid")
+                                  :disabled? (if (get-in data [:content :valid])
+                                           false
+                                           true)          
+                                  :on-click #(submit-add data)} (submit-text section)))))))
           (g/row
            {:id "add-content"}
            (if-let [create-view (add-renderer section)]

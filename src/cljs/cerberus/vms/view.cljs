@@ -660,7 +660,7 @@
   (reify
     om/IDisplayName
     (display-name [_]
-        "OMG")
+      "OMG")
     om/IRender
     (render [this]
       (let [x 20
@@ -792,46 +792,10 @@
   (reset! timer (js/setInterval #(tick uuid) 1000)))
 
 (def render
-  (fn render [data owner opts]
-    (reify
-      om/IDisplayName
-      (display-name [_]
-        "vmsdetailc")
-      om/IWillMount
-      (will-mount [_]
-        (let [uuid (get-in data [root :selected])]
-          ;;TODO: Make sure to re-enable this!
-          (start-timer! uuid)
-          (networks/list data)
-          (vms/get uuid)))
-      om/IWillUnmount
-      (will-unmount [_]
-        (stop-timer!))
-      om/IRenderState
-      (render-state [_ state]
-        (let [uuid (get-in data [root :selected])
-              element (get-in data [root :elements uuid])
-              section (get-in data [root :section])
-              key (get-in sections [section :key] 1)
-              base (str "/" (name root) "/" uuid)]
-
-      (d/div
-        {}
-        (g/row
-        {:class "ctarow"}  
-          (d/h1
-          {:class "cta"}
-          (:alias (:config element)))) 
-
-          (d/div
-           {}
-           (apply n/nav {:bs-style "tabs" :active-key key}
-                  (map
-                   (fn [[section data]]
-                     (n/nav-item {:key (:key data)
-                                  :href (str "#" base (if (empty? section) "" (str "/" section)))}
-                                 (:title data)))
-                   (sort-by (fn [[section data]] (:key data)) sections)))
-           (if-let [f (get-in sections [section :fn] )]
-             (f data element)
-             (goto base)))))))))
+  (view/make
+   root sections
+   vms/get
+   :mount-fn (fn [uuid data]
+               (start-timer! uuid)
+               (networks/list data))
+   :name-fn #(get-in % [:config :alias])))

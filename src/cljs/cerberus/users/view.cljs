@@ -335,11 +335,12 @@
 (def render
   (view/make
    root sections
-   (fn [data uuid]
-     (users/get uuid)
-     (orgs/list data)
-     (roles/list data))
-   {:password-validate false
-    :add-ssh-modal false
-    :key-name-validate false
-    :key-data-validate false}))
+   users/get
+   :mount-fn (fn [uuid data]
+               (orgs/list data)
+               (roles/list data))
+   :name-fn :name
+   :init-state {:password-validate false
+                :add-ssh-modal false
+                :key-name-validate false
+                :key-data-validate false}))

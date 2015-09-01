@@ -49,6 +49,6 @@
 (def sections
   {""             {:key  1 :fn #(om/build render-home %2)      :title "General"}
    "requirements" {:key  2 :fn #(om/build render-reqs (:requirements %2))  :title "Requirements"}
-   "metadata"     {:key  2 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+   "metadata"     {:key  3 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
-(def render (view/make root sections #(packages/get %2)))
+(def render (view/make root sections packages/get :name-fn :name))

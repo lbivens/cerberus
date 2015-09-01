@@ -16,6 +16,7 @@
    [cerberus.services :as services]
    [cerberus.metadata :as metadata]
    [cerberus.state :refer [set-state!]]
+   [cerberus.view :as view]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
 (defn apply-fmt [fmt v & rest]
@@ -164,17 +165,9 @@
    "notes"     {:key  5 :fn render-notes     :title "Notes"}
    "metadata"  {:key  6 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
-(defn render [data owner opts]
+
+#_(defn render [data owner opts]
   (reify
-    om/IDisplayName
-    (display-name [_]
-      "hypervisordetailc")
-    om/IWillMount
-    (will-mount [_]
-      (hypervisors/get (get-in data [root :selected])))
-    om/IInitState
-    (init-state [_]
-      {:edit-alias false})
     om/IRenderState
     (render-state [_ state]
       (let [uuid (get-in data [root :selected])
@@ -208,18 +201,26 @@
                        (when (:edit-alias state)
                          (hypervisors/rename uuid (:edit-alias-value state))
                          (om/set-state! owner :edit-alias false)))})
-           (d/h6 uuid))
-          (g/col
-           {:md 3}
-           (d/img {:src oslogo
-                   :className "os-logo"})))
-         (apply n/nav {:bs-style "tabs" :active-key key}
-                (map
-                 (fn [[section data]]
-                   (n/nav-item {:key (:key data)
-                                :href (str "#/hypervisors/" uuid (if (empty? section) "" (str "/" section)))}
-                               (:title data)))
-                 (sort-by (fn [[section data]] (:key data)) (seq sections))))
-         (if-let [f (get-in sections [section :fn] )]
-           (f data element)
-           (goto (str "/hypervisors/" uuid))))))))
+           (d/h6 uuid))))))))
+
+(def logo
+  {:smartos "/imgs/smartos-stacked-logo.png"
+   :other "/imgs/unknown-logo.png"})
+(def render
+  (view/make
+   root sections
+   hypervisors/get
+   :init-state {:edit-alias false}
+   :name-fn (fn [element]
+              (let [sysinfo (:sysinfo element)
+                    bootparams ((keyword "Boot Parameters") sysinfo)
+                    _ (pr bootparams)
+                    os (cond
+                         (= (:smartos bootparams) "true") :smartos
+                         :else :other)]
+                (d/div
+                 {}
+                 (:alias element)
+                 (d/img {:src (logo os)
+                         :alt (name os)
+                         :className "os-logo"}))))))

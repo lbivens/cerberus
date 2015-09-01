@@ -18,18 +18,12 @@
    [cerberus.state :refer [set-state!]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
-
-
 (defn render-home [app element]
   (reify
     om/IRenderState
     (render-state [_ _]
       (r/well
        {}
-       (d/h1
-        (if-let [homepage (get-in app [:metadata :homepage])]
-          (d/a {:href homepage} (:name app))
-          (:name app)))
        (d/p (:description app))
        (d/ul
         (d/li "type: " (:type app))
@@ -65,4 +59,8 @@
                "networks"      {:key  3 :fn #(om/build networks (:networks %2))         :title "Networks"}
                "metadata"      {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
-(def render (view/make root sections #(datasets/get %2)))
+(def render
+  (view/make root sections datasets/get
+             :name-fn #(if-let [homepage (get-in % [:metadata :homepage])]
+                         (d/a {:href homepage} (:name %))
+                         (:name %))))

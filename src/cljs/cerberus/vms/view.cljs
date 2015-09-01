@@ -814,6 +814,15 @@
               section (get-in data [root :section])
               key (get-in sections [section :key] 1)
               base (str "/" (name root) "/" uuid)]
+
+      (d/div
+        {}
+        (g/row
+        {:class "ctarow"}  
+          (d/h1
+          {:class "cta"}
+          uuid)) 
+
           (d/div
            {}
            (apply n/nav {:bs-style "tabs" :active-key key}
@@ -825,4 +834,4 @@
                    (sort-by (fn [[section data]] (:key data)) sections)))
            (if-let [f (get-in sections [section :fn] )]
              (f data element)
-             (goto base))))))))
+             (goto base)))))))))

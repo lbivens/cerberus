@@ -62,7 +62,9 @@
        "Change")))))
 
 (defn clean-key [owner]
+  (om/set-state! owner :key-name-validate false)
   (om/set-state! owner :key-name-value "")
+  (om/set-state! owner :key-data-validate false)
   (om/set-state! owner :key-data-value "")
   (om/set-state! owner :add-ssh-modal false)
   (om/set-state! owner :ssh-key-name-edited false))
@@ -73,9 +75,11 @@
 
 (defn change-key [state owner event]
   (if (not (:ssh-key-name-edited state))
-    (om/set-state!
-     owner :key-name-value
-     (last (clojure.string/split (val-by-id "newsshkey") #" "))))
+    (do (om/set-state!
+         owner :key-name-validate true)
+        (om/set-state!
+         owner :key-name-value
+         (last (clojure.string/split (val-by-id "newsshkey") #" ")))))
   (validate/nonempty
    :key-data-validate
    :key-data-value

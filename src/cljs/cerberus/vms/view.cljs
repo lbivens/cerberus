@@ -821,7 +821,7 @@
         {:class "ctarow"}  
           (d/h1
           {:class "cta"}
-          uuid)) 
+          (:alias (:config element)))) 
 
           (d/div
            {}

@@ -62,7 +62,7 @@
         (if (not (:packages data))
           (packages/list data))
         (g/grid
-         {:id "vm-create-grid"}
+         {:id "vm-create-grid" :class "vms-create"}
          (g/row
           {}
           (g/col

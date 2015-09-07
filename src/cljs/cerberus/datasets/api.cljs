@@ -4,8 +4,8 @@
   (:require
    [om.core :as om :include-macros true]
    [cerberus.api :as api]
-   [cerberus.http :as http]
    [cerberus.global :as global]
+   [cerberus.alert :refer [alerts]]
    [cerberus.state :refer [set-state!]]))
 
 (def root :datasets)
@@ -18,7 +18,8 @@
 (def get (partial api/get root))
 
 (defn delete [uuid]
-  (api/delete root [uuid]))
+  (api/delete root [uuid] (alerts "Dataset deleted." "Failed to delete dataset.")))
 
 (defn import [uuid]
-  (api/post root [] {"url" (str server "/" uuid)}))
+  (api/post root [] {"url" (str server "/" uuid)}
+            (alerts "Dataset import started." "Dataset import failed.")))

@@ -42,10 +42,12 @@
             owner (api/get-sub-element :orgs :owner identity data)
             package (api/get-sub-element :packages :package identity data)
             dataset (api/get-sub-element :datasets :dataset identity data)
+            hypervisor (api/get-sub-element :hypervisors :hypervisor identity data)
             services (:services data)]
         (r/well
          {}
          "Alias: "          (:alias conf)(d/br)
+         "Hypervisor: "     (:alias hypervisor)(d/br)
          "Type: "           (:type conf)(d/br)
          "Max Swap: "       (->> (:max_swap conf) (fmt-bytes :b))(d/br)
          "State: "          (:state conf)(d/br)
@@ -279,6 +281,7 @@
            (g/col {:xs 2}
                   (b/button {:bs-style "primary"
                              :wrapper-classname "col-xs-2"
+                             :disabled? (empty? (val-by-id "snapshot-comment"))
                              :on-click (fn []
                                          (if (not (empty? (val-by-id "snapshot-comment")))
                                            (vms/snapshot (:uuid data) (val-by-id "snapshot-comment"))))} "Create")))))
@@ -651,45 +654,57 @@
     [name points]
     [name (map #(* (/ (- max  %) max) 100) points)]))
 
+(defn mkp [points]
+  (apply str (map (fn [[x y]] (str x "," y " ")) points)))
 
-(defn point-view
-  [[name lines] owner]
+
+(defn omg
+  [{name :name lines :lines max :max} owner]
   (reify
+    om/IDisplayName
+    (display-name [_]
+      "OMG")
+    om/IRender
+    (render [this]
+      (let [x 20
+            y 10]
+        (d/svg
+         {:class   "omg"
+          :viewBox "0 0 200 100"}
+         ;; max text
+         (d/text {:x 0 :y 0 :class "label max"} (Math/round max))
+         ;; min text
+         (d/text {:x 10 :y 100 :class "label min"} 0)
+         ;; x-line
+         (d/polyline
+          {:points (mkp [[(- x 4) (- 101 y)] [(+ 120 x) (- 101 y)]])
+           :class "axis x"})
+         ;;y - line
+         (d/polyline
+          {:points (mkp [[(- x 1) (* -1 y)] [(- x 1) (- 100 (/ y 2))]])
+           :class "axis y"})
+         (map-indexed
+          (fn [idx [line points]]
+            (d/polyline
+             {:points (mkp (map-indexed (fn [a b] [(+ (* a 2) x) (- b 10)]) points))
+              :class  (str "line line-" line " line-" idx)
+              :style {:fill "none"}}))
+          lines))))))
+
+(defn point-view [{name :name :as data} owner]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "point-view")
     om/IRender
     (render [this]
       (g/col
        {:xs 12 :sm 6 :md 4 :lg 3
         :style {:text-align "center"}}
        (p/panel
-        {:header name}
-        (d/svg
-         {:width  "300px"
-          :height "160px"
-          :viewBox "0 0 180 100"
-          :style { :background "none" } }
-         (let [max (apply max (map max-metric lines))]
-           (d/polyline
-             {:key 0
-              :points (str "0,0 0,100")
-              :style {:stroke       "red"; "#95D4EC"
-                      :stroke-width "1"
-                      :fill         "none"}}))
-         (d/polyline
-          {:key 1
-           :points (str "120,100 0,100")
-           :style {:stroke       "red";"#95D4EC"
-                   :stroke-width "1"
-                   :fill         "none"}})
-         (map
-          (fn [[line points]]
-            (d/polyline
-             {:key line
-              :points (apply str (map-indexed (fn [a b] (str (* a 2) "," b " ")) points))
-              :style {:stroke       "#95D4EC"
-                      :stroke-width "1"
-                      :fill         "none"}}))
-          lines)))))))
-
+        {:header name
+         :class  name}
+        (om/build omg data))))))
 
 (defn process-metric [{name :n points :v}]
   {:name (clojure.string/split name #"-")
@@ -725,7 +740,9 @@
 
 (defn normalize-metrics [[name metrics]]
   (let [max (apply max (map max-metric metrics))]
-    [name  (map (partial normalize-metric max) metrics)]))
+    {:name name
+     :max max
+     :lines (map (partial normalize-metric max) metrics)}))
 
 (defn render-metrics [data owner opts]
   (reify
@@ -778,37 +795,10 @@
   (reset! timer (js/setInterval #(tick uuid) 1000)))
 
 (def render
-  (fn render [data owner opts]
-    (reify
-      om/IDisplayName
-      (display-name [_]
-        "vmsdetailc")
-      om/IWillMount
-      (will-mount [_]
-        (let [uuid (get-in data [root :selected])]
-          ;;TODO: Make sure to re-enable this!
-          (start-timer! uuid)
-          (networks/list data)
-          (vms/get uuid)))
-      om/IWillUnmount
-      (will-unmount [_]
-        (stop-timer!))
-      om/IRenderState
-      (render-state [_ state]
-        (let [uuid (get-in data [root :selected])
-              element (get-in data [root :elements uuid])
-              section (get-in data [root :section])
-              key (get-in sections [section :key] 1)
-              base (str "/" (name root) "/" uuid)]
-          (d/div
-           {}
-           (apply n/nav {:bs-style "tabs" :active-key key}
-                  (map
-                   (fn [[section data]]
-                     (n/nav-item {:key (:key data)
-                                  :href (str "#" base (if (empty? section) "" (str "/" section)))}
-                                 (:title data)))
-                   (sort-by (fn [[section data]] (:key data)) sections)))
-           (if-let [f (get-in sections [section :fn] )]
-             (f data element)
-             (goto base))))))))
+  (view/make
+   root sections
+   vms/get
+   :mount-fn (fn [uuid data]
+               (start-timer! uuid)
+               (networks/list data))
+   :name-fn #(get-in % [:config :alias])))

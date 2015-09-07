@@ -15,7 +15,7 @@
 @gray-light:             #bbb;
 @gray-lighter:           lighten(@gray-base, 93.5%); // #eee
 
-@brand-primary:         #2196F3;
+@brand-primary:         #48b4de;
 @brand-success:         #4CAF50;
 @brand-info:            #9C27B0;
 @brand-warning:         #ff9800;
@@ -72,7 +72,7 @@
 @headings-color:          #555;
 
 //** AddView Text attributes.
-@addview-color:           #555;   
+@addview-color:           #555;
 @addview-color-active:    #C0E5F4;
 @addview-color-installed: #6ec071;
 
@@ -883,24 +883,19 @@ main content bg: #xxxxxx
 
 /* ---------->>> GLOBAL <<<-----------*/
 
+@fifo-light:           #95D4EC;
+@fifo-medium:          #75B8E4;
+@fifo-dark:            #48B4DE;
+@fifo-grey:            #6C6D71;
+
+
+
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     color: #555;
 }
 
 a {
-    color: #48B4DE;
-}
-
-.alert.alert-success {
-    position: absolute;
-    z-index: 101;
-    top: 0;
-    left: 0;
-    right: 0;
-    text-align: center;
-    line-height: 2;
-    overflow: hidden;
-    background-color:rgba(37, 175, 90, 0.8); 
+    color: @fifo-dark;
 }
 
 /* ----------- END GLOBAL ------------*/
@@ -930,8 +925,8 @@ img.loginlogo {
 }
 
 .navbar>.container .navbar-brand:hover, .navbar>.container-fluid .navbar-brand:hover {
-margin-left: -5px;
-}
+                                            margin-left: -5px;
+                                        }
 
 .navbar {
     border: none;
@@ -940,9 +935,9 @@ margin-left: -5px;
 }
 
 .navbar .navbar-collapse .dropdown .badge {
-  padding: 1px 5px;
-  display: inline;
-  border-radius: 50%;
+    padding: 1px 5px;
+    display: inline;
+    border-radius: 50%;
 }
 /* ----------- END NAVIGATION ------------*/
 
@@ -954,7 +949,7 @@ margin-left: -5px;
 }
 
 .listview .table-hover>tbody>tr:hover {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .listview div.filterbar div.btn-group {
@@ -965,16 +960,16 @@ margin-left: -5px;
 
 /* ---------->>> ADDVIEW <<<-----------*/
 
-#addview .has-error .help-block, .has-error .control-label, .has-error .radio, .has-error .checkbox, .has-error .radio-inline, .has-error .checkbox-inline, .has-error.radio label, .has-error.checkbox label, .has-error.radio-inline label, .has-error.checkbox-inline label {
+#addview .vms-create .has-error .help-block, .has-error .control-label, .has-error .radio, .has-error .checkbox, .has-error .radio-inline, .has-error .checkbox-inline, .has-error.radio label, .has-error.checkbox label, .has-error.radio-inline label, .has-error.checkbox-inline label {
     // background-color: @brand-required;
     color: @addview-color;
-    border-radius: 5px;
-    border-style: dotted;
-    border-width: thin;
-    border-color: firebrick;
-    padding: 0px;
+    // border-radius: 5px;
+    // border-style: dotted;
+    // border-width: thin;
+    // border-color: firebrick;
+    // padding: 0px;
     margin-top: 9px;
-    text-align: center;
+    // text-align: center;
 }
 
 #add-view li.danger a {
@@ -989,9 +984,9 @@ margin-left: -5px;
 //
 
 .form-control {
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  border-radius: 2px;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
 }
 
 
@@ -1002,133 +997,133 @@ margin-left: -5px;
 
 // create new item button
 div.listview div.btn-toolbar {
-  position: fixed;
-  top: 61px;
-  right: 31px;
+    position: fixed;
+    top: 61px;
+    right: 31px;
 }
 
 button.addnew {
-  border-radius: 50%;
-  margin: 0;
-  height: 50px;
-  width: 50px;
+    border-radius: 50%;
+    margin: 0;
+    height: 50px;
+    width: 50px;
 }
 
 // filterbar properties
 div.filterbar {
-  display: inline-block;
-  height: 50px;
+    display: inline-block;
+    height: 50px;
 }
 // filterbar width wide enough for full uuid display
 div.filterbar div.form-group {
-  width: 325px;
-  float: right;
+    width: 325px;
+    float: right;
 }
 // float btngroup to the right
 div.filterbar div.btn-group {
-  float: right;
+    float: right;
 }
 // change hover color
 div.filterbar .btn-group button.dropdown-toggle.btn.btn-default:hover{
-  opacity:.5;
-  color: #F0602B;
+    opacity:.5;
+    color: #F0602B;
 }
 
 // control filter selector dropdown placement
 div.filterbar .btn-group .dropdown-menu{
-  top: 45px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  border-radius: 2px;
+    top: 45px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
 }
 // filter selector hover attributes
 div.filterbar .btn-group .dropdown-menu li a:hover{
-  background-color: transparent;
+    background-color: transparent;
 }
 // spacing between horizontal line and table headings
 .listview table thead tr td{
-  padding-top: 20px;
+    padding-top: 20px;
 }
 // slight rounded edges on filter input entry box
 .listview .form-group .form-control {
-  opacity: 0.9;
-  color: #F0602B;
+    opacity: 0.9;
+    color: #F0602B;
 }
 // still to be commented
 .listview .form-group div {
-  margin: 0;
+    margin: 0;
 }
 // change spacing for and size for column sort chevron
 .listview table thead tr td .glyphicon {
-  font-size: 10px;
-  padding-left: 3px;
+    font-size: 10px;
+    padding-left: 3px;
 }
 // hover colour for column sort chevron
 .listview table thead tr td a:hover {
-  cursor: pointer;
-  color: #F0602B;
+    cursor: pointer;
+    color: #F0602B;
 }
 // still to be commented
 .listview div .btn-group>.btn {
-  background-color: transparent;
+    background-color: transparent;
 }
 // change color on action dropdown hover
 .listview div .btn-group>.btn:hover {
-  opacity:.5;
-  color: #F0602B;
+    opacity:.5;
+    color: #F0602B;
 }
 // remove caret icon from action dropdown menu
 .listview div .btn-group>.btn span.caret{
-  display: none;
+    display: none;
 }
-// change uuid font to monospaced font that ties in and with fallback 
+// change uuid font to monospaced font that ties in and with fallback
 .uuid {
-  font-family:   "Courier New", Menlo, Monaco, Consolas, monospace;
+    font-family:   "Courier New", Menlo, Monaco, Consolas, monospace;
 }
 // expandable drop down 3 dots next to items
 .btn-xs {
-  background-color: transparent;
+    background-color: transparent;
 }
 // remove ugly caret icon next to table list action dropdown
 .listview table span.caret {
-  display: none;
+    display: none;
 }
 
 // remove ugly caret icon next to table list action dropdown
 .no-carret span.caret {
-  display: none;
+    display: none;
 }
 
 // alignment and style of table list action dropdown
 .listview table .dropdown-menu {
-  left: -95px;
-  top: 28px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-  min-width: 120px;
-  -webkit-border-radius: 2px;
-  -moz-border-radius: 2px;
-  border-radius: 2px;
+    left: -95px;
+    top: 28px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    min-width: 120px;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
 }
 // filterby padding
 .listview table td span.filterby {
-  padding-right: 5px;
+    padding-right: 5px;
 }
 // filterby item size
 .listview table td .filterby {
-  font-size: 80%;
-  opacity:.1
+    font-size: 80%;
+    opacity:.1
 }
 // change hover color on filter icons
 .listview table td .filterby:hover {
-  cursor: pointer;
-  opacity:.5;
-  color: #F0602B;
+    cursor: pointer;
+    opacity:.5;
+    color: #F0602B;
 }
 // add some space on table header names so they dont sit over filter icons
 .listview thead tr td + td a {
-  /* text-align: start; */
-  padding-left: 16px;
+    /* text-align: start; */
+    padding-left: 16px;
 }
 
 .pagination>.active>a {
@@ -1150,6 +1145,19 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
     background-color: @gray-light;
 }
 */
+
+
+/*  ----------- View Details  ----------- */
+
+.ctarow.row {
+    margin: 0;
+}
+
+h1.cta {
+    float: right;
+    margin: 0;
+    font-size: 46px;
+}
 
 
 // -----------> # START # - STYLING FOR CREATION BOX  ## //
@@ -1208,17 +1216,53 @@ div.filterbar .btn-group .dropdown-menu li a:hover{
 }
 
 #add-body .has-error input:not([type=checkbox]), .has-error .form-control, .has-error input:not([type=checkbox]):focus, .has-error .form-control:focus {
-    -webkit-box-shadow: none;
-    box-shadow: inset 0 -1px 0 @addview-color;
-}
+                                                                                                                            -webkit-box-shadow: none;
+                                                                                                                            box-shadow: inset 0 -1px 0 @addview-color;
+                                                                                                                        }
 
 #add-body .has-success input:not([type=checkbox]), .has-success .form-control, .has-success input:not([type=checkbox]):focus, .has-success .form-control:focus {
-    -webkit-box-shadow: none;
-    box-shadow: inset 0 -1px 0 @addview-color;
+                                                                                                                                  -webkit-box-shadow: none;
+                                                                                                                                  box-shadow: inset 0 -1px 0 @addview-color;
+                                                                                                                              }
+
+#add-view #add-hdr span.pull-right.invalid.glyphicon.glyphicon-ok {
+    // display: none;
+}
+
+#add-view div.addicons .glyphicon {
+    padding-right: 10px;
+}
+
+#add-view #add-hdr button.createbutton {
+    background-color: #48b4de;
+    margin-right: 10px;
+    margin-bottom: 15px;
+    float: right;
+}
+
+#add-view #add-hdr button.createbutton:hover {
+    background-color: #32abda;
+}
+
+#add-view span#add-plus-btn {
+    color: #ffffff;
+    background-color: #48b4de;
+    border-color: transparent;
+    padding: 10px;
+    margin-bottom: 10px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+
+#add-view span#add-plus-btn:hover {
+    background-color: #0c7cd5;
+    cursor: pointer;
+    border-color: rgba(0,0,0,0)
 }
 
 div#add-view.add-open {
-  padding-bottom: 50px;
+    padding-bottom: 50px;
 }
 
 #add-view #add-hdr .glyphicon {
@@ -1282,7 +1326,7 @@ div#add-view.add-open {
 //     text-align: center;
 // }
 
-#add-view ul.nav>li.danger.active>a  {
+#add-view .vms-create ul.nav>li.danger.active>a  {
     background-color: @addview-color-active;
     // color: @addview-color;
     // border-radius: 5px;
@@ -1294,7 +1338,7 @@ div#add-view.add-open {
     // text-align: center;
 }
 
-#add-view .table>tbody>tr.active>td {
+#add-view vms-create .table>tbody>tr.active>td {
     background-color: @addview-color-active;
 }
 
@@ -1304,11 +1348,11 @@ div#add-view.add-open {
 
 // still to be commented
 .add-open #add-hrd .glyphicon-ok:hover,.glyphicon-remove:hover {
-  color: @gray-dark;
-  cursor: pointer;
-  opacity: .5;
+                                           color: @gray-dark;
+                                           cursor: pointer;
+                                           opacity: .5;
 
-}
+                                       }
 
 #remote-datasets tr.selected {
     background-color: @addview-color-active;
@@ -1317,8 +1361,6 @@ div#add-view.add-open {
 #remote-datasets tr.installed {
     background-color: @addview-color-installed;
 }
-
-
 
 .list-panel .field-label {
     width: 120px;
@@ -1357,39 +1399,133 @@ div#add-view.add-open {
     margin-left: 290px;
 }
 
+/*  ----------- OMG graphs  ----------- */
+
+svg.omg {
+    background: none;
+    width: 300px;
+    height: 180px;
+}
+
+svg.omg > text.label {
+    fill: @fifo-grey;
+    font-size: 0.5em;
+}
+
+svg.omg > polyline {
+    stroke-width: 1px;
+}
+
+svg.omg > polyline.axis {
+    stroke: @fifo-grey;
+}
+
+svg.omg > polyline.line {
+    stroke: @fifo-light;
+    stroke-width: 1px;
+}
+
+svg.omg > polyline.line-1 {
+    stroke: @addview-color-active;
+    stroke-width: 1px;
+}
+
+svg.omg > polyline.line-2 {
+    stroke: @fifo-dark;
+    stroke-width: 1px;
+}
+
+/*  ----------- END OMG graphs  ----------- */
+
+/* ---------->>> Hypervisor <<<-----------*/
+
+.os-logo {
+    width: 1em;
+    height: 1em;
+}
+/*  ----------- END Hypervisor  ----------- */
+
 /* ---------->>> RESPONSIVE BREAKPOINTS <<<-----------*/
 
-/* Navigation */
-@media (min-width: 768px){
-.navbar-nav {
-    float: right;
-    margin: 0;
-  }
-}
-/* End Navigation */
+@media only screen and (max-width : 992px) {
 
-/* ListView */
-@media (max-width: 990px){
-
-.list-panel .field-label {
-    text-align: left;
-    padding-left: 10px;
-    width: 80px;
-  }
-
+    h1.cta {
+        // float: none;
+        // text-align: center;
+        font-size: 36px;
+    }
 }
 
-@media (max-width: 400px){
+@media only screen and (max-width: 768px){
 
-.listview div.filterbar div.btn-group {
-    float: left;
-  }
+    #login-box {
+        margin: 100px auto 10px;
+    }
 
-.listview div.filterbar div.form-group {
-    float: right;
-  }    
+    #add-view #add-hdr button.createbutton {
+        margin-right: 0;
+        margin-top: 20px;
+        float: none;
+        text-align: center;
+    }
+
+    h1.cta {
+        float: none;
+        text-align: center;
+        font-size: 36px;
+    }
 
 }
-/* End ListView */
+
+@media only screen and (max-width: 480px){
+
+    .listview div.filterbar div.btn-group {
+        float: left;
+    }
+
+    .listview div.filterbar div.form-group {
+        float: right;
+    }
+
+    #login-box {
+        margin: 10px auto 10px;
+    }
+
+}
+
+
+/* Custom, iPhone Retina */
+@media only screen and (min-width : 320px) {
+
+}
+
+/* Extra Small Devices, Phones */
+@media only screen and (min-width : 480px) {
+
+}
+
+/* Small Devices, Tablets */
+@media only screen and (min-width : 768px) {
+    .navbar-nav {
+        float: right;
+        margin: 0;
+    }
+}
+
+/* Medium Devices, Desktops */
+@media only screen and (min-width : 992px) {
+    .list-panel .field-label {
+        text-align: left;
+        padding-left: 10px;
+        width: 80px;
+    }
+
+}
+
+/* Large Devices, Wide Screens */
+@media only screen and (min-width : 1200px) {
+
+}
+
 
 /* ----------- END RESPONSIVE BREAKPOINTS ------------*/

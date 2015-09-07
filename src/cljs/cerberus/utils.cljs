@@ -28,13 +28,21 @@
   (. js/document (getElementById id)))
 
 (defn val-by-id [id]
-  (.-value (by-id id)))
+  (if-let [e (by-id id)]
+    (.-value e)))
+
+(defn prevent-default [f]
+  (fn [event]
+    (f event)
+    (.preventDefault event)))
+
+(defn stop-propagation [f]
+  (fn [event]
+    (f event)
+    (.stopPropagation event)))
 
 (defn make-event [f]
-  (fn [event]
-    (f)
-    (.stopPropagation event)
-    (.preventDefault event)))
+  (prevent-default (stop-propagation f)))
 
 (defn initial-state [config]
   (reduce

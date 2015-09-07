@@ -6,7 +6,7 @@
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.input :as i]
    [om-bootstrap.random :as r]
-
+   [om-bootstrap.button :as b]
    [om-bootstrap.grid :as g]
    [cerberus.debug :as dbg]
    [cerberus.api :as api]
@@ -36,16 +36,28 @@
    :datasets datasets/render})
 
 (def add-title
-  {:vms      "Create VM"
-   :users    "Create User"
-   :roles    "Create Role"
-   :orgs     "Create Organisation"
-   :clients  "Create Client"
-   :packages "Create Package"
-   :networks "Create Network"
-   :ipranges "Create IP-Range"
-   :dtrace   "Create DTrace Script"
+  {:vms      "New Machine"
+   :users    "New User"
+   :roles    "New Role"
+   :orgs     "New Organisation"
+   :clients  "New Client"
+   :packages "New Package"
+   :networks "New Network"
+   :ipranges "New IP-Range"
+   :dtrace   "New DTrace Script"
    :datasets "Import Dataset"})
+
+(def submit-text
+  {:vms      "Create"
+   :users    "Add User"
+   :roles    "Add Role"
+   :orgs     "Add Organisation"
+   :clients  "add Client"
+   :packages "Add Package"
+   :networks "Add Network"
+   :ipranges "Add IP-Range"
+   :dtrace   "Add DTrace Script"
+   :datasets "Import"})
 
 (def add-submit
   {:datasets datasets/submit})
@@ -55,7 +67,7 @@
 
 (defn clear-add [data]
   (let [section (:view-section data)]
-    (om/transact! data  (constantly {:view-section section}))))
+    (om/update! data {:view-section section})))
 
 (defn submit-add [data]
   (let [values (get-in data [:content :data])]
@@ -68,9 +80,9 @@
       (dbg/info "[add] invalid values " values))))
 
 (defn init-add [data section]
-  (om/transact! data :section (constantly section))
-  (om/transact! data :content (constantly {}))
-  (om/transact! data :maximized (constantly true)))
+  (om/update! data :section section)
+  (om/update! data :content {})
+  (om/update! data :maximized true))
 
 (defn add-btn [data owner opts]
   (reify
@@ -88,18 +100,22 @@
           {:xs 2 :xs-offset 5 :style {:text-align "center"}}
           (match
            maximized
-           true (r/glyphicon {:glyph "menu-down" :on-click #(om/transact! data :maximized (constantly false))})
-           false (r/glyphicon {:glyph "menu-up" :on-click #(om/transact! data :maximized (constantly true))})
+           true (r/glyphicon {:glyph "menu-down" :on-click #(om/update! data :maximized false)})
+           false (r/glyphicon {:glyph "menu-up" :on-click #(om/update! data :maximized true)})
            :else (if addable
                    (r/glyphicon {:glyph "plus" :id "add-plus-btn" :on-click #(init-add data view-section)}))))
          (g/col
-          {:xs 1 :xs-offset 4 :style {:text-align "right"}}
-          (if (and addable maximized (not (:stash data)))
-            (r/glyphicon {:glyph "cloud-upload" :id "add-stash-btn" :on-click
-                          #(let [add (conf/get [:add])]
-                             (conf/delete! :add)
-                             (conf/write! [:stash] add)
-                             (init-add data view-section))}))))))))
+          {:class "addicons"}
+          (if (not (nil? maximized))
+            (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add data)}))
+          (if (and maximized (not (:stash data)))
+            (r/glyphicon
+             {:glyph "cloud-upload" :class "pull-right" :id "add-stash-btn"
+              :on-click
+              #(let [add (conf/get [:add])]
+                 (conf/delete! :add)
+                 (conf/write! [:stash] add)
+                 (init-add data view-section))}))))))))
 
 (defn add-body [data owner opts]
   (reify
@@ -116,13 +132,17 @@
            (if-let [create-view (add-renderer section)]
              (g/col
               {:md 12 :style {:text-align "center"}}
-              (d/h4 {:style {:padding-left "38px"}} ;; padding to compensate for the two icons on the right
-                    (add-title section)
-                    (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add data)})
-                    (r/glyphicon {:glyph "ok"
-                                  :class (if (get-in data [:content :valid])
-                                           "pull-right valid"
-                                           "pull-right invalid") :on-click #(submit-add data)})))))
+              (d/h4
+               (add-title section)
+               (b/toolbar
+                {}
+                (b/button
+                 {:bs-style "primary"
+                  :class (if (get-in data [:content :valid])
+                           "createbutton valid"
+                           "createbutton invalid")
+                  :disabled? (not (get-in data [:content :valid]))
+                  :on-click #(submit-add data)} (submit-text section)))))))
           (g/row
            {:id "add-content"}
            (if-let [create-view (add-renderer section)]

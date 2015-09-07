@@ -33,4 +33,5 @@
                "permissions"  {:key  2 :fn #(om/build permissions/render %2 {:opts {:grant roles/grant :revoke roles/revoke}}) :title "Permissions"}
                "metadata"     {:key  3 :fn #(om/build metadata/render %2)    :title "Metadata"}})
 
-(def render (view/make root sections #(roles/get %2)))
+(def render
+  (view/make root sections roles/get :name-fn :name))

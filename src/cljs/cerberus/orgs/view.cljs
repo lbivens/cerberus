@@ -64,4 +64,4 @@
    "triggers"  {:key  3 :fn #(om/build render-triggers (:triggers %2))  :title "Triggers"}
    "metadata"  {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
-(def render (view/make root sections #(orgs/get %2)))
+(def render (view/make root sections orgs/get :name-fn :name))

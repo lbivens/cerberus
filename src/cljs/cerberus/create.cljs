@@ -18,7 +18,7 @@
                      optional :optional
                      :or {data-type :string}}]
   (let [validator (or validator (default-validator data-type))]
-    #(or (and optional (empty? %2)) (validator %1 %2))))
+    #(or (and optional (empty? %3)) (validator %1 %2 %3))))
 
 (defn to-dt [data-type val]
   (condp = data-type
@@ -37,9 +37,11 @@
                        :or {data-type :string} :as field}]
                    (let [path (if (vector? key) key [key])
                          path (concat [:data] path)
+                         view-path (concat [:view] path)
                          val (get-in data path)
+                         view (get-in data path)
                          validator (mk-validator field)]
-                     (validator data val))) spec)]
+                     (validator data val view))) spec)]
 
     (every? identity results)))
 
@@ -73,7 +75,7 @@
               :id id
               :addon-after unit
               :has-feedback? true
-              :bs-style (if (validator data data-val) "success" "error")
+              :bs-style (if (validator data data-val val) "success" "error")
               :on-change set-fn
               :on-blur set-fn
               :value (from-dt data-type val)}

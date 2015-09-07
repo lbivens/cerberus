@@ -73,6 +73,7 @@
 (def render
   (view/make
    root sections
-   (fn [data uuid]
-     (ipranges/list data)
-     (networks/get uuid))))
+   networks/get
+   :mount-fn (fn [uuid data]
+               (ipranges/list data))
+   :name-fn :name))

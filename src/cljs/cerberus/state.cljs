@@ -2,7 +2,7 @@
   (:require
    [cerberus.debug :as dbg]))
 
-(def app-state (atom {:view :root :list []}))
+(def app-state (atom {:valid-login true :view :root :list []}))
 (def app-alerts (atom {}))
 (def breadcrumbs (atom []))
 (def token (atom))

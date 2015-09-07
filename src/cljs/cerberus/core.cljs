@@ -54,21 +54,24 @@
         (let [e (:body response)
               token (e :access_token)
               expires-in (e :expires_in)]
+          (set-state! :valid-login true)
           (conf/login token expires-in)
-          (howl/init))))))
+          (howl/init))
+        (set-state! :valid-login false)))))
 
 (defn login [app]
   (r/well
    {:id "login-box"}
-
    (d/img {:className "loginlogo" :src "imgs/fifo-logo.png" :alt "FiFo"})
    (d/form
     nil
-    (i/input {:type "text" :placeholder "Login" :id "login"})
+    (i/input {:type "text" :placeholder "Login" :id "login" :bs-style (if (:valid-login app) "" "error")})
     (i/input {:type "password" :placeholder "Password" :id "password"
-              :on-key-up #(if (= (.-keyCode  %) 13) (login-fn))})
+              :on-key-up #(if (= (.-keyCode  %) 13) (login-fn))
+              :bs-style (if (:valid-login app) "" "error")})
     (i/input {:type "text" :placeholder "YubiKey" :id "yubikey"
-              :on-key-up #(if (= (.-keyCode  %) 13) (login-fn))})
+              :on-key-up #(if (= (.-keyCode  %) 13) (login-fn))
+              :bs-style (if (:valid-login app) "" "error")})
     (b/button {:bs-style "primary"
                :on-click login-fn} "Login"))))
 

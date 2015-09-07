@@ -30,8 +30,10 @@
       (js/setTimeout #(clear id) timeout))
     (set-state! [:alerts id] {:id id :overlay true :type type :text text})))
 
-(defn alerts [success error]
-  {:success #(raise :success success)
-   :error #(raise :danger error)
-   503 #(raise :danger (str error " - not all services are available."))
-   404 #(raise :warning (str error " - not found."))})
+(defn alerts [success error & {:as addition}]
+  (merge
+   {:success #(raise :success success)
+    :error #(raise :danger error)
+    503 #(raise :danger (str error " - not all services are available."))
+    404 #(raise :warning (str error " - not found."))}
+   addition))

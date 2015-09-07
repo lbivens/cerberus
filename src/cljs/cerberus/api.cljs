@@ -86,7 +86,7 @@
         (apply callback args)))))
 
 (defn get-sub-element [root key path element]
-  (let [uuid (element key)]
+  (let [uuid (key element)]
     (if (empty? uuid)
       ""
       (if-let [sub (get-in @app-state [root :elements uuid])]

@@ -11,7 +11,7 @@
 (def root :vms)
 
 (def list-fields
-  "alias,uuid,config,state,dataset,package,metadata")
+  "alias,uuid,config,state,dataset,package,metadata,dataset,hypervisor")
 
 (defn list [data]
   (api/list data root list-fields))

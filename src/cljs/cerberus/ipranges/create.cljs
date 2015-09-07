@@ -46,14 +46,17 @@
       "addnetworkc")
     om/IRenderState
     (render-state [_ _]
-      (om/update! data [:data :vlan] 0)
-      (om/update! data [:view :vlan] 0)
+      (if (nil? (get-in data [:data :vlan]))
+        (om/update! data [:data :vlan] 0))
+      (if (nil? (get-in data [:view :vlan]))
+        (om/update! data [:view :vlan] "0"))
       (create/render
        data
        {:type :input :label "Name" :id "ipr-name" :key :name}
        {:type :input :label "NIC Tag" :id "ipr-tag" :key :tag}
        {:type :input :label "VLAN" :id "ipr-vlan" :key :vlan :data-type :integer
         :validator #(and
+                     (not (empty? %3))
                      (not (nil? %2))
                      (not (js/isNaN  %2))
                      (<= 0 %2 4096))}

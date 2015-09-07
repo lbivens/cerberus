@@ -11,7 +11,7 @@
 (def root :users)
 
 (def list-fields
-  "uuid,name")
+  "uuid,name,org")
 
 (defn list [data]
   (api/list data root list-fields))

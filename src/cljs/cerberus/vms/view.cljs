@@ -42,10 +42,12 @@
             owner (api/get-sub-element :orgs :owner identity data)
             package (api/get-sub-element :packages :package identity data)
             dataset (api/get-sub-element :datasets :dataset identity data)
+            hypervisor (api/get-sub-element :hypervisors :hypervisor identity data)
             services (:services data)]
         (r/well
          {}
          "Alias: "          (:alias conf)(d/br)
+         "Hypervisor: "     (:alias hypervisor)(d/br)
          "Type: "           (:type conf)(d/br)
          "Max Swap: "       (->> (:max_swap conf) (fmt-bytes :b))(d/br)
          "State: "          (:state conf)(d/br)
@@ -279,6 +281,7 @@
            (g/col {:xs 2}
                   (b/button {:bs-style "primary"
                              :wrapper-classname "col-xs-2"
+                             :disabled? (empty? (val-by-id "snapshot-comment"))
                              :on-click (fn []
                                          (if (not (empty? (val-by-id "snapshot-comment")))
                                            (vms/snapshot (:uuid data) (val-by-id "snapshot-comment"))))} "Create")))))

@@ -54,36 +54,57 @@
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
 
-(defn post
-  ([root path data callback]
-   (go
-     (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))]
-       (callback resp))))
-  ([root path data]
-   (post root path data
-         (fn [resp]
-           (if (:success resp)
-             (let [body (:body resp)
-                   uuid (:uuid body)]
-               (howl/join uuid)
-               (set-state! [root :elements uuid] body)))))))
+(defn post [root path data {:as callbacks :or
+                            {:success (fn [resp]
+                                        (let [body (:body resp)
+                                              uuid (:uuid body)]
+                                          (howl/join uuid)
+                                          (set-state! [root :elements uuid] body)))}}]
+  (go
+    (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))
+          success (or (:success callbacks) identity)
+          error (or (:error callbacks) identity)
+          status (:status resp)]
+      (if-let [always (:always callbacks)]
+        (always resp))
+      (if-let [callback (callbacks status)]
+        (callback resp)
+        (if (:success resp)
+          (success resp)
+          (error resp))))))
 
-(defn put
-  ([root path data]
-    (go
-      (let [resp (<! (http/put (concat [root] path) {} {:json-params data}))]
-        #_(if (:success resp)
-          (let [body (:body resp)
-                uuid (:uuid body)]
-            (set-state! [root :elements uuid] body))))))
-  ([root path data callback args]
-    (go
-      (let [resp (<! (http/put (concat [root] path) {} {:json-params data}))]
-        #_(if (:success resp)
-          (let [body (:body resp)
-                uuid (:uuid body)]
-            (set-state! [root :elements uuid] body)))
-        (apply callback args)))))
+(defn put [root path data {:as callbacks :or
+                           {:success (fn [resp]
+                                       (let [body (:body resp)
+                                             uuid (:uuid body)]
+                                         (howl/join uuid)
+                                         (set-state! [root :elements uuid] body)))}}]
+  (go
+    (let [resp (<! (http/put (concat [root] path) {} {:json-params data}))
+          success (or (:success callbacks) identity)
+          error (or (:error callbacks) identity)
+          status (:status resp)]
+      (if-let [always (:always callbacks)]
+        (always resp))
+      (if-let [callback (callbacks status)]
+        (callback resp)
+        (if (:success resp)
+          (success resp)
+          (error resp))))))
+
+(defn delete [root path {:as callbacks}]
+  (go
+    (let [resp (<! (http/delete (concat [root] path) {}))
+          success (or (:success callbacks) identity)
+          error (or (:error callbacks) identity)
+          status (:status resp)]
+      (if-let [always (:always callbacks)]
+        (always resp))
+      (if-let [callback (callbacks status)]
+        (callback resp)
+        (if (:success resp)
+          (success resp)
+          (error resp))))))
 
 (defn get-sub-element [root key path element]
   (let [uuid (key element)]
@@ -114,15 +135,6 @@
         path (butlast path)]
     (request-and-get http/put root uuid (concat [:metadata] path) (hash-map key value))))
 
-
-(defn delete
-  ([root path]
-   (go
-     (let [resp (<! (http/delete (concat [root] path)))])))
-  ([root path callback]
-   (go
-     (let [resp (<! (http/delete (concat [root] path)))]
-       (callback resp)))))
 
 (defn delete-metadata [root uuid path]
   (request-and-get http/delete root uuid (concat [:metadata] path)))

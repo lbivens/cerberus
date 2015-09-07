@@ -5,6 +5,7 @@
    [clojure.string :refer [join]]
    [cerberus.api :as api]
    [cerberus.http :as http]
+   [cerberus.alert :refer [alerts]]
    [cerberus.utils :refer [initial-state make-event]]
    [cerberus.state :refer [set-state! delete-state!]]))
 
@@ -19,48 +20,57 @@
 (defn get [uuid]
   (api/get root uuid))
 
+(defn a-get [uuid success error]
+  (merge (alerts success error) :always #(get uuid)))
+
 (defn delete [uuid]
-  (api/delete root [uuid]))
+  (api/delete root [uuid]
+              (alerts "User deletion successful." "Failed to delete User.")))
 
 (defn changepass [uuid newpass]
-  (api/put root [uuid] {:password newpass})
-  (println "PASSWORD SET. TODO Alert"))
+  (api/put root [uuid] {:password newpass}
+           (alerts "Password changed." "Failed to change password.")))
 
 (defn grant [uuid perm]
   (api/put root (concat [uuid :permissions] perm) {}
-           #(get uuid) []))
+           (a-get uuid "Permission granted." "Failed to grant permission.")))
 
 (defn revoke [uuid perm]
   (api/delete root (concat [uuid :permissions] perm)
-           #(get uuid)))
+              (a-get uuid "Permission revoed." "Failed to revoke permission.")))
 
 (defn add-sshkey [uuid keyname keydata]
-  (api/put root [uuid :keys] {keyname keydata} api/get [root uuid])
-  (println "SSH KEY ADDED. TODO Alert"))
+  (api/put root [uuid :keys] {keyname keydata}
+           (a-get uuid "SSH key added." "Failed to add SSH key.")))
 
 (defn add-yubikey [uuid keyid]
-  (api/put root [uuid :yubikeys] {:otp keyid} api/get [root uuid])
-  (println "SSH KEY ADDED. TODO Alert"))
+  (api/put root [uuid :yubikeys] {:otp keyid}
+           (a-get uuid "Yubikey added." "Failed to add Yubikey.")))
 
 (defn delete-sshkey [uuid key-name]
   (api/delete root (concat [uuid :keys key-name])
-              #(get uuid)))
+              (a-get uuid "SSH key removed." "Failed to remove SSH key.")))
 
 (defn delete-yubikey [uuid key-id]
   (api/delete root (concat [uuid :yubikeys key-id])
-              #(get uuid)))
+              (a-get uuid "Yubikey removed." "Failed to remove Yubikey.")))
 
 (defn add-role [uuid role]
-  (api/put root [uuid :roles role] {}  #(get uuid) []))
+  (api/put root [uuid :roles role] {}
+           (a-get uuid "Role added." "Failed to add role.")))
 
 (defn remove-role [uuid role]
-  (api/delete root [uuid :roles role] #(get uuid)))
+  (api/delete root [uuid :roles role]
+              (a-get uuid "Role removed." "Failed to remve role.")))
 
-(defn add-org [uuid role]
-  (api/put root [uuid :orgs role] {}  #(get uuid) []))
+(defn add-org [uuid org]
+  (api/put root [uuid :orgs org] {}
+           (a-get uuid "Organisation joined." "Failed to join organisation.")))
 
 (defn active-org [uuid role]
-  (api/put root [uuid :orgs role] {:active true}  #(get uuid) []))
+  (api/put root [uuid :orgs role] {:active true}
+           (a-get uuid "Organisation set as active." "Failed to set organisation as active.")))
 
 (defn remove-org [uuid role]
-  (api/delete root [uuid :orgs role] #(get uuid)))
+  (api/delete root [uuid :orgs role]
+              (a-get uuid "Organisation left." "Failed to leave organisation.")))

@@ -173,9 +173,11 @@
   (reify
     om/IRenderState
     (render-state [_ _]
-      (r/alert
-       {:bs-style (name (:type alert))}
-       (:text alert) (d/span {:on-click #(alert/clear id) :class "pull-right"} "x")))))
+      (if
+          (:overlay alert)
+          (r/alert
+           {:bs-style (name (:type alert))}
+           (:text alert) (d/span {:on-click #(alert/clear id) :class "pull-right"} "x"))))))
 
 (defn main []
   (om/root

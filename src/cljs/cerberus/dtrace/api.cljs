@@ -3,7 +3,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
    [cerberus.api :as api]
-   [cerberus.http :as http]
+   [cerberus.alert :refer [alerts]]
    [cerberus.state :refer [set-state!]]))
 
 (def root :dtrace)
@@ -17,4 +17,4 @@
 (def get (partial api/get root))
 
 (defn delete [uuid]
-  (api/delete root [uuid]))
+  (api/delete root [uuid] (alerts "DTrace script deleted." "Failed to delete DTrace SCript")))

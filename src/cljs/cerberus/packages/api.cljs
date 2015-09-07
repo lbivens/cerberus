@@ -4,6 +4,7 @@
   (:require
    [cerberus.api :as api]
    [cerberus.http :as http]
+   [cerberus.alert :refer [alerts]]
    [cerberus.state :refer [set-state!]]))
 
 (def root :packages)
@@ -14,4 +15,4 @@
 (def get (partial api/get root))
 
 (defn delete [uuid]
-  (api/delete root [uuid]))
+  (api/delete root [uuid] (alerts "Package deleted." "Failed to delete package.")))

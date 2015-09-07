@@ -31,11 +31,18 @@
   (if-let [e (by-id id)]
     (.-value e)))
 
-(defn make-event [f]
+(defn prevent-default [f]
   (fn [event]
-    (f)
-    (.stopPropagation event)
+    (f event)
     (.preventDefault event)))
+
+(defn stop-propagation [f]
+  (fn [event]
+    (f event)
+    (.stopPropagation event)))
+
+(defn make-event [f]
+  (prevent-default (stop-propagation f)))
 
 (defn initial-state [config]
   (reduce

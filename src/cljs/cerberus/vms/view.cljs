@@ -44,30 +44,92 @@
             dataset (api/get-sub-element :datasets :dataset identity data)
             hypervisor (api/get-sub-element :hypervisors :hypervisor identity data)
             services (:services data)]
-        (r/well
-         {}
-         "Alias: "          (:alias conf)(d/br)
-         "Hypervisor: "     (:alias hypervisor)(d/br)
-         "Type: "           (:type conf)(d/br)
-         "Max Swap: "       (->> (:max_swap conf) (fmt-bytes :b))(d/br)
-         "State: "          (:state conf)(d/br)
-         "Memory: "         (->> (:ram conf) (fmt-bytes :mb))(d/br)
-         "Resolvers: "      (cstr/join ", " (:resolvers conf))(d/br)
-         "DNS Domain: "     (:dns_domain conf)(d/br)
-         "Quota: "          (->> (:quota conf) (fmt-bytes :gb))(d/br)
-         "I/O Priority: "   (:zfs_io_pryesiority conf)(d/br)
-         "CPU Shares: "     (:cpu_shares conf)(d/br)
-         "CPU Cap: "        (-> (:cpu_cap conf) fmt-percent)(d/br)
-         "Owner: "          (:name owner)(d/br)
-         "Autoboot: "       (:autoboot conf)(d/br)
-         "Dataset: "        (:name dataset)(d/br)
-         "Created: "        (:created_at conf)(d/br)
-         "Backups: "        (count (:backups conf))(d/br)
-         "Snapshots: "      (count (:backups conf))(d/br)
-         "Firewall Rules: " (count (:fw_rules conf))(d/br)
-         "Services: "       (count (filter (fn [[_ state]] (= state "maintainance")) services)) "/"
+        (table
+         {:class "ftable" :responsive? true}
+          (d/tbody {:class "filoment"}
+            (d/tr
+            (d/td "Alias")
+            (d/td (:alias conf))
+            )
+            (d/tr
+            (d/td "Hypervisor")
+            (d/td (:alias hypervisor))
+            )
+            (d/tr
+            (d/td "Type")
+            (d/td (:type conf))
+            )
+            (d/tr
+            (d/td "Max Swap")
+            (d/td (->> (:max_swap conf) (fmt-bytes :b)))
+            )
+            (d/tr
+            (d/td "State")
+            (d/td (:state conf))
+            )
+            (d/tr
+            (d/td "Memory")
+            (d/td (->> (:ram conf) (fmt-bytes :mb)))
+            )
+            (d/tr
+            (d/td "Resolvers")
+            (d/td (cstr/join ", " (:resolvers conf)))
+            )
+            (d/tr
+            (d/td "DNS Domain")
+            (d/td (:dns_domain conf))
+            )
+            (d/tr
+            (d/td "Quota")
+            (d/td (->> (:quota conf) (fmt-bytes :gb)))
+            )
+            (d/tr
+            (d/td "I/O Priority")
+            (d/td (:zfs_io_priority conf))
+            )
+            (d/tr
+            (d/td "CPU Shares")
+            (d/td (:cpu_shares conf))
+            )
+            (d/tr
+            (d/td "CPU Cap")
+            (d/td (-> (:cpu_cap conf) fmt-percent))
+            )
+            (d/tr
+            (d/td "Owner")
+            (d/td (:name owner))
+            )
+            (d/tr
+            (d/td "Autoboot")
+            (d/td (:autoboot conf))
+            )
+            (d/tr
+            (d/td "Dataset")
+            (d/td (:name dataset))
+            )
+            (d/tr
+            (d/td "Created")
+            (d/td (:created_at conf))
+            )
+            (d/tr
+            (d/td "Backups")
+            (d/td (count (:backups conf)))
+            )
+            (d/tr
+            (d/td "Snapshots")
+            (d/td (count (:snapshots conf)))
+            )
+            (d/tr
+            (d/td "Firewall Rules")
+            (d/td (count (:fw_rules conf)))
+            )
+            (d/tr
+            (d/td "Services")
+            (d/td (count (filter (fn [[_ state]] (= state "maintenance")) services)) "/"
          (count (filter (fn [[_ state]] (= state "online")) services)) "/"
-         (count (filter (fn [[_ state]] (= state "disabled")) services)))))))
+         (count (filter (fn [[_ state]] (= state "disabled")) services)))
+            )           
+         ))))))
 
 (defn render-logs [data owner opts]
   (reify

@@ -23,7 +23,7 @@
   (api/get root uuid))
 
 (defn a-get [uuid success error]
-  (merge (alerts success error) :always #(api/get root uuid)))
+  (assoc (alerts success error) :always #(api/get root uuid)))
 
 (defn metrics [uuid]
   (api/to-state [root :elements uuid :metrics]

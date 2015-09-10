@@ -21,7 +21,7 @@
   (api/get root uuid))
 
 (defn a-get [uuid success error]
-  (merge (alerts success error) :always #(get uuid)))
+  (assoc (alerts success error) :always #(get uuid)))
 
 (defn delete [uuid]
   (api/delete root [uuid]

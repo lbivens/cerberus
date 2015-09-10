@@ -12,7 +12,7 @@
    [om-bootstrap.modal :as md]
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
-   [cerberus.utils :refer [goto row display val-by-id]]
+   [cerberus.utils :refer [goto row display val-by-id ->state]]
    [cerberus.http :as http]
    [cerberus.metadata :as metadata]
    [cerberus.permissions :as permissions]
@@ -243,26 +243,34 @@
 
 (defn render-roles [app owner {:keys [root id]}]
   (reify
+    om/IInitState
+    (init-state [_]
+      {:role (first (first (get-in app [:roles :elements])))})
+
     om/IRenderState
     (render-state [_ state]
       (let [element (get-in app [root :elements id])
             roles (get-in app [:roles :elements])
-            current-roles (sort (or (:roles element) []))]
+            current-roles (sort (or (:roles element) []))
+            role-set (set current-roles)]
         (r/well
          {}
          (row
           (col
            {:xs 10 :sm 4}
            (i/input
-            {:type "select" :id "role"}
+            {:type "select" :id "role" :value (:role state)
+             :on-chnage (->state owner :role)}
             (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) roles)))
           (col
            {:xs 2 :sm 1}
            (b/button
             {:bs-style "primary"
              :className "pull-right"
-             :onClick #(users/add-role  id (val-by-id "role"))
-             :disabled? (false? (:password-validate state))}
+             :onClick #(users/add-role id (:role state))
+             :disabled? (or
+                         (role-set (:role state))
+                         (empty? (:role state)))}
             "Add"))
           (col
            {:xs 12 :sm 6}

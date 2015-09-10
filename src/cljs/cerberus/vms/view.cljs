@@ -22,6 +22,7 @@
    [cerberus.packages.api :as packages]
    [cerberus.state :refer [app-state set-state!]]
    [cerberus.fields :as fields]
+   [cerberus.metrics :as metrics]
    [cerberus.utils :refer [make-event menu-items]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
@@ -691,70 +692,6 @@
           (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
             (map (partial render-rule (:uuid data)) rules)))))))))
 
-(defn max-metric [[_ points]]
-  (apply max points))
-
-(defn  normalize-metric [max [name points]]
-  (if (= max 0)
-    [name points]
-    [name (map #(* (/ (- max  %) max) 100) points)]))
-
-(defn mkp [points]
-  (apply str (map (fn [[x y]] (str x "," y " ")) points)))
-
-
-(defn omg
-  [{name :name lines :lines max :max} owner]
-  (reify
-    om/IDisplayName
-    (display-name [_]
-      "OMG")
-    om/IRender
-    (render [this]
-      (let [x 20
-            y 10]
-        (d/svg
-         {:class   "omg"
-          :viewBox "0 0 200 100"}
-         ;; max text
-         (d/text {:x 0 :y 0 :class "label max"} (Math/round max))
-         ;; min text
-         (d/text {:x 10 :y 100 :class "label min"} 0)
-         ;; x-line
-         (d/polyline
-          {:points (mkp [[(- x 4) (- 101 y)] [(+ 120 x) (- 101 y)]])
-           :class "axis x"})
-         ;;y - line
-         (d/polyline
-          {:points (mkp [[(- x 1) (* -1 y)] [(- x 1) (- 100 (/ y 2))]])
-           :class "axis y"})
-         (map-indexed
-          (fn [idx [line points]]
-            (d/polyline
-             {:points (mkp (map-indexed (fn [a b] [(+ (* a 2) x) (- b 10)]) points))
-              :class  (str "line line-" line " line-" idx)
-              :style {:fill "none"}}))
-          lines))))))
-
-(defn point-view [{name :name :as data} owner]
-  (reify
-    om/IDisplayName
-    (display-name [_]
-      "point-view")
-    om/IRender
-    (render [this]
-      (g/col
-       {:xs 12 :sm 6 :md 4 :lg 3
-        :style {:text-align "center"}}
-       (p/panel
-        {:header name
-         :class  name}
-        (om/build omg data))))))
-
-(defn process-metric [{name :n points :v}]
-  {:name (clojure.string/split name #"-")
-   :points points})
-
 (defn build-metric [acc {name :name points :points}]
   (match
    [name]
@@ -783,22 +720,6 @@
    [_] acc))
 
 
-(defn normalize-metrics [[name metrics]]
-  (let [max (apply max (map max-metric metrics))]
-    {:name name
-     :max max
-     :lines (map (partial normalize-metric max) metrics)}))
-
-(defn render-metrics [data owner opts]
-  (reify
-    om/IRenderState
-    (render-state [_ _]
-      (r/well
-       {}
-       (g/row
-        {}
-        (let [metrics (map normalize-metrics (reduce build-metric {}  (map process-metric (:metrics data))))]
-          (om/build-all point-view metrics)))))))
 
 (defn b [f]
   #(om/build f %2))
@@ -814,7 +735,7 @@
    "services"  {:key  6 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
    "logs"      {:key  7 :fn (b render-logs)      :title "Logs"}
    "fw-rules"  {:key  8 :fn (b render-fw-rules)  :title "Firewall"}
-   "metrics"   {:key  9 :fn (b render-metrics)   :title "Metrics"}
+   "metrics"   {:key  9 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "metadata"  {:key 10 :fn (b metadata/render)  :title "Metadata"}})
 
 ;; This is really ugly but something is crazy about the reify for OM here

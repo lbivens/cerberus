@@ -17,6 +17,8 @@
     (> (:confirmed e) 0) "warning"
     (> (:cleared   e) 0) "info"
     :else                "success"))
+(defn log [e]
+  (. js/console (log e)))
 
 (defn goto [& page]
   (set! (.-hash js/location) (apply str "#" page)))
@@ -36,7 +38,8 @@
   (.-value (.-target e)))
 
 (defn ->state [owner key]
-  (fn [e] (om/set-state! owner key (event-val e))))
+  (fn ->state-event [e]
+    (om/set-state! owner key (event-val e))))
 
 (defn prevent-default [f]
   (fn [event]

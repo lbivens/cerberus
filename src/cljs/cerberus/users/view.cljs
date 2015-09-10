@@ -245,22 +245,22 @@
   (reify
     om/IInitState
     (init-state [_]
-      {:role (first (first (get-in app [:roles :elements])))})
-
+      {:role (or (first (first (get-in app [:roles :elements]))) "")})
     om/IRenderState
     (render-state [_ state]
       (let [element (get-in app [root :elements id])
             roles (get-in app [:roles :elements])
             current-roles (sort (or (:roles element) []))
-            role-set (set current-roles)]
+            invalid-role (set (cons "" current-roles))]
         (r/well
          {}
          (row
           (col
            {:xs 10 :sm 4}
            (i/input
-            {:type "select" :id "role" :value (:role state)
-             :on-chnage (->state owner :role)}
+            {:type "select"
+             :value (:role state)
+             :on-change (->state owner :role)}
             (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) roles)))
           (col
            {:xs 2 :sm 1}
@@ -268,9 +268,7 @@
             {:bs-style "primary"
              :className "pull-right"
              :onClick #(users/add-role id (:role state))
-             :disabled? (or
-                         (role-set (:role state))
-                         (empty? (:role state)))}
+             :disabled? (invalid-role (:role state))}
             "Add"))
           (col
            {:xs 12 :sm 6}
@@ -287,26 +285,32 @@
 
 (defn render-orgs [app owner {:keys [root id]}]
   (reify
+    om/IInitState
+    (init-state [_]
+      {:org (or (first (first (get-in app [:orgs :elements]))) "")})
     om/IRenderState
     (render-state [_ state]
       (let [element (get-in app [root :elements id])
             orgs (get-in app [:orgs :elements])
-            current-orgs (sort (or (:orgs element) []))]
+            current-orgs (sort (or (:orgs element) []))
+            invalid-org (set (cons "" current-orgs))]
         (r/well
          {}
          (row
           (col
            {:xs 10 :sm 4}
            (i/input
-            {:type "select" :id "org"}
+            {:type "select"
+             :value (:org state)
+             :on-change (->state owner :org)}
             (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) orgs)))
           (col
            {:xs 2 :sm 1}
            (b/button
             {:bs-style "primary"
              :className "pull-right"
-             :onClick #(users/add-org  id (val-by-id "org"))
-             :disabled? (false? (:password-validate state))}
+             :on-click #(users/add-org id (:org state))
+             :disabled? (invalid-org (:org state))}
             "Add"))
           (col
            {:xs 12 :sm 6}

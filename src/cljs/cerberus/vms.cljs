@@ -47,9 +47,8 @@
    :dataset {:title "Dataset" :type :string
              :key (partial api/get-sub-element :datasets :dataset
                            #(str (:name %) "-" (:version %)))}
-   :dataset {:title "Dataset" :type :string
-             :key (partial api/get-sub-element :datasets :dataset
-                           #(str (:name %) "-" (:version %)))}
+   :package {:title "Package" :type :string
+             :key (partial api/get-sub-element :packages :package :name)}
    :owner {:title "Owner" :type :string
            :key (partial api/get-sub-element :orgs :owner :name)}
    :hypervisor {:title "Hypervisor" :type :string

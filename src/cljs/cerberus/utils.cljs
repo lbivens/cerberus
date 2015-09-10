@@ -2,13 +2,14 @@
   (:require-macros [cljs.core.match.macros :refer [match]])
   (:require
    [cljs.core.match]
+   [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
-   [cerberus.state]
    [om-bootstrap.table :refer [table]]
    [om-bootstrap.panel :as p]
    [om-bootstrap.grid :as g]
    [om-bootstrap.button :as b]
-   [om-bootstrap.random :as r]))
+   [om-bootstrap.random :as r]
+   [cerberus.state]))
 
 (defn tr-color [e]
   (cond
@@ -30,6 +31,12 @@
 (defn val-by-id [id]
   (if-let [e (by-id id)]
     (.-value e)))
+
+(defn event-val [e]
+  (.-value (.-target e)))
+
+(defn ->state [owner key]
+  (fn [e] (om/set-state! owner key (event-val e))))
 
 (defn prevent-default [f]
   (fn [event]

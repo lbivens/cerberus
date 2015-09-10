@@ -11,7 +11,7 @@
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
    [om-bootstrap.button :as b]
-   [cerberus.utils :refer [goto grid-row row val-by-id str->int]]
+   [cerberus.utils :refer [goto grid-row row ->state val-by-id str->int]]
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.services :as services]
@@ -24,7 +24,6 @@
    [cerberus.fields :as fields]
    [cerberus.utils :refer [make-event menu-items]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
-
 
 (def sub-element (partial api/get-sub-element))
 
@@ -46,90 +45,69 @@
             services (:services data)]
         (table
          {:class "ftable" :responsive? true}
-          (d/tbody {:class "filoment"}
-            (d/tr
-            (d/td "Alias")
-            (d/td (:alias conf))
-            )
-            (d/tr
-            (d/td "Hypervisor")
-            (d/td (:alias hypervisor))
-            )
-            (d/tr
-            (d/td "Type")
-            (d/td (:type conf))
-            )
-            (d/tr
-            (d/td "Max Swap")
-            (d/td (->> (:max_swap conf) (fmt-bytes :b)))
-            )
-            (d/tr
-            (d/td "State")
-            (d/td (:state conf))
-            )
-            (d/tr
-            (d/td "Memory")
-            (d/td (->> (:ram conf) (fmt-bytes :mb)))
-            )
-            (d/tr
-            (d/td "Resolvers")
-            (d/td (cstr/join ", " (:resolvers conf)))
-            )
-            (d/tr
-            (d/td "DNS Domain")
-            (d/td (:dns_domain conf))
-            )
-            (d/tr
-            (d/td "Quota")
-            (d/td (->> (:quota conf) (fmt-bytes :gb)))
-            )
-            (d/tr
-            (d/td "I/O Priority")
-            (d/td (:zfs_io_priority conf))
-            )
-            (d/tr
-            (d/td "CPU Shares")
-            (d/td (:cpu_shares conf))
-            )
-            (d/tr
-            (d/td "CPU Cap")
-            (d/td (-> (:cpu_cap conf) fmt-percent))
-            )
-            (d/tr
-            (d/td "Owner")
-            (d/td (:name owner))
-            )
-            (d/tr
-            (d/td "Autoboot")
-            (d/td (:autoboot conf))
-            )
-            (d/tr
-            (d/td "Dataset")
-            (d/td (:name dataset))
-            )
-            (d/tr
-            (d/td "Created")
-            (d/td (:created_at conf))
-            )
-            (d/tr
-            (d/td "Backups")
-            (d/td (count (:backups conf)))
-            )
-            (d/tr
-            (d/td "Snapshots")
-            (d/td (count (:snapshots conf)))
-            )
-            (d/tr
-            (d/td "Firewall Rules")
-            (d/td (count (:fw_rules conf)))
-            )
-            (d/tr
-            (d/td "Services")
-            (d/td (count (filter (fn [[_ state]] (= state "maintenance")) services)) "/"
-         (count (filter (fn [[_ state]] (= state "online")) services)) "/"
-         (count (filter (fn [[_ state]] (= state "disabled")) services)))
-            )           
-         ))))))
+         (d/tbody {:class "filoment"}
+                  (d/tr
+                   (d/td "Alias")
+                   (d/td (:alias conf)))
+                  (d/tr
+                   (d/td "Hypervisor")
+                   (d/td (:alias hypervisor)))
+                  (d/tr
+                   (d/td "Type")
+                   (d/td (:type conf)))
+                  (d/tr
+                   (d/td "Max Swap")
+                   (d/td (->> (:max_swap conf) (fmt-bytes :b))))
+                  (d/tr
+                   (d/td "State")
+                   (d/td (:state conf)))
+                  (d/tr
+                   (d/td "Memory")
+                   (d/td (->> (:ram conf) (fmt-bytes :mb))))
+                  (d/tr
+                   (d/td "Resolvers")
+                   (d/td (cstr/join ", " (:resolvers conf))))
+                  (d/tr
+                   (d/td "DNS Domain")
+                   (d/td (:dns_domain conf)))
+                  (d/tr
+                   (d/td "Quota")
+                   (d/td (->> (:quota conf) (fmt-bytes :gb))))
+                  (d/tr
+                   (d/td "I/O Priority")
+                   (d/td (:zfs_io_priority conf)))
+                  (d/tr
+                   (d/td "CPU Shares")
+                   (d/td (:cpu_shares conf)))
+                  (d/tr
+                   (d/td "CPU Cap")
+                   (d/td (-> (:cpu_cap conf) fmt-percent)))
+                  (d/tr
+                   (d/td "Owner")
+                   (d/td (:name owner)))
+                  (d/tr
+                   (d/td "Autoboot")
+                   (d/td (:autoboot conf)))
+                  (d/tr
+                   (d/td "Dataset")
+                   (d/td (:name dataset)))
+                  (d/tr
+                   (d/td "Created")
+                   (d/td (:created_at conf)))
+                  (d/tr
+                   (d/td "Backups")
+                   (d/td (count (:backups conf))))
+                  (d/tr
+                   (d/td "Snapshots")
+                   (d/td (count (:snapshots conf))))
+                  (d/tr
+                   (d/td "Firewall Rules")
+                   (d/td (count (:fw_rules conf))))
+                  (d/tr
+                   (d/td "Services")
+                   (d/td (count (filter (fn [[_ state]] (= state "maintenance")) services)) "/"
+                         (count (filter (fn [[_ state]] (= state "online")) services)) "/"
+                         (count (filter (fn [[_ state]] (= state "disabled")) services))))))))))
 
 (defn render-logs [data owner opts]
   (reify
@@ -324,8 +302,11 @@
 
 (defn render-snapshots [data owner opts]
   (reify
+    om/IInitState
+    (init-state [_]
+      {:name ""})
     om/IRenderState
-    (render-state [_ _]
+    (render-state [_ state]
       (r/well
        {}
        (row
@@ -337,16 +318,15 @@
            (g/col
             {:xs 10}
             (i/input {:type :text
+                      :value (:name state)
                       :placeholder "Snapshot Comment"
-                      :id "snapshot-comment"
-                      }))
-           (g/col {:xs 2}
-                  (b/button {:bs-style "primary"
-                             :wrapper-classname "col-xs-2"
-                             :disabled? (empty? (val-by-id "snapshot-comment"))
-                             :on-click (fn []
-                                         (if (not (empty? (val-by-id "snapshot-comment")))
-                                           (vms/snapshot (:uuid data) (val-by-id "snapshot-comment"))))} "Create")))))
+                      :on-change (->state owner :name)}))
+           (g/col
+            {:xs 2}
+            (b/button {:bs-style "primary"
+                       :wrapper-classname "col-xs-2"
+                       :disabled? (empty? (:name state))
+                       :on-click #(vms/snapshot (:uuid data) (:name state))} "Create")))))
         (snapshot-table (:uuid data) (:snapshots data)))))))
 
 (defn backup-row  [vm [uuid {comment :comment timestamp :timestamp
@@ -387,8 +367,11 @@
 
 (defn render-backups [data owner opts]
   (reify
+    om/IInitState
+    (init-state [_]
+      {:name ""})
     om/IRenderState
-    (render-state [_ _]
+    (render-state [_ state]
       (r/well
        {}
        (row
@@ -401,15 +384,15 @@
             {:xs 10}
             (i/input {:type :text
                       :placeholder "Backup Comment"
+                      :on-change (->state owner :name)
+                      :value (:name state)
                       :id "backup-comment"}))
            (g/col {:xs 2}
                   (b/button {:bs-style "primary"
                              :wrapper-classname "col-xs-2"
-                             :on-click (fn []
-                                         (if (not (empty? (val-by-id "backup-comment")))
-                                           (vms/backup (:uuid data) (val-by-id "backup-comment"))))} "Create")))))
+                             :disabled? (empty? (:name state))
+                             :on-click #(vms/backup (:uuid data) (:name state))} "Create")))))
         (backup-table (:uuid data) (:backups data)))))))
-
 
 (defn fw-panel [direction data]
   (g/col

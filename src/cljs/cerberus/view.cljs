@@ -39,7 +39,7 @@
            {}
            (if name-fn
              (g/row
-              {:class "ctarow"}
+              {:class "ctarow fmainheading"}
               (d/h1
                {:class "cta"}
                (name-fn element))))

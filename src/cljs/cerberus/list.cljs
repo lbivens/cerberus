@@ -42,7 +42,7 @@
     fields)))
 
 (defn used-fields [expanded-fields fields]
-  (sort :order (filter #(get-in fields [(:id %) :show]) expanded-fields)))
+  (sort-by #(get-in fields [(:id %) :order]) (filter #(get-in fields [(:id %) :show]) expanded-fields)))
 
 (defn pre-render-field [e field]
   (let [txt (show-field field e)]

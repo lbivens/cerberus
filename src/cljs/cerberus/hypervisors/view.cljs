@@ -1,4 +1,5 @@
 (ns cerberus.hypervisors.view
+  (:require-macros [cljs.core.match.macros :refer [match]])
   (:require
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
@@ -15,8 +16,9 @@
    [cerberus.hypervisors.api :refer [root]]
    [cerberus.services :as services]
    [cerberus.metadata :as metadata]
-   [cerberus.state :refer [set-state!]]
+   [cerberus.state :refer [set-state! app-state]]
    [cerberus.view :as view]
+   [cerberus.metrics :as metrics]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
 (defn apply-fmt [fmt v & rest]
@@ -102,48 +104,53 @@
                                 ) ])
                       pools)))})))
 
-(defn render-home [app element]
-  (let [pools (:pools element)
-        sysinfo (:sysinfo element)
-        bootparams ((keyword "Boot Parameters") sysinfo)
-        resources (:resources element)
-        osname (cond
-                 (= (:smartos bootparams) "true") "SmartOS"
-                 ;;(true? (:omnios bootparams)) "OmniOS"
-                 :else "Unknown")]
-    (r/well
-     {}
-     (row
-      (g/col
-       {:md 6}
-       (info osname
-             ((keyword "Live Image") sysinfo)
-             (:version element)
-             (int ((keyword "Boot Time") sysinfo))))
-      (g/col
-       {:md 6}
-       (hardware ((keyword "CPU Type") sysinfo)
-                 ((keyword "CPU Total Cores") sysinfo)
-                 (:virtualisation element)
-                 (:Product sysinfo)
-                 (:Manufacturer sysinfo)
-                 ((keyword "Serial Number") sysinfo))))
-     (row
-      (g/col
-       {:md 4}
-       (memory (:total-memory resources)
-               (:provisioned-memory resources)
-               (:free-memory resources)
-               (:reserved-memory resources)
-               (:l1size resources)
-               (/ (:l1hits resources) (+ (:l1hits resources) (:l1miss resources)) .01)))
-      (g/col
-       {:md 4}
-       (storage pools, (:Disks sysinfo))
-       )
-      (g/col
-       {:md 4}
-       (p/panel {:header "Networks"}))))))
+(defn render-home [app element opts]
+  (reify
+    om/IInitState
+    (init-state [_]
+      {:org (or (first (first (get-in app [:orgs :elements]))) "")})
+    om/IRenderState
+    (render-state [_ state]
+      (let [pools (:pools element)
+            sysinfo (:sysinfo element)
+            bootparams ((keyword "Boot Parameters") sysinfo)
+            resources (:resources element)
+            osname (cond
+                     (= (:smartos bootparams) "true") "SmartOS"
+                     ;;(true? (:omnios bootparams)) "OmniOS"
+                     :else "Unknown")]
+        (r/well
+         {}
+         (row
+          (g/col
+           {:md 6}
+           (info osname
+                 ((keyword "Live Image") sysinfo)
+                 (:version element)
+                 (int ((keyword "Boot Time") sysinfo))))
+          (g/col
+           {:md 6}
+           (hardware ((keyword "CPU Type") sysinfo)
+                     ((keyword "CPU Total Cores") sysinfo)
+                     (:virtualisation element)
+                     (:Product sysinfo)
+                     (:Manufacturer sysinfo)
+                     ((keyword "Serial Number") sysinfo))))
+         (row
+          (g/col
+           {:md 4}
+           (memory (:total-memory resources)
+                   (:provisioned-memory resources)
+                   (:free-memory resources)
+                   (:reserved-memory resources)
+                   (:l1size resources)
+                   (/ (:l1hits resources) (+ (:l1hits resources) (:l1miss resources)) .01)))
+          (g/col
+           {:md 4}
+           (storage pools (:Disks sysinfo)))
+          (g/col
+           {:md 4}
+           (p/panel {:header "Networks"}))))))))
 
 (defn render-perf [app element]
   "stub"
@@ -152,65 +159,62 @@
 (defn render-chars [app element]
   "stub"
   )
+
 (defn render-notes [app element]
   "stub"
   )
 
+(defn build-metric [acc {name :name points :points}]
+  (match
+   [name]
+
+   [["cpu" sub-metric]]
+   (assoc-in acc ["CPU" sub-metric] points)
+   
+   [_] acc))
 
 (def sections
-  {""          {:key  1 :fn render-home      :title "General"}
-   "perf"      {:key  2 :fn render-perf      :title "Performance"}
+  {""          {:key  1 :fn  #(om/build render-home %2)     :title "General"}
+   "metrics"   {:key  9 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "services"  {:key  3 :fn #(om/build services/render %2   {:opts {:action hypervisors/service-action}})  :title "Services"}
    "chars"     {:key  4 :fn render-chars     :title "Characteraristics"}
-   "notes"     {:key  5 :fn render-notes     :title "Notes"}
+   ;"notes"     {:key  5 :fn render-notes     :title "Notes"}
    "metadata"  {:key  6 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
-
-#_(defn render [data owner opts]
-  (reify
-    om/IRenderState
-    (render-state [_ state]
-      (let [uuid (get-in data [root :selected])
-            element (get-in data [root :elements uuid])
-            sysinfo (:sysinfo element)
-            bootparams ((keyword "Boot Parameters") sysinfo)
-            section (get-in data [root :section])
-            key (get-in sections [section :key] 1)
-            oslogo (cond
-                     (= (:smartos bootparams) "true") "/imgs/smartos-stacked-logo.png"
-                     ;;(true? (:omnios bootparams)) "OmniOS"
-                     :else "Unknown")]
-        (d/div
-         {}
-         (row
-          (g/col
-           {:md 9}
-           (d/h1
-            {:style (display (not (:edit-alias state)))
-             :onClick #((om/set-state! owner :edit-alias true)
-                        (om/set-state! owner :edit-alias-value (:alias element)))}
-            (:alias element) " ")
-           (d/input
-            {:style (display (:edit-alias state))
-             :value (:edit-alias-value state)
-             :onChange (fn [e] (om/set-state! owner :edit-alias-value (.. e -target -value)))
-             :onKeyDown #(when (= (.-key %) "Enter")
-                           (hypervisors/rename uuid (:edit-alias-value state))
-                           (om/set-state! owner :edit-alias false))
-             :onBlur (fn [e]
-                       (when (:edit-alias state)
-                         (hypervisors/rename uuid (:edit-alias-value state))
-                         (om/set-state! owner :edit-alias false)))})
-           (d/h6 uuid))))))))
 
 (def logo
   {:smartos "/imgs/smartos-stacked-logo.png"
    :other "/imgs/unknown-logo.png"})
+
+;; This is really ugly but something is crazy about the reify for OM here
+;; this for will moutnt and will unmoutn are not the same and having timer in
+;; let does not work either so lets "MAKE ALL THE THINGS GLOBAL!"
+
+(def timer (atom))
+
+(defn stop-timer! []
+  (if @timer
+    (js/clearInterval @timer))
+  (reset! timer nil))
+
+(defn tick [uuid]
+  (if (and
+       (= (get-in @app-state [root :selected]) uuid)
+       (= (:section @app-state) :hypervisors))
+    (hypervisors/metrics uuid)
+    (stop-timer!)))
+
+(defn start-timer! [uuid]
+  (stop-timer!)
+  (reset! timer (js/setInterval #(tick uuid) 1000)))
+
 (def render
   (view/make
    root sections
    hypervisors/get
    :init-state {:edit-alias false}
+   :mount-fn (fn [uuid data]
+               (start-timer! uuid))
    :name-fn (fn [element]
               (let [sysinfo (:sysinfo element)
                     bootparams ((keyword "Boot Parameters") sysinfo)

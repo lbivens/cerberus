@@ -39,20 +39,19 @@
 (def config
   (mk-config
    root "Machines" actions
-   :name {:title "Name" :key [:config :alias] :order -10}
-   :cpu {:title "CPU" :key [:config :cpu_cap] :type :percent}
-   :ram {:title "Memory" :key [:config :ram] :type [:bytes :mb]}
-   :ip {:title "IP" :key get-ip :type :ip}
-   :state {:title "State" :key :state :type :string}
-   :dataset {:title "Dataset" :type :string
-             :key (partial api/get-sub-element :datasets :dataset
-                           #(str (:name %) "-" (:version %)))}
-   :dataset {:title "Dataset" :type :string
-             :key (partial api/get-sub-element :datasets :dataset
-                           #(str (:name %) "-" (:version %)))}
-   :owner {:title "Owner" :type :string
-           :key (partial api/get-sub-element :orgs :owner :name)}
-   :hypervisor {:title "Hypervsor" :type :string
+   :name       {:title "Name" :key [:config :alias] :order -10}
+   :cpu        {:title "CPU" :key [:config :cpu_cap] :type :percent}
+   :ram        {:title "Memory" :key [:config :ram] :type [:bytes :mb]}
+   :ip         {:title "IP" :key get-ip :type :ip}
+   :state      {:title "State" :key :state :type :string}
+   :dataset    {:title "Dataset" :type :string
+                :key (partial api/get-sub-element :datasets :dataset
+                              #(str (:name %) "-" (:version %)))}
+   :package    {:title "Package" :type :string
+                :key (partial api/get-sub-element :packages :package :name)}
+   :owner      {:title "Owner" :type :string
+                :key (partial api/get-sub-element :orgs :owner :name)}
+   :hypervisor {:title "Hypervisor" :type :string
                 :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}))
 
 (set-state! [root :fields] (initial-state config))

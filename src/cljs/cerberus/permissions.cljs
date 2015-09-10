@@ -21,7 +21,7 @@
    [cerberus.orgs.api :as orgs]
    [cerberus.clients.api :as clients]
 
-   [cerberus.utils :refer [row val-by-id make-event menu-items]]
+   [cerberus.utils :refer [row ->state make-event menu-items]]
    [cerberus.state :refer [app-state]]))
 
 
@@ -173,8 +173,7 @@
            (i/input
             {:type "select"
              :default-value nil
-             :id "perm-l1"
-             :on-change #(om/set-state! owner :l1 (val-by-id "perm-l1"))}
+             :on-change (->state owner :l1)}
             (d/option  {:value nil} "")
             (options perms)))
           (if-let [l1 (get-in perms [l1v :children])]
@@ -183,8 +182,7 @@
               (i/input
                {:type "select"
                 :default-value ""
-                :id "perm-l2"
-                :on-change #(om/set-state! owner :l2 (val-by-id "perm-l2"))}
+                :on-change (->state owner :l2)}
                (d/option  "")
                (options l1)))
              (if-let [l2 (get-in l1 [l2v :children])]
@@ -193,14 +191,13 @@
                 (i/input
                  {:type "select"
                   :default-value ""
-                  :id "perm-l3"
-                  :on-change #(om/set-state! owner :l3 (val-by-id "perm-l3"))}
+                  :on-change (->state owner :l3)}
                  (d/option  "")
                  (options l2))))])
           (g/col
            {:xs 3}
            (if-let [path (end state perms)]
-             (b/button {:on-click #(grant path)} "submit!"))))
+             (b/button {:bs-style "primary" :on-click #(grant path)} "Grant"))))
          (row
           (g/col
            {:xs 12}

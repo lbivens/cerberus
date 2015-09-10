@@ -4,7 +4,6 @@
    [cerberus.match :as jmatch]
    [cerberus.utils :refer [make-event value-by-key]]))
 
-
 (def large "hidden-xs hidden-sm")
 
 (def small "visible-xs-block visible-sm-block")

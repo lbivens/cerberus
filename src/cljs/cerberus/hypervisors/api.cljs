@@ -3,6 +3,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
    [cerberus.api :as api]
+   [cerberus.http :as http]
    [cerberus.alert :refer [alerts]]
    [cerberus.state :refer [set-state!]]))
 
@@ -17,7 +18,7 @@
 (def get (partial api/get root))
 
 (defn a-get [uuid success error]
-  (merge (alerts success error) :always #(get uuid)))
+  (assoc (alerts success error) :always #(get uuid)))
 
 (defn delete [uuid]
   (api/delete root [uuid] (alerts "Hypervisor removed." "Failed to remove hypervisor.")))
@@ -28,3 +29,8 @@
 (defn service-action [uuid service action]
   (api/put root [uuid :services] {:service service :action action}
            (a-get uuid "Service state changed." "Failed to change service state.")))
+
+(defn metrics [uuid]
+  (api/to-state [root :elements uuid :metrics]
+                (http/get [root uuid :metrics])))
+

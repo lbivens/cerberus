@@ -14,6 +14,7 @@
    [cerberus.utils :refer [goto grid-row row ->state val-by-id str->int]]
    [cerberus.http :as http]
    [cerberus.api :as api]
+   [cerberus.orgs.api :as orgs]
    [cerberus.services :as services]
    [cerberus.metadata :as metadata]
    [cerberus.vms.api :refer [root] :as vms]
@@ -34,81 +35,108 @@
 (defn get-dataset [element]
   (sub-element :datasets :dataset [:name] element))
 
-(defn render-home [data owner opts]
+(defn render-home [app owner opts]
   (reify
+    om/IInitState
+    (init-state [_]
+      {:org (or (first (first (get-in app [:orgs :elements]))) "")})
     om/IRenderState
-    (render-state [_ _]
-      (let [conf (:config data)
-            owner (api/get-sub-element :orgs :owner identity data)
-            package (api/get-sub-element :packages :package identity data)
-            dataset (api/get-sub-element :datasets :dataset identity data)
-            hypervisor (api/get-sub-element :hypervisors :hypervisor identity data)
-            services (:services data)]
-        (table
-         {:class "ftable" :responsive? true}
-         (d/tbody {:class "filoment"}
-                  (d/tr
-                   (d/td "Alias")
-                   (d/td (:alias conf)))
-                  (d/tr
-                   (d/td "Hypervisor")
-                   (d/td (:alias hypervisor)))
-                  (d/tr
-                   (d/td "Type")
-                   (d/td (:type conf)))
-                  (d/tr
-                   (d/td "Max Swap")
-                   (d/td (->> (:max_swap conf) (fmt-bytes :b))))
-                  (d/tr
-                   (d/td "State")
-                   (d/td (:state conf)))
-                  (d/tr
-                   (d/td "Memory")
-                   (d/td (->> (:ram conf) (fmt-bytes :mb))))
-                  (d/tr
-                   (d/td "Resolvers")
-                   (d/td (cstr/join ", " (:resolvers conf))))
-                  (d/tr
-                   (d/td "DNS Domain")
-                   (d/td (:dns_domain conf)))
-                  (d/tr
-                   (d/td "Quota")
-                   (d/td (->> (:quota conf) (fmt-bytes :gb))))
-                  (d/tr
-                   (d/td "I/O Priority")
-                   (d/td (:zfs_io_priority conf)))
-                  (d/tr
-                   (d/td "CPU Shares")
-                   (d/td (:cpu_shares conf)))
-                  (d/tr
-                   (d/td "CPU Cap")
-                   (d/td (-> (:cpu_cap conf) fmt-percent)))
-                  (d/tr
-                   (d/td "Owner")
-                   (d/td (:name owner)))
-                  (d/tr
-                   (d/td "Autoboot")
-                   (d/td (:autoboot conf)))
-                  (d/tr
-                   (d/td "Dataset")
-                   (d/td (:name dataset)))
-                  (d/tr
-                   (d/td "Created")
-                   (d/td (:created_at conf)))
-                  (d/tr
-                   (d/td "Backups")
-                   (d/td (count (:backups conf))))
-                  (d/tr
-                   (d/td "Snapshots")
-                   (d/td (count (:snapshots conf))))
-                  (d/tr
-                   (d/td "Firewall Rules")
-                   (d/td (count (:fw_rules conf))))
-                  (d/tr
-                   (d/td "Services")
-                   (d/td (count (filter (fn [[_ state]] (= state "maintenance")) services)) "/"
-                         (count (filter (fn [[_ state]] (= state "online")) services)) "/"
-                         (count (filter (fn [[_ state]] (= state "disabled")) services))))))))))
+    (render-state [_ state]
+      (let [uuid (get-in app [root :selected])
+            element (get-in app [root :elements uuid])
+            conf (:config element)
+            current-owner (:owner element)
+            invalid-owner #{"" current-owner}
+            orgs (get-in app [:orgs :elements])
+            org (api/get-sub-element :orgs :owner identity element)
+            package (api/get-sub-element :packages :package identity element)
+            dataset (api/get-sub-element :datasets :dataset identity element)
+            hypervisor (api/get-sub-element :hypervisors :hypervisor identity element)
+            services (:services element)]
+        (r/well
+         {}
+         (row
+          (g/col
+           {:md 8}
+           (i/input
+            {:type "select"
+             :value (:org state)
+             :on-change (->state owner :org)}
+            (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) orgs)))
+          (g/col
+           {:md :4}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :on-click #(vms/set-owner uuid (:org state))
+             :disabled? (invalid-owner (:org state))}
+            "Set owner")))
+         (row
+          (table
+           {:class "ftable" :responsive? true}
+           (d/tbody {:class "filoment"}
+                    (d/tr
+                     (d/td "Alias")
+                     (d/td (:alias conf)))
+                    (d/tr
+                     (d/td "Hypervisor")
+                     (d/td (:alias hypervisor)))
+                    (d/tr
+                     (d/td "Type")
+                     (d/td (:type conf)))
+                    (d/tr
+                     (d/td "Max Swap")
+                     (d/td (->> (:max_swap conf) (fmt-bytes :b))))
+                    (d/tr
+                     (d/td "State")
+                     (d/td (:state conf)))
+                    (d/tr
+                     (d/td "Memory")
+                     (d/td (->> (:ram conf) (fmt-bytes :mb))))
+                    (d/tr
+                     (d/td "Resolvers")
+                     (d/td (cstr/join ", " (:resolvers conf))))
+                    (d/tr
+                     (d/td "DNS Domain")
+                     (d/td (:dns_domain conf)))
+                    (d/tr
+                     (d/td "Quota")
+                     (d/td (->> (:quota conf) (fmt-bytes :gb))))
+                    (d/tr
+                     (d/td "I/O Priority")
+                     (d/td (:zfs_io_priority conf)))
+                    (d/tr
+                     (d/td "CPU Shares")
+                     (d/td (:cpu_shares conf)))
+                    (d/tr
+                     (d/td "CPU Cap")
+                     (d/td (-> (:cpu_cap conf) fmt-percent)))
+                    (d/tr
+                     (d/td "Owner")
+                     (d/td (:name org)))
+                    (d/tr
+                     (d/td "Autoboot")
+                     (d/td (:autoboot conf)))
+                    (d/tr
+                     (d/td "Dataset")
+                     (d/td (:name dataset)))
+                    (d/tr
+                     (d/td "Created")
+                     (d/td (:created_at conf)))
+                    (d/tr
+                     (d/td "Backups")
+                     (d/td (count (:backups conf))))
+                    (d/tr
+                     (d/td "Snapshots")
+                     (d/td (count (:snapshots conf))))
+                    (d/tr
+                     (d/td "Firewall Rules")
+                     (d/td (count (:fw_rules conf))))
+                    (d/tr
+                     (d/td "Services")
+                     (d/td (count (filter (fn [[_ state]] (= state "maintenance")) services)) "/"
+                           (count (filter (fn [[_ state]] (= state "online")) services)) "/"
+                           (count (filter (fn [[_ state]] (= state "disabled")) services))))))))))))
 
 (defn render-logs [data owner opts]
   (reify
@@ -725,7 +753,7 @@
   #(om/build f %2))
 
 (def sections
-  {""          {:key  1 :fn (b render-home)      :title "General"}
+  {""          {:key  1 :fn #(om/build render-home %1)      :title "General"}
    "networks"  {:key  2 :fn #(om/build
                               render-networks %1
                               {:opts {:uuid (:uuid %2)}})  :title "Networks"}
@@ -766,5 +794,6 @@
    vms/get
    :mount-fn (fn [uuid data]
                (start-timer! uuid)
+               (orgs/list data)
                (networks/list data))
    :name-fn #(get-in % [:config :alias])))

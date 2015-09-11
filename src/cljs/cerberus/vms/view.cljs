@@ -796,4 +796,33 @@
                (start-timer! uuid)
                (orgs/list data)
                (networks/list data))
-   :name-fn #(get-in % [:config :alias])))
+   :name-fn  (fn [{state :state uuid :uuid {alias :alias} :config}]
+               (d/div
+                {}
+                alias " "
+                (b/button-group
+                 {}
+                 (b/button
+                  {:bs-size "small"
+                   :bs-style "primary"
+                   :on-click #(vms/stop uuid)
+                   :disabled? (= state "stopped")}
+                  (r/glyphicon {:glyph "stop"}))
+                 (b/button
+                  {:bs-size "small"
+                   :bs-style "primary"
+                   :on-click #(vms/start uuid)
+                   :disabled? (= state "running")}
+                  (r/glyphicon {:glyph "play"}))
+                 (b/button
+                  {:bs-size "small"
+                   :bs-style "primary"
+                   :on-click #(vms/reboot uuid)
+                   :disabled? (= state "stopped")}
+                  (r/glyphicon {:glyph "refresh"}))
+                 (b/button
+                  {:bs-size "small"
+                   :bs-style "danger"
+                   :on-click #(vms/delete uuid)
+                   :disabled? (not= state "stopped")}
+                  (r/glyphicon {:glyph "trash"})))))))

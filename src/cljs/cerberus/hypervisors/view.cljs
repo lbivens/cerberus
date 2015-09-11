@@ -106,9 +106,17 @@
 
 (defn render-home [element owner opts]
   (reify
+    om/IDisplayName
+    (display-name [_]
+      "hypervisor-home")
+    om/IInitState
+    (init-state [_]
+      {:alias (:alias element)})
+
     om/IRenderState
     (render-state [_ state]
       (let [pools (:pools element)
+            uuid (:uuid element)
             sysinfo (:sysinfo element)
             bootparams ((keyword "Boot Parameters") sysinfo)
             resources (:resources element)
@@ -118,6 +126,21 @@
                      :else "Unknown")]
         (r/well
          {}
+         (row
+          (g/col
+           {:md 8}
+           (i/input
+            {:type "text"
+             :value (:alias state)
+             :on-change (->state owner :alias)}))
+          (g/col
+           {:md :4}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :on-click #(hypervisors/set-config uuid {:alias (:alias state)})
+             :disabled? (empty? (:alias state))}
+            "Change alias")))
          (row
           (g/col
            {:md 6}

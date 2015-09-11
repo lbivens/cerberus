@@ -34,3 +34,6 @@
   (api/to-state [root :elements uuid :metrics]
                 (http/get [root uuid :metrics])))
 
+(defn set-config [uuid config]
+  (api/put root [uuid :config] config
+           (a-get uuid "Configuration updated." "Failed to change configuration.")))

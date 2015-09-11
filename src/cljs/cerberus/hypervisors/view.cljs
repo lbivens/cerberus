@@ -9,11 +9,11 @@
    [om-bootstrap.random :as r]
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
-   [cerberus.utils :refer [goto row display]]
+   [om-bootstrap.button :as b]
+   [cerberus.utils :refer [goto row display ->state]]
    [cerberus.http :as http]
    [cerberus.api :as api]
-   [cerberus.hypervisors.api :as hypervisors]
-   [cerberus.hypervisors.api :refer [root]]
+   [cerberus.hypervisors.api :as hypervisors :refer [root]]
    [cerberus.services :as services]
    [cerberus.metadata :as metadata]
    [cerberus.state :refer [set-state! app-state]]
@@ -104,14 +104,19 @@
                                 ) ])
                       pools)))})))
 
-(defn render-home [app element opts]
+(defn render-home [element owner opts]
   (reify
+    om/IDisplayName
+    (display-name [_]
+      "hypervisor-home")
     om/IInitState
     (init-state [_]
-      {:org (or (first (first (get-in app [:orgs :elements]))) "")})
+      {:alias (:alias element)})
+
     om/IRenderState
     (render-state [_ state]
       (let [pools (:pools element)
+            uuid (:uuid element)
             sysinfo (:sysinfo element)
             bootparams ((keyword "Boot Parameters") sysinfo)
             resources (:resources element)
@@ -121,6 +126,21 @@
                      :else "Unknown")]
         (r/well
          {}
+         (row
+          (g/col
+           {:md 8}
+           (i/input
+            {:type "text"
+             :value (:alias state)
+             :on-change (->state owner :alias)}))
+          (g/col
+           {:md :4}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :on-click #(hypervisors/set-config uuid {:alias (:alias state)})
+             :disabled? (empty? (:alias state))}
+            "Change alias")))
          (row
           (g/col
            {:md 6}
@@ -170,7 +190,7 @@
 
    [["cpu" sub-metric]]
    (assoc-in acc ["CPU" sub-metric] points)
-   
+
    [_] acc))
 
 (def sections
@@ -218,7 +238,6 @@
    :name-fn (fn [element]
               (let [sysinfo (:sysinfo element)
                     bootparams ((keyword "Boot Parameters") sysinfo)
-                    _ (pr bootparams)
                     os (cond
                          (= (:smartos bootparams) "true") :smartos
                          :else :other)]

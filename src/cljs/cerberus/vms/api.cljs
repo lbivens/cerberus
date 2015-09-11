@@ -13,7 +13,7 @@
 
 
 (def list-fields
-  "alias,uuid,config,state,dataset,package,metadata,dataset,hypervisor")
+  "alias,uuid,config,state,dataset,package,metadata,dataset,hypervisor,owner")
 
 (defn list [data]
   (api/list data root list-fields))
@@ -124,3 +124,8 @@
            (a-get uuid "Marking network as primary." "Failed to mark network as primary.")))
 
 (def update-metadata (partial api/update-metadata root))
+
+
+(defn set-owner [uuid org]
+  (api/put root [uuid :owner] {:org org}
+           (a-get uuid "Owner changed." "Failed to change owner.")))

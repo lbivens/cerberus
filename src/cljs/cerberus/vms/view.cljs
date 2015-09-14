@@ -801,7 +801,7 @@
                 {}
                 alias " "
                 (b/button-group
-                 {}
+                 {:class "fctabuttons"}
                  (b/button
                   {:bs-size "small"
                    :bs-style "primary"

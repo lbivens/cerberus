@@ -54,24 +54,30 @@
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
 
-(defn post [root path data {:as callbacks :or
-                            {:success (fn [resp]
-                                        (let [body (:body resp)
-                                              uuid (:uuid body)]
-                                          (howl/join uuid)
-                                          (set-state! [root :elements uuid] body)))}}]
-  (go
-    (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))
-          success (or (:success callbacks) identity)
-          error (or (:error callbacks) identity)
-          status (:status resp)]
-      (if-let [always (:always callbacks)]
-        (always resp))
-      (if-let [callback (callbacks status)]
-        (callback resp)
-        (if (:success resp)
-          (success resp)
-          (error resp))))))
+(defn post-success-fn [root]
+  (fn post-success-fn* [resp]
+    (let [body (:body resp)
+          uuid (:uuid body)]
+      (pr "success got:" body)
+      (howl/join uuid)
+      (set-state! [root :elements uuid] body))))
+
+(defn post
+  ([root path data]
+   (post root path data {:success (post-success-fn root)}))
+  ([root path data {:as callbacks :or {:success (post-success-fn root)}}]
+   (go
+     (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))
+           success (or (:success callbacks) identity)
+           error (or (:error callbacks) identity)
+           status (:status resp)]
+       (if-let [always (:always callbacks)]
+         (always resp))
+       (if-let [callback (callbacks status)]
+         (callback resp)
+         (if (:success resp)
+           (success resp)
+           (error resp)))))))
 
 (defn put [root path data {:as callbacks :or
                            {:success (fn [resp]

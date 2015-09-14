@@ -67,7 +67,7 @@
            {:md :4}
            (b/button
             {:bs-style "primary"
-             :className "pull-right"
+             :className "pull-right fbutown"
              :on-click #(vms/set-owner uuid (:org state))
              :disabled? (invalid-owner (:org state))}
             "Set owner")))

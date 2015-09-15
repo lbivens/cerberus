@@ -711,13 +711,15 @@
         (g/col
          {:xs 12 :md 6}
          (p/panel
-          {:header "inbound"}
+          {:header "Inbound rules"
+           :class "fwrule"}
           (let [rules (filter #(= (:direction %) "inbound") (:fw_rules data))]
             (map (partial render-rule (:uuid data)) rules))))
         (g/col
          {:xs 12 :md 6}
          (p/panel
-          {:header "outbound"}
+          {:header "Outbound rules"
+           :class "fwrule"}
           (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
             (map (partial render-rule (:uuid data)) rules)))))))))
 

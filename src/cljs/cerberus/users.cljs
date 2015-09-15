@@ -19,8 +19,7 @@
              root "Users" actions
              :name {:title "Name" :key :name :order -10}
              :org {:title "Organisation"
-                   :key (partial api/get-sub-element :orgs :org :name)}
-             ))
+                   :key (partial api/get-sub-element :orgs :org :name)}))
 
 (set-state! [root :fields] (initial-state config))
 

@@ -67,7 +67,7 @@
            {:md :4}
            (b/button
             {:bs-style "primary"
-             :className "pull-right"
+             :className "pull-right fbutown"
              :on-click #(vms/set-owner uuid (:org state))
              :disabled? (invalid-owner (:org state))}
             "Set owner")))
@@ -616,7 +616,7 @@
       (map str->int (cstr/split (:ports state) #"[, ]+") ))))
 
 
-;; TODO: make this prpperly cehck for va
+;; TODO: make this properly check for va
 (defn valid-rule [{action :action
                    direction :direction
                    target :target
@@ -704,19 +704,22 @@
          (action-select owner state)))
        (row (b/button
              {:bs-style "primary"
+              :class "fwaddbtn"
               :on-click #(add-rule state)}
-             "add"))
+             "add rule"))
        (row
         (g/col
          {:xs 12 :md 6}
          (p/panel
-          {:header "inbound"}
+          {:header "Inbound rules"
+           :class "fwrule"}
           (let [rules (filter #(= (:direction %) "inbound") (:fw_rules data))]
             (map (partial render-rule (:uuid data)) rules))))
         (g/col
          {:xs 12 :md 6}
          (p/panel
-          {:header "outbound"}
+          {:header "Outbound rules"
+           :class "fwrule"}
           (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
             (map (partial render-rule (:uuid data)) rules)))))))))
 
@@ -801,7 +804,7 @@
                 {}
                 alias " "
                 (b/button-group
-                 {}
+                 {:class "fctabuttons"}
                  (b/button
                   {:bs-size "small"
                    :bs-style "primary"

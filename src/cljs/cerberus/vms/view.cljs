@@ -616,7 +616,7 @@
       (map str->int (cstr/split (:ports state) #"[, ]+") ))))
 
 
-;; TODO: make this prpperly cehck for va
+;; TODO: make this properly check for va
 (defn valid-rule [{action :action
                    direction :direction
                    target :target
@@ -704,8 +704,9 @@
          (action-select owner state)))
        (row (b/button
              {:bs-style "primary"
+              :class "fwaddbtn"
               :on-click #(add-rule state)}
-             "add"))
+             "add rule"))
        (row
         (g/col
          {:xs 12 :md 6}

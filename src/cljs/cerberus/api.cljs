@@ -33,23 +33,29 @@
   ([data root]
      (go
        (let [resp (<! (full-list (name root)))
-             elements (js->clj (:body resp))
-             elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
+             elements (js->clj (:body resp))]
          (if (= 401 (:status resp))
            (check-login)
            (do
-             (doall (map #(howl/join %) (keys elements)))
-             (om/transact! data [root :elements] (constantly elements)))))))
+             (doall (map #(howl/join %) (map :uuid elements)))
+             (om/transact! data [root :elements]
+                           #(reduce
+                             (fn [acc e]
+                               (update acc (:uuid e) merge e))
+                             % elements)))))))
   ([data root list-fields]
      (go
        (let [resp (<! (full-list (name root) list-fields))
-             elements (map-indexed #(assoc %2 :react-key (* 100 %2)) (js->clj (:body resp)))
-             elements (reduce (fn [acc e] (assoc acc (:uuid e) e)) {} elements)]
+             elements (map-indexed #(assoc %2 :react-key (* 100 %2)) (js->clj (:body resp)))]
          (if (= 401 (:status resp))
            (check-login)
            (do
-             (doall (map howl/join (keys elements)))
-             (om/transact! data [root :elements] (constantly elements))))))))
+             (doall (map howl/join (map :uuid elements)))
+             (om/transact! data [root :elements]
+                           #(reduce
+                             (fn [acc e]
+                               (update acc (:uuid e) merge e))
+                             % elements))))))))
 
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))

@@ -20,6 +20,7 @@
    [cerberus.users.api :as users :refer [root]]
    [cerberus.roles.api :as roles]
    [cerberus.orgs.api :as orgs]
+   [cerberus.clients.api :as clients]
    [cerberus.alert :as alert]
    [cerberus.state :refer [set-state!]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]
@@ -283,7 +284,7 @@
                           (r/glyphicon {:glyph "remove"}))))
              current-roles)))))))))
 
-(defn render-orgs [app owner {:keys [root id]}]
+(defn render-orgs [app owner {:keys [id]}]
   (reify
     om/IInitState
     (init-state [_]
@@ -327,22 +328,63 @@
                   (b/button {:bs-size "xsmall"
                              :className "pull-right"
                              :onClick #(users/active-org id uuid)}
-                            (r/glyphicon {:glyph "check"})))))
+                            (r/glyphicon {:class "pull-right" :glyph "check"})))))
              current-orgs)))))))))
+
+(defn render-tokens [app owner {:keys [id]}]
+  (reify
+    om/IInitState
+    (init-state [_]
+      {})
+    om/IRenderState
+    (render-state [_ state]
+      (r/well
+       {}
+       (let [element (get-in app [root :elements id])
+             tokens (sort-by :client (:tokens element))
+             client-name #(get-in app [clients/root :elements % :name])]
+         (table
+          {}
+          (d/thead
+           {}
+           (d/tr
+            (d/th "Client")
+            (d/th "Type")
+            (d/th "Expiery")
+            (d/th "Revoke")))
+          (d/tbody
+           (map (fn [{type :type
+                      expiery :expiery
+                      client :client}]
+                  (d/tr
+                   (d/td (or (client-name client) (d/strong "User")))
+                   (d/td (cond
+                           (and (= type "access") (not client)) "password"
+                           (and (not expiery) (not client)) "API"
+                           :else type))
+                   (d/td (if expiery (str (js/Date. (* expiery 1000))) "never"))
+                   (d/td (r/glyphicon {:glyph "trash"}))
+                   ))
+                tokens))))))))
 
 (def sections
   {""         {:key  1 :fn #(om/build render-auth %2)  :title "Authentication"}
    "perms"    {:key  2
-               :fn #(om/build permissions/render (get-in %1 [root :elements (get-in %1 [root :selected])])
+               :fn #(om/build permissions/render
+                              %2
+                              ;(get-in %1 [root :elements (get-in %1 [root :selected])])
                               {:opts {:grant users/grant :revoke users/revoke}})
                :title "Permissions"}
    "roles"    {:key  3 :fn #(om/build render-roles %1
                                       {:opts {:id (get-in %1 [root :selected])
                                               :root root}})     :title "Roles"}
    "orgs"     {:key  4 :fn #(om/build render-orgs %1
-                                      {:opts {:id (get-in %1 [root :selected])
-                                              :root root}})    :title "Orgs"}
-   "metadata" {:key  5 :fn #(om/build metadata/render (get-in %1 [root :elements (get-in %1 [root :selected])]))  :title "Metadata"}})
+                                      {:opts {:id (get-in %1 [root :selected])}})
+               :title "Orgs"}
+   "tokens"   {:key  5 :fn #(om/build render-tokens %1
+                                      {:opts {:id (get-in %1 [root :selected])}})
+               :title "Tokens"}
+   "metadata" {:key  6 :fn #(om/build metadata/render (get-in %1 [root :elements (get-in %1 [root :selected])]))  :title "Metadata"}})
 
 (def render
   (view/make
@@ -350,6 +392,7 @@
    users/get
    :mount-fn (fn [uuid data]
                (orgs/list data)
+               (clients/list data)
                (roles/list data))
    :name-fn :name
    :init-state {:password-validate false

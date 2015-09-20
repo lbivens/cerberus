@@ -353,18 +353,27 @@
             (d/th "Expiery")
             (d/th "Revoke")))
           (d/tbody
-           (map (fn [{type :type
-                      expiery :expiery
-                      client :client}]
+           (map (fn [{type     :type
+                      expiery  :expiery
+                      comment  :comment
+                      token-id :id
+                      client   :client}]
                   (d/tr
-                   (d/td (or (client-name client) (d/strong "User")))
                    (d/td (cond
-                           (and (= type "access") (not client)) "password"
+                           (and (not expiery) (not client)) (d/strong comment)
+                           (and (= type "access") (not client)) (d/strong "User")
+                           :else (client-name client)))
+                   (d/td (cond
                            (and (not expiery) (not client)) "API"
+                           (and (= type "access") (not client)) "password"
                            :else type))
-                   (d/td (if expiery (str (js/Date. (* expiery 1000))) "never"))
-                   (d/td (r/glyphicon {:glyph "trash"}))
-                   ))
+                   (d/td
+                    (if expiery (str (js/Date. (* expiery 1000))) "never"))
+                   (d/td
+                    (b/button {:bs-size "xsmall"
+                               :className "pull-right"
+                               :onClick #(users/revoke-token id token-id)}
+                            (r/glyphicon {:class "pull-right" :glyph "trash"})))))
                 tokens))))))))
 
 (def sections

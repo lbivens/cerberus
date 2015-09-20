@@ -39,6 +39,10 @@
   (api/delete root (concat [uuid :permissions] perm)
               (a-get uuid "Permission revoed." "Failed to revoke permission.")))
 
+(defn revoke-token [uuid token]
+  (api/delete root [uuid :tokens token]
+              (a-get uuid "Token revoked." "Failed to revoke token.")))
+
 (defn add-sshkey [uuid keyname keydata]
   (api/put root [uuid :keys] {keyname keydata}
            (a-get uuid "SSH key added." "Failed to add SSH key.")))

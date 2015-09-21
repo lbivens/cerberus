@@ -265,7 +265,7 @@
       (g/col
        {:md 8}
        (table
-        {}
+        {:class "pkg-list"}
         (d/thead
          {}
          (map d/td

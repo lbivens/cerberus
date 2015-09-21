@@ -47,7 +47,7 @@
         (r/well
          {}
          (table
-          {:striped? true :condensed? true :hover? true :responsive? true}
+          {:class "service-list":striped? true :condensed? true :hover? true :responsive? true}
           (d/thead
            {:striped? false}
            (d/tr

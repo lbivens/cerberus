@@ -146,7 +146,7 @@
         (r/well
          {}
          (table
-          {:striped? true :condensed? true :hover? true :responsive? true}
+          {:striped? true :condensed? true :hover? true :responsive? true :class "logs-list"}
           (d/thead
            {:striped? false}
            (d/tr

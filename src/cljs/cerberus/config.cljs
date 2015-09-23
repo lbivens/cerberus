@@ -103,5 +103,6 @@
 (if-let [token (.get goog.net.cookies "token")]
   (do
     (set-state! :token token)
-    (howl/init)
-    (load)))
+    (load)
+    (howl/init)))
+

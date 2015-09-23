@@ -12,10 +12,10 @@
 ;; miliseconds before the alert is automaticaly closed
 (def alert-timeouts
   {:danger false
-   :success 5000})
+   :success 30000})
 
 (defn alert-timeout [type]
-  (get-in alert-timeouts [type] 10000))
+  (get-in alert-timeouts [type] 60000))
 
 (defn clear [alert]
   (match

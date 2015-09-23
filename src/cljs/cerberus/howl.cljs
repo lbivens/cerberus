@@ -98,7 +98,8 @@
             (if-not error
               (ws-loop init ws-channel)
                                         ;(ws-authenticate ws-channel)
-              (dbg/error "[howl] ws error:" error))))
+              (dbg/error "[howl] ws error:" error)))
+          (do))
         (dbg/error "[ott] error: " response)))))
 
 (defn send [msg]

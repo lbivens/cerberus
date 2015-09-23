@@ -1,4 +1,5 @@
 (ns cerberus.users.view
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
    [clojure.string :refer [blank?]]
    [om.core :as om :include-macros true]
@@ -19,6 +20,7 @@
    [cerberus.view :as view]
    [cerberus.users.api :as users :refer [root]]
    [cerberus.roles.api :as roles]
+   [cerberus.scopes.api :as scopes]
    [cerberus.orgs.api :as orgs]
    [cerberus.clients.api :as clients]
    [cerberus.alert :as alert]
@@ -331,57 +333,134 @@
                             (r/glyphicon {:class "pull-right" :glyph "check"})))))
              current-orgs)))))))))
 
+
+(defn token-modal [owner state]
+  (d/div
+   {:style {:display (if (:token state) "block" "none")} }
+   (md/modal
+    {:header (d/h4
+              "API Key"
+              (d/button {:type         "button"
+                         :class        "close"
+                         :aria-hidden  true
+                         :on-click #(do
+                                      (om/set-state! owner :comment "")
+                                      (om/set-state! owner :token false)
+                                      (om/set-state! owner :token false))}
+                        "×"))
+     :close-button? false
+     :visible? true
+     :animate? false
+     :style {:display "block"}}
+    (d/p
+     "Your API key as been created, this is the only time you will be able to access it, "
+     "be sure to put it in the applicaiton you generated it for." (d/br)
+     (d/strong "Once this window is closed you will not be able to retrive it any again!"))
+    (d/p
+     "API Token: " (d/strong {:class "uuid"} (:token state))))))
+
+(defn create-api-key [owner {:keys [comment scopes uuid] :as state}]
+  (go
+    (let [data     {:comment comment :scope scopes}
+          resp     (<! (http/post [root uuid :tokens] {} {:json-params data}))]
+      (if (= 200 (:status resp))
+        (do
+          (users/get uuid)
+          (om/set-state! owner :token (:token (js->clj (:body resp)))))))))
+
 (defn render-tokens [app owner {:keys [id]}]
   (reify
     om/IInitState
     (init-state [_]
-      {})
+      {:comment ""
+       :token   false
+       :uuid    id
+       :scopes  (set (map :scope (filter :default (get-in app [scopes/root :elements]))))})
     om/IRenderState
     (render-state [_ state]
-      (r/well
-       {}
-       (let [element (get-in app [root :elements id])
-             tokens (sort-by :client (:tokens element))
-             client-name #(get-in app [clients/root :elements % :name])]
-         (table
+      (let [element (get-in app [root :elements id])
+            tokens (sort-by :client (:tokens element))
+            client-name #(get-in app [clients/root :elements % :name])
+            scopes (get-in app [scopes/root :elements])]
+        (d/div
+         {}
+         (token-modal owner state)
+         (r/well
           {}
-          (d/thead
+
+          (g/row
            {}
-           (d/tr
-            (d/th "Client")
-            (d/th "Type")
-            (d/th "Expiery")
-            (d/th "Revoke")))
-          (d/tbody
-           (map (fn [{type     :type
-                      expiery  :expiery
-                      comment  :comment
-                      token-id :id
-                      client   :client}]
-                  (d/tr
-                   (d/td (cond
-                           (and (not expiery) (not client)) (d/strong comment)
-                           (and (= type "access") (not client)) (d/strong "User")
-                           :else (client-name client)))
-                   (d/td (cond
-                           (and (not expiery) (not client)) "API"
-                           (and (= type "access") (not client)) "password"
-                           :else type))
-                   (d/td
-                    (if expiery (str (js/Date. (* expiery 1000))) "never"))
-                   (d/td
-                    (b/button {:bs-size "xsmall"
-                               :className "pull-right"
-                               :onClick #(users/revoke-token id token-id)}
-                            (r/glyphicon {:class "pull-right" :glyph "trash"})))))
-                tokens))))))))
+           (g/col
+            {:xs 12 :sm 8 :md 10}
+            (i/input
+             {:type "text"
+              :value (:comment state)
+              :placeholder "API Key Name"
+              :on-change (->state owner :comment)}))
+           (g/col
+            {:xs 12 :sm 4 :md 2}
+            (b/button {:bs-style "primary"
+                       :disabled? (or (empty? (:scopes state))
+                                      (empty? (:comment state)))
+                       :on-click #(create-api-key owner state)}
+                      "Create API Key")))
+          (g/row
+           {}
+           (map
+            (fn [{scope :scope desc :description}]
+              (let [checked ((:scopes state) scope)]
+                (g/col
+                 {:xs 12 :sm 6 :md 4 :lg 3}
+                 (i/input {:type "checkbox" :label desc
+                           :on-click (fn []
+                                       (if checked
+                                         (om/update-state! owner [:scopes] #(disj % scope))
+                                         (om/update-state! owner [:scopes] #(conj % scope))))
+                           :checked checked}))))
+            scopes))
+          (g/row
+           {}
+           (g/col
+            {:xs 12}
+            (table
+             {}
+             (d/thead
+              {}
+              (d/tr
+               (d/th "Client")
+               (d/th "Type")
+               (d/th "Expiery")
+               (d/th "Revoke")))
+             (d/tbody
+              (map (fn [{type     :type
+                         expiery  :expiery
+                         comment  :comment
+                         token-id :id
+                         client   :client}]
+                     (d/tr
+                      (d/td (cond
+                              (and (not expiery) (not client)) (d/strong comment)
+                              (and (= type "access") (not client)) (d/strong "User")
+                              :else (client-name client)))
+                      (d/td (cond
+                              (and (not expiery) (not client)) "API"
+                              (and (= type "access") (not client)) "password"
+                              :else type))
+                      (d/td
+                       (if expiery (str (js/Date. (* expiery 1000))) "never"))
+                      (d/td
+                       (b/button {:bs-size "xsmall"
+                                  :className "pull-right"
+                                  :onClick #(users/revoke-token id token-id)}
+                                 (r/glyphicon {:class "pull-right" :glyph "trash"})))))
+                   tokens)))))))))))
 
 (def sections
   {""         {:key  1 :fn #(om/build render-auth %2)  :title "Authentication"}
    "perms"    {:key  2
                :fn #(om/build permissions/render
                               %2
-                              ;(get-in %1 [root :elements (get-in %1 [root :selected])])
+                                        ;(get-in %1 [root :elements (get-in %1 [root :selected])])
                               {:opts {:grant users/grant :revoke users/revoke}})
                :title "Permissions"}
    "roles"    {:key  3 :fn #(om/build render-roles %1
@@ -402,6 +481,7 @@
    :mount-fn (fn [uuid data]
                (orgs/list data)
                (clients/list data)
+               (scopes/list data)
                (roles/list data))
    :name-fn :name
    :init-state {:password-validate false

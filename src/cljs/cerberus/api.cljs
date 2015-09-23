@@ -15,47 +15,47 @@
 
 (defn to-state
   ([state-path req]
-     (go (let [resp (<! req)]
-           (set-state! state-path (js->clj (:body resp))))))
+   (go (let [resp (<! req)]
+         (set-state! state-path (js->clj (:body resp))))))
   ([state-path req map-fn]
-     (go (let [resp (<! req)]
-           (if (= 401 (:status resp))
-             (check-login)
-             (set-state! state-path (map map-fn (js->clj (:body resp)))))))))
+   (go (let [resp (<! req)]
+         (if (= 401 (:status resp))
+           (check-login)
+           (set-state! state-path (map map-fn (js->clj (:body resp)))))))))
 
 (defn full-list
   ([path]
-     (http/get path {"x-full-list" "true"}))
+   (http/get path {"x-full-list" "true"}))
   ([path fields]
-     (http/get path {"x-full-list" "true" "x-full-list-fields" fields})))
+   (http/get path {"x-full-list" "true" "x-full-list-fields" fields})))
 
 (defn list
   ([data root]
-     (go
-       (let [resp (<! (full-list (name root)))
-             elements (js->clj (:body resp))]
-         (if (= 401 (:status resp))
-           (check-login)
-           (do
-             (doall (map #(howl/join %) (map :uuid elements)))
-             (om/transact! data [root :elements]
-                           #(reduce
-                             (fn [acc e]
-                               (update acc (:uuid e) merge e))
-                             % elements)))))))
+   (go
+     (let [resp (<! (full-list (name root)))
+           elements (js->clj (:body resp))]
+       (if (= 401 (:status resp))
+         (check-login)
+         (do
+           (doall (map #(howl/join %) (map :uuid elements)))
+           (om/transact! data [root :elements]
+                         #(reduce
+                           (fn [acc e]
+                             (update acc (:uuid e) merge e))
+                           % elements)))))))
   ([data root list-fields]
-     (go
-       (let [resp (<! (full-list (name root) list-fields))
-             elements (map-indexed #(assoc %2 :react-key (* 100 %2)) (js->clj (:body resp)))]
-         (if (= 401 (:status resp))
-           (check-login)
-           (do
-             (doall (map howl/join (map :uuid elements)))
-             (om/transact! data [root :elements]
-                           #(reduce
-                             (fn [acc e]
-                               (update acc (:uuid e) merge e))
-                             % elements))))))))
+   (go
+     (let [resp (<! (full-list (name root) list-fields))
+           elements (map-indexed #(assoc %2 :react-key (* 100 %2)) (js->clj (:body resp)))]
+       (if (= 401 (:status resp))
+         (check-login)
+         (do
+           (doall (map howl/join (map :uuid elements)))
+           (om/transact! data [root :elements]
+                         #(reduce
+                           (fn [acc e]
+                             (update acc (:uuid e) merge e))
+                           % elements))))))))
 
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get (str (name root) "/" uuid))))
@@ -130,17 +130,17 @@
 
 (defn request-and-get
   ([request root uuid path]
-     (let [path-str (map #(if (keyword? %) (name %) %) path)
-           path-url (str (name  root) "/" uuid "/" (join "/" path-str))]
-       (go (let [resp  (<! (request path-url))]
-             (if (and (>= (:status resp) 200) (< (:status resp) 300))
-               (get root uuid))))))
+   (let [path-str (map #(if (keyword? %) (name %) %) path)
+         path-url (str (name  root) "/" uuid "/" (join "/" path-str))]
+     (go (let [resp  (<! (request path-url))]
+           (if (and (>= (:status resp) 200) (< (:status resp) 300))
+             (get root uuid))))))
   ([request root uuid path value]
-     (let [path-str (map #(if (keyword? %) (name %) %) path)
-           path-url (str (name  root) "/" uuid "/" (join "/" path-str))]
-       (go (let [resp  (<! (request path-url {} {:json-params value}))]
-             (if (and (>= (:status resp) 200) (< (:status resp) 300))
-               (get root uuid)))))))
+   (let [path-str (map #(if (keyword? %) (name %) %) path)
+         path-url (str (name  root) "/" uuid "/" (join "/" path-str))]
+     (go (let [resp  (<! (request path-url {} {:json-params value}))]
+           (if (and (>= (:status resp) 200) (< (:status resp) 300))
+             (get root uuid)))))))
 
 (defn update-metadata [root uuid path value]
   (let [key (last path)

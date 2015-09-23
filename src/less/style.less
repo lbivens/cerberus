@@ -683,10 +683,13 @@ monospace;
 
 /* ---------->>> GLOBAL <<<-----------*/
 
+//== FiFo Colors
 @fifo-light: #95D4EC;
 @fifo-medium: #75B8E4;
 @fifo-dark: #48B4DE;
 @fifo-grey: #6C6D71;
+@flist-headings: #5d80a7;
+
 h1,
 h2,
 h3,
@@ -853,6 +856,31 @@ select, select.form-control {
 
 .fwrule span {
     padding-right: 3px;
+}
+
+// Snapshots list Heading row
+#snapshot-table thead tr td {
+    color: @flist-headings;
+}
+
+// Packages list Heading row
+table.pkg-list thead tr td {
+    color: @flist-headings;
+}
+
+// Backups list Heading row
+table#backup-table thead tr td {
+    color: @flist-headings;
+}
+
+// Services list Heading row
+table.service-list thead tr td {
+    color: @flist-headings;
+}
+
+// Logs list Heading row
+table.logs-list thead tr td {
+    color: @flist-headings;
 }
 /* ----------- END MACHINE DETAIL VIEW ------------*/
 

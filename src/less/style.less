@@ -290,7 +290,7 @@ monospace;
 // Basics of a navbar
 @navbar-height: 64px;
 @navbar-margin-bottom: @line-height-computed;
-@navbar-border-radius: @border-radius-base;
+@navbar-border-radius: 0;
 @navbar-padding-horizontal: floor((@grid-gutter-width / 2));
 @navbar-padding-vertical: ((@navbar-height - @line-height-computed) / 2);
 @navbar-collapse-max-height: 340px;
@@ -746,6 +746,7 @@ img.loginlogo {
 
 .navbar {
     border: none;
+    border-radius: 0;
     -webkit-box-shadow: 0 1px 2px rgba(72, 180, 222, 1);
     box-shadow: 0 1px 2px rgba(72, 180, 222, 1);
 }
@@ -1409,7 +1410,7 @@ svg.omg > polyline.line-2 {
     }
 
     div.fctabuttons {
-        padding: 0 0 0 0;    
+        padding: 0 0 0 0;
   }
 
     // change owner button

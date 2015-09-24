@@ -29,3 +29,6 @@
 (defn revoke [uuid perm]
   (api/delete root (concat [uuid :permissions] perm)
               (a-get uuid "Permission revoked." "Failed to revoke permission.")))
+(defn change-secret [uuid secret]
+  (api/put root [uuid] {:secret secret}
+           (alerts "Secret changed." "Failed to change secret.")))

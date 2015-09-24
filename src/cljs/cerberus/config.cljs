@@ -1,9 +1,10 @@
 (ns cerberus.config
-  (:refer-clojure :exclude [get print])
+  (:refer-clojure :exclude [get set! print])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
    [cerberus.http :as http]
    [cerberus.api :as api]
+   [cerberus.users.api :as user]
    [goog.net.cookies]
    [cerberus.howl :as howl]
    [cerberus.debug :as dbg]
@@ -11,6 +12,14 @@
    [cerberus.state :refer [clear-state! app-state set-state! delete-state! update-state!]]))
 
 (enable-console-print!)
+
+
+(defn deep-merge
+  "Recursively merges maps. If keys are not maps, the last value wins."
+  [& vals]
+  (if (every? map? vals)
+    (apply merge-with deep-merge vals)
+    (last vals)))
 
 (def updates (atom []))
 
@@ -35,9 +44,13 @@
         (if (= 200 (:status resp))
           (let [conf (get-in (:body resp) metadata-root)
                 uuid (:uuid (:body resp))]
+            (swap! app-state #(deep-merge % conf))
+            (pr "config: " conf)
             (set-state! :config conf)
             (set-state! :user uuid)
             conf)))))
+(defn set! [ks v]
+  (user/set-metadata (:user @app-state) (concat  [:cerberus] ks) v))
 
 (defn login [token expires-in]
   (do
@@ -75,11 +88,11 @@
   ([path default]
    (let [path (path-vec path)
          v (get-in @app-state (concat [:config] path) :no-value-set)]
-       (if (= v :no-value-set)
-         (do
-           (write! path default)
-           default)
-         v)))
+     (if (= v :no-value-set)
+       (do
+         (write! path default)
+         default)
+       v)))
   ([path]
    (let [path (path-vec path)]
      (get-in @app-state (concat [:config] path)))))
@@ -95,8 +108,25 @@
     (api/delete-metadata :users uuid (concat [:cerberus] full-path))
     (update-state! (concat [:config] path) dissoc key)))
 
+(defn extract-fields [fields]
+  (into
+   {}
+   (map
+    (fn [[field opts]]
+      [field (select-keys opts [:order :show])])
+    fields)))
+
+(defn extract []
+  (into
+   {}
+   (map
+    (fn [[name {fields :fields}]]
+      [name (extract-fields fields)])
+    (filter
+     #(not (nil? (:fields (second %)))) @app-state))))
+
 (defn print []
-  (dbg/debug "[config] " (get-in @app-state [:config])))
+  (dbg/debug "[config] " (extract)))
 
 (defn user [] (get-in @app-state [:user]))
 
@@ -105,4 +135,3 @@
     (set-state! :token token)
     (load)
     (howl/init)))
-

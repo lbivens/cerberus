@@ -51,20 +51,21 @@
 (defn type-defaults [type field]
   (match
    type
-   :uuid {:no-quick-filter true :class "uuid"}
-   :percent {:formater fmt-percent}
-   :percent-flt {:formater fmt-percent-float}
+   :uuid         {:no-quick-filter true :class "uuid" :show false}
+   :percent      {:formater fmt-percent}
+   :percent-flt  {:formater fmt-percent-float}
    [:bytes size] {:formater (partial fmt-bytes size)}
-   :ip {:sort-key #(int-ip ((:key field) %))}
-   :else {}))
+   :ip           {:sort-key #(int-ip ((:key field) %))}
+   :else         {}))
 
 (def default-fields
-  {:uuid {:title "UUID" :key :uuid :order -10  :type :uuid}
+  {:uuid {:title "UUID" :key :uuid :order -12  :type :uuid :show false}
    :name {:title "Name" :key :name :order -20}})
 
 (defn apply-defaults
   ([fields]
    (let [fields (merge default-fields fields)]
+     (pr "fields" fields)
      (reduce
       (fn [acc id]
         (assoc acc id (apply-defaults id (fields id))))

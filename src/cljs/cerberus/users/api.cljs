@@ -78,3 +78,7 @@
 (defn remove-org [uuid role]
   (api/delete root [uuid :orgs role]
               (a-get uuid "Organisation left." "Failed to leave organisation.")))
+
+
+(defn set-metadata [uuid path value]
+  (api/update-metadata root uuid path value))

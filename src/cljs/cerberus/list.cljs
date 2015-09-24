@@ -7,6 +7,7 @@
    [om-bootstrap.button :as b]
    [om-bootstrap.input :as i]
    [cerberus.match :as jmatch]
+   [cerberus.config :as config]
    [cerberus.state :refer [set-state! update-state!]]
    [cerberus.debug :as dbg]
    [cerberus.list.table :as table]
@@ -25,13 +26,16 @@
      {:type "text" :id field-id :value (:filter data)
       :on-change (fn [] (om/update! data :filter (val-by-id field-id)))})))
 
-(defn col-selector [data fields]
+(defn col-selector [data fields root]
   (b/dropdown
    {:title (r/glyphicon {:glyph "align-justify"})}
    (map-indexed
     (fn [idx field]
       (let [id (:id field)
-            toggle-fn (make-event #(om/transact! data [:fields id :show] not))]
+            toggle-fn (make-event #(do
+                                     (config/set! [root :fields id :show]
+                                                  (not (get-in data [:fields id :show])))
+                                     (om/transact! data [:fields id :show] not)))]
         (b/menu-item
          {:key idx :on-click toggle-fn}
          (i/input
@@ -39,7 +43,7 @@
            :label (:title field)
            :on-click toggle-fn
            :checked (get-in data [:fields id :show])}))))
-    fields)))
+    (sort-by #(get-in data [:fields (:id %) :order])  fields))))
 
 (defn used-fields [expanded-fields fields]
   (sort-by #(get-in fields [(:id %) :order]) (filter #(get-in fields [(:id %) :show]) expanded-fields)))
@@ -124,10 +128,10 @@
           (d/div
            {:class (str  "filterbar pull-right " large)}
            (search-field "list" section)
-           (col-selector section expanded-fields)))
+           (col-selector section expanded-fields root)))
          (d/div
           {:class (str  "filterbar " small)}
           (search-field "well" section)
-          (col-selector section expanded-fields))
+          (col-selector section expanded-fields root))
          (table/render section all-rows {:root root :actions actions :fields display-fields :set-filter set-filter :show fields})
          (well/well section all-rows {:root root :actions actions :set-filter set-filter :show fields}))))))

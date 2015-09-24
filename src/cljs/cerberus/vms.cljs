@@ -39,19 +39,20 @@
 (def config
   (mk-config
    root "Machines" actions
-   :name       {:title "Name" :key [:config :alias] :order -10}
-   :cpu        {:title "CPU" :key [:config :cpu_cap] :type :percent}
-   :ram        {:title "Memory" :key [:config :ram] :type [:bytes :mb]}
-   :ip         {:title "IP" :key get-ip :type :ip}
-   :state      {:title "State" :key :state :type :string}
-   :dataset    {:title "Dataset" :type :string
+   :name       {:title "Name" :key [:config :alias] :order -20}
+   :hostname   {:title "Hostname" :key [:config :hostname] :order -18 :show false}
+   :ip         {:title "IP" :key get-ip :type :ip :order -16}
+   :package    {:title "Package" :type :string :order -14
+                :key (partial api/get-sub-element :packages :package :name)}
+   :dataset    {:title "Dataset" :type :string :order -12
                 :key (partial api/get-sub-element :datasets :dataset
                               #(str (:name %) "-" (:version %)))}
-   :package    {:title "Package" :type :string
-                :key (partial api/get-sub-element :packages :package :name)}
-   :owner      {:title "Owner" :type :string
+   :owner      {:title "Owner" :type :string :order -10
                 :key (partial api/get-sub-element :orgs :owner :name)}
-   :hypervisor {:title "Hypervisor" :type :string
+   :cpu        {:title "CPU" :key [:config :cpu_cap] :type :percent :show false}
+   :ram        {:title "Memory" :key [:config :ram] :type [:bytes :mb] :show false}
+   :state      {:title "State" :key :state :type :string}
+   :hypervisor {:title "Hypervisor" :type :string :show false
                 :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}))
 
 (set-state! [root :fields] (initial-state config))

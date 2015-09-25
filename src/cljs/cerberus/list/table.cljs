@@ -89,9 +89,7 @@
     (d/td (cell-attrs e)
           (r/glyphicon {:glyph "pushpin"
                         :class "filterby"
-                        :on-click (make-event #(do
-                                                 (pr e)
-                                                 (set-filter (str (name (:id e)) ":" filter-txt))))}) " " txt)
+                        :on-click (make-event #(set-filter (str (name (:id e)) ":" filter-txt)))}) " " txt)
     (d/td (cell-attrs e)
           txt)))
 

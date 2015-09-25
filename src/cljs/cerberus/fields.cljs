@@ -65,7 +65,6 @@
 (defn apply-defaults
   ([fields]
    (let [fields (merge default-fields fields)]
-     (pr "fields" fields)
      (reduce
       (fn [acc id]
         (assoc acc id (apply-defaults id (fields id))))

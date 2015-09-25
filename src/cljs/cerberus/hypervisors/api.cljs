@@ -37,3 +37,11 @@
 (defn set-config [uuid config]
   (api/put root [uuid :config] config
            (a-get uuid "Configuration updated." "Failed to change configuration.")))
+
+(defn set-characteristic [uuid char val]
+  (api/put root [uuid :characteristics] {char val}
+           (a-get uuid "Characteristic set." "Failed to set cgaracteristic.")))
+
+(defn delete-characteristic [uuid char]
+  (api/delete root [uuid :characteristics char]
+              (a-get uuid "Characteristic deleted." "Failed to delete cgaracteristic.")))

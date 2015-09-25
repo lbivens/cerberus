@@ -172,13 +172,66 @@
            {:md 4}
            (p/panel {:header "Networks"}))))))))
 
-(defn render-perf [app element]
-  "stub"
-  )
-
-(defn render-chars [app element]
-  "stub"
-  )
+(defn render-chars [element owner opts]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "hypervisor-characteristics")
+    om/IInitState
+    (init-state [_]
+      {})
+    om/IRenderState
+    (render-state [_ state]
+      (let [chars    (:characteristics element)
+            uuid     (:uuid element)
+            invalid? (or (empty? (:char state))  (empty? (:val state)))]
+        (r/well
+         {}
+         (row
+          (g/col
+           {:md 3}
+           (i/input
+            {:type "text"
+             :placeholder "Characteristic"
+             :value (:char state)
+             :on-change (->state owner :char)}))
+          (g/col
+           {:md 7}
+           (i/input
+            {:type "text"
+             :placeholder "Value"
+             :value (:val state)
+             :on-change (->state owner :val)}))
+          (g/col
+           {:md 2}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :on-click #(hypervisors/set-characteristic uuid (:char state) (:val state))
+             :disabled? invalid?}
+            "Add Characsteristic")))
+         (row
+          (g/col
+           {}
+           (table
+            {}
+            (d/thead
+             (d/tr
+              (d/th "Characteristic")
+              (d/th "Value")
+              (d/th "")))
+            (d/tbody
+             (map
+              (fn [[c v]]
+                (d/tr
+                 (d/td (name c))
+                 (d/td v)
+                 (d/td
+                  (b/button {:bs-size "xsmall"
+                             :className "pull-right"
+                             :on-click #(hypervisors/delete-characteristic uuid (name c))}
+                            (r/glyphicon {:glyph "remove"})))))
+              chars))))))))))
 
 (defn render-notes [app element]
   "stub"
@@ -197,8 +250,8 @@
   {""          {:key  1 :fn  #(om/build render-home %2)     :title "General"}
    "metrics"   {:key  9 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "services"  {:key  3 :fn #(om/build services/render %2   {:opts {:action hypervisors/service-action}})  :title "Services"}
-   "chars"     {:key  4 :fn render-chars     :title "Characteraristics"}
-   ;"notes"     {:key  5 :fn render-notes     :title "Notes"}
+   "chars"     {:key  4 :fn #(om/build render-chars %2)     :title "Characteraristics"}
+                                        ;"notes"     {:key  5 :fn render-notes     :title "Notes"}
    "metadata"  {:key  6 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
 
@@ -234,7 +287,8 @@
    hypervisors/get
    :init-state {:edit-alias false}
    :mount-fn (fn [uuid data]
-               (start-timer! uuid))
+                                        ;(start-timer! uuid)
+               )
    :name-fn (fn [element]
               (let [sysinfo (:sysinfo element)
                     bootparams ((keyword "Boot Parameters") sysinfo)

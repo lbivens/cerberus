@@ -88,11 +88,12 @@
                     options)))))
 
 (defn render [data & spec]
-  (d/form {:class "form-horizontal"}
-          (map
-           (fn [{type :type :as field :or {type :input}}]
-             (condp = type
-               :select   (input data spec (assoc field :type "select"))
-               :input    (input data spec (assoc field :type "text"))
-               :password (input data spec (assoc field :type "password"))))
-           spec)))
+  (d/form
+   {:class "form-horizontal"}
+   (map
+    (fn [{type :type :as field :or {type :input}}]
+      (condp = type
+        :select   (input data spec (assoc field :type "select"))
+        :input    (input data spec (assoc field :type "text"))
+        :password (input data spec (assoc field :type "password"))))
+    spec)))

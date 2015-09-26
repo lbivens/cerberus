@@ -60,7 +60,7 @@
 (def role-perms
   (assoc perm-perms
          "join"   {:title "Join a role"},
-         "leave", {:title "Leave a role"}))
+         "leave"  {:title "Leave a role"}))
 
 (def user-perms
   (assoc perm-perms
@@ -78,8 +78,7 @@
          "console"         {:title "Console/VNC"}
          "snapshot"        {:title "Create a Snapshot"}
          "rollback"        {:title "Rollback a Snapshot"}
-         "snapshot_delete" {:title "Delete a Snapshot"}
-         "create"          {:title "Create VM's here"}))
+         "snapshot_delete" {:title "Delete a Snapshot"}))
 
 (defn perms [data]
   {"..." {:title  "Everything" :pos 0}

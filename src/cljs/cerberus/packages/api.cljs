@@ -5,7 +5,7 @@
    [cerberus.api :as api]
    [cerberus.http :as http]
    [cerberus.alert :refer [alerts]]
-   [cerberus.state :refer [set-state!]]))
+   [cerberus.state :refer [app-state set-state!]]))
 
 (def root :packages)
 
@@ -14,5 +14,9 @@
 
 (def get (partial api/get root))
 
+(defn a-delete [uuid success error]
+  (assoc (alerts success error) :success #(swap! app-state update-in [root :elements]
+                                                 (fn [es] (dissoc es uuid)))))
+
 (defn delete [uuid]
-  (api/delete root [uuid] (alerts "Package deleted." "Failed to delete package.")))
+  (api/delete root [uuid] (a-delete uuid "Package deleted." "Failed to delete package.")))

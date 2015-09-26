@@ -70,8 +70,63 @@
          (secret-panel data owner state)))))))
 
 
-(def sections {""         {:key  1 :fn #(om/build render-auth %2)  :title "Authentication"}
+(defn render-uris [element owner opts]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "client-uris")
+    om/IInitState
+    (init-state [_]
+      {})
+    om/IRenderState
+    (render-state [_ state]
+      (let [uris   (:redirect_uris element)
+            uuid   (:uuid element)
+            uri    (:uri state)
+            invalid? (empty? uri)]
+        (r/well
+         {}
+         (row
+          (g/col
+           {:sm 9 :md 10}
+           (i/input
+            {:type "text"
+             :placeholder "URI"
+             :value uri
+             :on-change (->state owner :uri)}))
+          (g/col
+           {:sm 3 :md 2}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :on-click #(clients/add-uri uuid (:uri state))
+             :disabled? invalid?}
+            "Add Redirect URI")))
+         (row
+          (g/col
+           {}
+           (table
+            {}
+            (d/thead
+             (d/tr
+              (d/th "URI")
+              (d/th "")))
+            (d/tbody
+             (map
+              (fn [[uid u]]
+                (d/tr
+                 (d/td u)
+                 (d/td
+                  (b/button {:bs-size "xsmall"
+                             :className "pull-right"
+                             :on-click #(clients/delete-uri uuid (name uid))}
+                            (r/glyphicon {:glyph "remove"})))))
+              uris))))))))))
+
+
+(def sections {""            {:key  1 :fn #(om/build render-auth %2)  :title "Authentication"}
                "permissions" {:key  2 :fn #(om/build permissions/render %2 {:opts {:grant clients/grant :revoke clients/revoke}}) :title "Permissions"}
-               "metadata"    {:key  3 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+               "uris"        {:key  3 :fn #(om/build render-uris %2) :title "URI's"}
+               "metadata"    {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
 (def render (view/make root sections clients/get :name-fn :name))

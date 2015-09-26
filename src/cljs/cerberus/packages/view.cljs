@@ -34,17 +34,24 @@
        "RAM: " (:ram data) (d/br)
        "Compression: " (:compression data) (d/br)))))
 
-(defn render-requirement [{attribute :attribute condition :condition value :value
-                           weight :weight}]
-  [(d/dt weight) (d/dd attribute " " condition " " value)])
+(defn render-requirement [{:keys [attribute condition value
+                                  weight low high]}]
+  (condp = weight
+    "scale" [(d/dt weight) (d/dd (d/strong attribute) " betwee " (d/strong  low) " and " (d/strong high))]
+    "random" [(d/dt weight) (d/dd "between " (d/strong low) " and " (d/strong high))]
+    [(d/dt weight) (d/dd (d/strong attribute) " " condition " " (d/strong value))]))
 
+(defn build-reqs [reqs]
+  (d/dl
+   {}
+   (map render-requirement reqs)))
 (defn render-reqs [app owner opts]
   (reify
     om/IRenderState
     (render-state [_ _]
       (r/well
        {}
-       (map render-requirement app)))))
+       (build-reqs app)))))
 
 (def sections
   {""             {:key  1 :fn #(om/build render-home %2)      :title "General"}

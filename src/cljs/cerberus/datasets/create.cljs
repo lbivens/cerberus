@@ -32,6 +32,7 @@
     "zone-dataset" "zone"
     "zvol" "kvm"
     type))
+
 (defn render [data]
   (reify
         om/IDisplayName

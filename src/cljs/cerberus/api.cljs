@@ -64,7 +64,6 @@
   (fn post-success-fn* [resp]
     (let [body (:body resp)
           uuid (:uuid body)]
-      (pr "success got:" body)
       (howl/join uuid)
       (set-state! [root :elements uuid] body))))
 

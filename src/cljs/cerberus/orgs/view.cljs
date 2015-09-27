@@ -11,7 +11,7 @@
    [om-bootstrap.random :as r]
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
-   [cerberus.utils :refer [goto grid-row display ->state]]
+   [cerberus.utils :refer [lg goto grid-row display ->state]]
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.users.api :as users]
@@ -224,15 +224,31 @@
                (map (fn [[uuid t]] (assoc t :uuid uuid)) triggers))))
             ))))))))
 
-(defn render-home [data owner opts]
+(defn render-home [{ts :triggers :as data} owner opts]
   (reify
     om/IRenderState
     (render-state [_ _]
       (r/well
        {}
-       (d/h3
-        (:name data))
-       (:uuid data)))))
+       (g/row
+        {}
+        (g/col
+         {:sm 6}
+         (p/panel
+          {:header (d/h3 "General")
+           :list-group
+           (lg
+            "UUID"     (:uuid data))}))
+        (g/col
+         {:sm 6}
+         (p/panel
+          {:header (d/h3 "Triggers")
+           :list-group
+           (lg
+            "Total"            (count (:triggers data))
+            "VM Creation"      (count (filter (fn [[_ {t :trigger}]] (= t "vm_create")) ts))
+            "User Creation"    (count (filter (fn [[_ {t :trigger}]] (= t "user_create")) ts))
+            "Dataset Creation" (count (filter (fn [[_ {t :trigger}]] (= t "dataset_create")) ts)))})))))))
 
 (def sections
   {""          {:key  1 :fn #(om/build render-home %2)      :title "General"}

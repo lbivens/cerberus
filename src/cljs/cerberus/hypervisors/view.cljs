@@ -10,7 +10,7 @@
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
    [om-bootstrap.button :as b]
-   [cerberus.utils :refer [goto row display ->state]]
+   [cerberus.utils :refer [lg goto row display ->state]]
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.hypervisors.api :as hypervisors :refer [root]]
@@ -24,85 +24,71 @@
 (defn apply-fmt [fmt v & rest]
   (concat [(fmt v)] rest))
 
-(defn li [[label value]]
-  (d/li {:class "list-group-item"}
-        (d/div {:class "span-label"} label)
-        (d/div {:class "span-value"} value)))
-
-(defn lg [& items]
-  (d/ul
-   {:class "list-group"}
-   (map li (partition 2 items))))
-
 (defn info [osname osver chunterversion boottime]
-  (d/div
-   (p/panel
-    {:header (d/h3 "Info")
-     :list-group
-     (lg
-      "Operating System" osname
-      "OS Version"       osver
-      "Chunter Version"  chunterversion
-      "Last Boot"        (.toISOString (js/Date. (* boottime 1000))))})))
+  (p/panel
+   {:header (d/h3 "Info")
+    :list-group
+    (lg
+     "Operating System" osname
+     "OS Version"       osver
+     "Chunter Version"  chunterversion
+     "Last Boot"        (.toISOString (js/Date. (* boottime 1000))))}))
 
 (defn hardware [cpu cores virt_support mainboard manufacturer serial_number]
-  (d/div
-   (p/panel
-    {:header (d/h3 "Hardware")
-     :list-group
-     (lg
-      "CPU"                    cpu
-      "Cores"                  cores
-      "Mainboard"              mainboard
-      "Manufacturer"           manufacturer
-      "Serial Number"          serial_number
-      "Virtualisation Support" (clojure.string/join ", " virt_support))})))
+  (p/panel
+   {:header (d/h3 "Hardware")
+    :list-group
+    (lg
+     "CPU"                    cpu
+     "Cores"                  cores
+     "Mainboard"              mainboard
+     "Manufacturer"           manufacturer
+     "Serial Number"          serial_number
+     "Virtualisation Support" (clojure.string/join ", " virt_support))}))
 
 (defn memory [total provisioned free reserved l1size l1hit]
-  (d/div
-   (p/panel
-    {:header (d/h3 "Memory")
-     :list-group
-     (lg
-      "Total"          total
-      "Provisioned"    provisioned
-      "Free"           free
-      "Reserved"       reserved
-      "L1 Cache Size"  l1size
-      "L1 Cache Hit %" l1hit)})))
+  (p/panel
+   {:header (d/h3 "Memory")
+    :list-group
+    (lg
+     "Total"          total
+     "Provisioned"    provisioned
+     "Free"           free
+     "Reserved"       reserved
+     "L1 Cache Size"  l1size
+     "L1 Cache Hit %" l1hit)}))
 
 (defn storage [pools disks]
-  (d/div
-   (p/panel
-    {:header (d/h3 "Storage")
-     :list-group
-     (d/ul {:class "list-group"}
-           (d/li {:class "list-group-item"}
-                 (d/b {:class "span-label"} "Disks")
-                 (map (fn [[disk disk-info]]
-                        [(d/div {:class "span-value"}
-                                (clojure.string/replace (str disk) #"^:" "") ": "
-                                ((keyword "Size in GB") disk-info))])
-                      disks))
-           (d/li {:class "list-group-item"}
-                 (d/b {:class "span-label"} "Pools")
-                 (map (fn [[pool pool-info]]
-                        [(d/div {:class "span-value"}
-                                (d/b (d/i (clojure.string/replace (str pool) #"^:" "") ": "))
-                                (d/br)
-                                "Health: "
-                                (:health pool-info)
-                                (d/br)
-                                "Size: "
-                                (apply-fmt (partial fmt-bytes :mb) (:size pool-info))
-                                (d/br)
-                                "Free: "
-                                (apply-fmt (partial fmt-bytes :mb) (:free pool-info))
-                                (d/br)
-                                "Used: "
-                                (apply-fmt (partial fmt-bytes :mb) (:used pool-info))
-                                ) ])
-                      pools)))})))
+  (p/panel
+   {:header (d/h3 "Storage")
+    :list-group
+    (d/ul {:class "list-group"}
+          (d/li {:class "list-group-item"}
+                (d/b {:class "span-label"} "Disks")
+                (map (fn [[disk disk-info]]
+                       [(d/div {:class "span-value"}
+                               (clojure.string/replace (str disk) #"^:" "") ": "
+                               ((keyword "Size in GB") disk-info))])
+                     disks))
+          (d/li {:class "list-group-item"}
+                (d/b {:class "span-label"} "Pools")
+                (map (fn [[pool pool-info]]
+                       [(d/div {:class "span-value"}
+                               (d/b (d/i (clojure.string/replace (str pool) #"^:" "") ": "))
+                               (d/br)
+                               "Health: "
+                               (:health pool-info)
+                               (d/br)
+                               "Size: "
+                               (apply-fmt (partial fmt-bytes :mb) (:size pool-info))
+                               (d/br)
+                               "Free: "
+                               (apply-fmt (partial fmt-bytes :mb) (:free pool-info))
+                               (d/br)
+                               "Used: "
+                               (apply-fmt (partial fmt-bytes :mb) (:used pool-info))
+                               ) ])
+                     pools)))}))
 
 (defn render-home [element owner opts]
   (reify
@@ -251,7 +237,7 @@
    "metrics"   {:key  9 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "services"  {:key  3 :fn #(om/build services/render %2   {:opts {:action hypervisors/service-action}})  :title "Services"}
    "chars"     {:key  4 :fn #(om/build render-chars %2)     :title "Characteraristics"}
-                                        ;"notes"     {:key  5 :fn render-notes     :title "Notes"}
+   ;;"notes"     {:key  5 :fn render-notes     :title "Notes"}
    "metadata"  {:key  6 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
 
@@ -287,8 +273,7 @@
    hypervisors/get
    :init-state {:edit-alias false}
    :mount-fn (fn [uuid data]
-                                        ;(start-timer! uuid)
-               )
+               (start-timer! uuid))
    :name-fn (fn [element]
               (let [sysinfo (:sysinfo element)
                     bootparams ((keyword "Boot Parameters") sysinfo)

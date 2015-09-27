@@ -11,7 +11,7 @@
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
    [om-bootstrap.button :as b]
-   [cerberus.utils :refer [goto grid-row row ->state val-by-id str->int]]
+   [cerberus.utils :refer [lg goto grid-row row ->state val-by-id str->int]]
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.orgs.api :as orgs]
@@ -72,71 +72,54 @@
              :disabled? (invalid-owner (:org state))}
             "Set owner")))
          (row
-          (table
-           {:class "ftable" :responsive? true}
-           (d/tbody {:class "filoment"}
-                    (d/tr
-                     (d/td "Alias")
-                     (d/td (:alias conf)))
-                    (d/tr
-                     (d/td "Hypervisor")
-                     (d/td (:alias hypervisor)))
-                    (d/tr
-                     (d/td "Type")
-                     (d/td (:type conf)))
-                    (d/tr
-                     (d/td "Max Swap")
-                     (d/td (->> (:max_swap conf) (fmt-bytes :b))))
-                    (d/tr
-                     (d/td "State")
-                     (d/td (:state conf)))
-                    (d/tr
-                     (d/td "Memory")
-                     (d/td (->> (:ram conf) (fmt-bytes :mb))))
-                    (d/tr
-                     (d/td "Resolvers")
-                     (d/td (cstr/join ", " (:resolvers conf))))
-                    (d/tr
-                     (d/td "DNS Domain")
-                     (d/td (:dns_domain conf)))
-                    (d/tr
-                     (d/td "Quota")
-                     (d/td (->> (:quota conf) (fmt-bytes :gb))))
-                    (d/tr
-                     (d/td "I/O Priority")
-                     (d/td (:zfs_io_priority conf)))
-                    (d/tr
-                     (d/td "CPU Shares")
-                     (d/td (:cpu_shares conf)))
-                    (d/tr
-                     (d/td "CPU Cap")
-                     (d/td (-> (:cpu_cap conf) fmt-percent)))
-                    (d/tr
-                     (d/td "Owner")
-                     (d/td (:name org)))
-                    (d/tr
-                     (d/td "Autoboot")
-                     (d/td (:autoboot conf)))
-                    (d/tr
-                     (d/td "Dataset")
-                     (d/td (:name dataset)))
-                    (d/tr
-                     (d/td "Created")
-                     (d/td (:created_at conf)))
-                    (d/tr
-                     (d/td "Backups")
-                     (d/td (count (:backups conf))))
-                    (d/tr
-                     (d/td "Snapshots")
-                     (d/td (count (:snapshots conf))))
-                    (d/tr
-                     (d/td "Firewall Rules")
-                     (d/td (count (:fw_rules conf))))
-                    (d/tr
-                     (d/td "Services")
-                     (d/td (count (filter (fn [[_ state]] (= state "maintenance")) services)) "/"
-                           (count (filter (fn [[_ state]] (= state "online")) services)) "/"
-                           (count (filter (fn [[_ state]] (= state "disabled")) services))))))))))))
+          (g/col
+           {:sm 6 :md 4}
+           (p/panel
+            {:header (d/h3 "General")
+             :list-group
+             (lg
+              "UUID"       uuid
+              "Type"       (:type conf)
+              "Alias"      (:alias conf)
+              "State"      (:state conf)
+              "Created"    (:created_at conf)
+              "Hypervisor" (:alias hypervisor)
+              "Owner"      (:name org)
+              "Autoboot"   (:autoboot conf)
+              "Dataset"    (:name dataset)
+              "Services" (d/span (count (filter (fn [[_ state]] (= state "maintenance")) services)) "/"
+                                 (count (filter (fn [[_ state]] (= state "online")) services)) "/"
+                                 (count (filter (fn [[_ state]] (= state "disabled")) services))))}))
+          (g/col
+           {:sm 6 :md 4}
+           (p/panel
+            {:header (d/h3 "CPU / Memory")
+             :list-group
+             (lg
+              "CPU Shares" (:cpu_shares conf)
+              "CPU Cap"    (-> (:cpu_cap conf) fmt-percent)
+              "Max Swap"   (->> (:max_swap conf) (fmt-bytes :b))
+              "Memory"     (->> (:ram conf) (fmt-bytes :mb)))}))
+          (g/col
+           {:sm 6 :md 4}
+           (p/panel
+            {:header (d/h3 "Disk")
+             :list-group
+             (lg
+              "Quota"        (->> (:quota conf) (fmt-bytes :gb))
+              "I/O Priority" (:zfs_io_priority conf)
+              "Backups"      (count (:backups conf))
+              "Snapshots"     (count (:snapshots conf)))}))
+          (g/col
+           {:sm 6 :md 4}
+           (p/panel
+            {:header (d/h3 "Networking")
+             :list-group
+             (lg
+              "Hostname"       (:hostname conf)
+              "DNS Domain"     (:dns_domain conf)
+              "Resolvers"      (cstr/join ", " (:resolvers conf))
+              "Firewall Rules" (count (:fw_rules conf)))}))))))))
 
 (defn render-logs [data owner opts]
   (reify
@@ -423,12 +406,6 @@
                              :on-click #(vms/backup (:uuid data) (:name state))} "Create")))))
         (backup-table (:uuid data) (:backups data)))))))
 
-(defn fw-panel [direction data]
-  (g/col
-   {:xs 5}
-   (p/panel
-    {:header direction}
-    (i/input {:type "select"}))))
 
 (defn o-state! [owner id]
   (om/set-state! owner id (val-by-id (name id))))
@@ -651,27 +628,26 @@
                     direction :direction filters :filters}]
   (let [target-str (str protocol "://" (render-target target))
         filters-str (render-filter filters)]
-    (row
-     (d/span
+    (let [btn (b/button
+               {:bs-style "warning"
+                :bs-size "xsmall"
+                :class "pull-right"
+                :on-click #(vms/delete-fw-rule uuid id)}
+               "x")
+          action (if (= "allow" action)
+                   (r/glyphicon {:glyph "transfer"})
+                   (r/glyphicon {:glyph "fire"}))]
       (if (= direction "inbound")
-        (d/span
-         target-str " "
-         (if (= "allow" action)
-           (r/glyphicon {:glyph "transfer"})
-           (r/glyphicon {:glyph "fire"}))
-         " " (r/glyphicon {:glyph "cloud"}) ":" filters-str)
-        (d/span
-         (r/glyphicon {:glyph "cloud"}) " "
-         (if (= "allow" action)
-           (r/glyphicon {:glyph "transfer"})
-           (r/glyphicon {:glyph "fire"})) " "
-           target-str ":" filters-str)))
-     (b/button
-      {:bs-style "warning"
-       :bs-size "xsmall"
-       :class "pull-right"
-       :on-click #(vms/delete-fw-rule uuid id)}
-      "x"))))
+        (d/tr
+         (d/td target-str)
+         (d/td action)
+         (d/td (r/glyphicon {:glyph "cloud"}) ":" filters-str)
+         (d/td btn))
+        (d/tr
+         (d/td (r/glyphicon {:glyph "cloud"}))
+         (d/td action)
+         (d/td target-str ":" filters-str)
+         (d/td btn))))))
 
 (defn render-fw-rules [data owner opts]
   (reify
@@ -713,15 +689,33 @@
          (p/panel
           {:header "Inbound rules"
            :class "fwrule"}
-          (let [rules (filter #(= (:direction %) "inbound") (:fw_rules data))]
-            (map (partial render-rule (:uuid data)) rules))))
+          (table
+           {}
+           (d/thead
+            (d/tr
+             (d/th "src")
+             (d/th "action")
+             (d/th "dst")
+             (d/th)))
+           (d/tbody
+            (let [rules (filter #(= (:direction %) "inbound") (:fw_rules data))]
+            (map (partial render-rule (:uuid data)) rules))))))
         (g/col
          {:xs 12 :md 6}
          (p/panel
           {:header "Outbound rules"
            :class "fwrule"}
-          (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
-            (map (partial render-rule (:uuid data)) rules)))))))))
+          (table
+           {}
+           (d/thead
+            (d/tr
+             (d/th "src")
+             (d/th "action")
+             (d/th "dst")
+             (d/th )))
+           (d/tbody
+            (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
+              (map (partial render-rule (:uuid data)) rules)))))))))))
 
 (defn build-metric [acc {name :name points :points}]
   (match

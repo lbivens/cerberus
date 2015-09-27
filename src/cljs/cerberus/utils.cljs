@@ -112,3 +112,14 @@
   (if show
     #js {}
     #js {:display "none"}))
+
+(defn li [[label value]]
+  (d/li {:class "list-group-item"}
+        (d/div {:class "span-label"} label)
+        (d/div {:class "span-value"} value)))
+
+
+(defn lg [& items]
+  (d/ul
+   {:class "list-group"}
+   (map li (partition 2 items))))

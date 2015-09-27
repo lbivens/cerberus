@@ -9,7 +9,7 @@
    [om-bootstrap.random :as r]
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
-   [cerberus.utils :refer [goto grid-row display]]
+   [cerberus.utils :refer [lg]]
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.packages.api :refer [root] :as packages]
@@ -20,6 +20,8 @@
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
 
+(defn or-auto [v]
+  (or v (d/strong "auto")))
 
 (defn render-home [data owner opts]
   (reify
@@ -27,12 +29,36 @@
     (render-state [_ _]
       (r/well
        {}
-       (d/h2 (:name data))
-       "UUID: " (:uuid data) (d/br)
-       "CPU Capacy: " (:cpu_cap data) (d/br)
-       "Quota: " (:quota data) (d/br)
-       "RAM: " (:ram data) (d/br)
-       "Compression: " (:compression data) (d/br)))))
+       (g/row
+        {}
+        (g/col
+         {:sm 4}
+         (p/panel
+          {:header (d/h3 "General")
+           :list-group
+           (lg
+            "UUID" (:uuid data)
+            "Requirements" (count (:requirements data)))}))
+
+        (g/col
+         {:sm 4}
+         (p/panel
+          {:header (d/h3 "CPU / Memory")
+           :list-group
+           (lg
+            "RAM"        (:ram data)
+            "CPU Capacy" (:cpu_cap data)
+            "CPU Shares" (or-auto (:cpu_shares data)))}))
+        (g/col
+         {:sm 4}
+         (p/panel
+          {:header (d/h3 "Disk")
+           :list-group
+           (lg
+            "Quota"       (:quota data)
+            "Compression" (:compression data)
+            "IO Priority" (or-auto (:io_priority data))
+            "Block  Size" (or-auto (:block_size data)))})))))))
 
 (defn render-requirement [{:keys [attribute condition value
                                   weight low high]}]

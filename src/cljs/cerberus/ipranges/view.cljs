@@ -9,6 +9,8 @@
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
    [cerberus.view :as view]
+   [cerberus.utils :refer [lg]]
+
    [cerberus.metadata :as metadata]
    [cerberus.ipranges.api :refer [root] :as ipranges]))
 
@@ -18,15 +20,30 @@
     (render-state [_ _]
       (r/well
        {}
-       (d/h2 (:name data))
-       "UUID: " (:uuid data) (d/br)
-       "Network: " (:network data) (d/br)
-       "Gateway: " (:gateway data) (d/br)
-       "Netmask: " (:netmask data) (d/br)
-       "VLAN: " (:vlan data) (d/br)
-       "TAG: " (:tag data) (d/br)
-       "Free: " (count (:free data)) (d/br)
-       "Used: " (count (:used data)) (d/br)))))
+       (g/row
+        {}
+        (g/col
+         {:xs 12 :sm 6}
+         (p/panel
+          {:header (d/h3 "General")
+           :list-group
+           (lg
+            "UUID"    (:uuid data)
+            "Network" (:network data)
+            "Gateway" (:gateway data)
+            "Netmask" (:netmask data)
+            "VLAN"    (:vlan data)
+            "TAG"     (:tag data)
+            )})
+         )
+        (g/col
+         {:xs 12 :sm 6}
+         (p/panel
+          {:header (d/h3 "IPs")
+           :list-group
+           (lg
+            "Free" (count (:free data))
+            "Used" (count (:used data)))})))))))
 
 (defn render-ips [data owner opts]
   (reify

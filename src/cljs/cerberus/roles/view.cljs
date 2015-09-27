@@ -9,7 +9,7 @@
    [om-bootstrap.random :as r]
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
-   [cerberus.utils :refer [goto grid-row display]]
+   [cerberus.utils :refer [lg]]
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.roles.api :refer [root] :as roles]
@@ -22,16 +22,27 @@
 
 
 
-(defn render-home [app element]
-  (r/well
-   {}
-   (d/h3
-    (:name element))
-   (:uuid element)))
+(defn render-home [data owner opts]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (r/well
+       {}
+       (g/row
+        {}
+        (g/col
+         {:sm 6}
+         (p/panel
+          {:header (d/h3 "General")
+           :list-group
+           (lg
+            "UUID"        (:uuid data)
+            "Permissions" (count (:permissions data)))})))))))
 
-(def sections {""             {:key  1 :fn render-home                       :title "General"}
-               "permissions"  {:key  2 :fn #(om/build permissions/render %2 {:opts {:grant roles/grant :revoke roles/revoke}}) :title "Permissions"}
-               "metadata"     {:key  3 :fn #(om/build metadata/render %2)    :title "Metadata"}})
+(def sections
+  {""             {:key  1 :fn #(om/build render-home %2)                       :title "General"}
+   "permissions"  {:key  2 :fn #(om/build permissions/render %2 {:opts {:grant roles/grant :revoke roles/revoke}}) :title "Permissions"}
+   "metadata"     {:key  3 :fn #(om/build metadata/render %2)    :title "Metadata"}})
 
 (def render
   (view/make root sections roles/get :name-fn :name))

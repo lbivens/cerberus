@@ -9,7 +9,7 @@
    [om-bootstrap.random :as r]
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
-   [cerberus.utils :refer [goto row display val-by-id]]
+   [cerberus.utils :refer [lg goto row display val-by-id]]
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.networks.api :refer [root] :as networks]
@@ -62,8 +62,12 @@
     (render-state [_ _]
       (r/well
        {}
-       (d/h2 (:name data))
-       "UUID: " (:uuid data) (d/br)))))
+       (p/panel
+          {:header (d/h3 "General")
+           :list-group
+           (lg
+            "UUID"     (:uuid data)
+            "IPRanges" (count (:ipranges data)))})))))
 
 (def sections
   {""          {:key  1 :fn #(om/build render-home %2)     :title "General"}

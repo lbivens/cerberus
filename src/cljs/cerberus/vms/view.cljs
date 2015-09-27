@@ -406,12 +406,6 @@
                              :on-click #(vms/backup (:uuid data) (:name state))} "Create")))))
         (backup-table (:uuid data) (:backups data)))))))
 
-(defn fw-panel [direction data]
-  (g/col
-   {:xs 5}
-   (p/panel
-    {:header direction}
-    (i/input {:type "select"}))))
 
 (defn o-state! [owner id]
   (om/set-state! owner id (val-by-id (name id))))
@@ -634,27 +628,26 @@
                     direction :direction filters :filters}]
   (let [target-str (str protocol "://" (render-target target))
         filters-str (render-filter filters)]
-    (row
-     (d/span
+    (let [btn (b/button
+               {:bs-style "warning"
+                :bs-size "xsmall"
+                :class "pull-right"
+                :on-click #(vms/delete-fw-rule uuid id)}
+               "x")
+          action (if (= "allow" action)
+                   (r/glyphicon {:glyph "transfer"})
+                   (r/glyphicon {:glyph "fire"}))]
       (if (= direction "inbound")
-        (d/span
-         target-str " "
-         (if (= "allow" action)
-           (r/glyphicon {:glyph "transfer"})
-           (r/glyphicon {:glyph "fire"}))
-         " " (r/glyphicon {:glyph "cloud"}) ":" filters-str)
-        (d/span
-         (r/glyphicon {:glyph "cloud"}) " "
-         (if (= "allow" action)
-           (r/glyphicon {:glyph "transfer"})
-           (r/glyphicon {:glyph "fire"})) " "
-           target-str ":" filters-str)))
-     (b/button
-      {:bs-style "warning"
-       :bs-size "xsmall"
-       :class "pull-right"
-       :on-click #(vms/delete-fw-rule uuid id)}
-      "x"))))
+        (d/tr
+         (d/td target-str)
+         (d/td action)
+         (d/td (r/glyphicon {:glyph "cloud"}) ":" filters-str)
+         (d/td btn))
+        (d/tr
+         (d/td (r/glyphicon {:glyph "cloud"}))
+         (d/td action)
+         (d/td target-str ":" filters-str)
+         (d/td btn))))))
 
 (defn render-fw-rules [data owner opts]
   (reify
@@ -696,15 +689,33 @@
          (p/panel
           {:header "Inbound rules"
            :class "fwrule"}
-          (let [rules (filter #(= (:direction %) "inbound") (:fw_rules data))]
-            (map (partial render-rule (:uuid data)) rules))))
+          (table
+           {}
+           (d/thead
+            (d/tr
+             (d/th "src")
+             (d/th "action")
+             (d/th "dst")
+             (d/th)))
+           (d/tbody
+            (let [rules (filter #(= (:direction %) "inbound") (:fw_rules data))]
+            (map (partial render-rule (:uuid data)) rules))))))
         (g/col
          {:xs 12 :md 6}
          (p/panel
           {:header "Outbound rules"
            :class "fwrule"}
-          (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
-            (map (partial render-rule (:uuid data)) rules)))))))))
+          (table
+           {}
+           (d/thead
+            (d/tr
+             (d/th "src")
+             (d/th "action")
+             (d/th "dst")
+             (d/th )))
+           (d/tbody
+            (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
+              (map (partial render-rule (:uuid data)) rules)))))))))))
 
 (defn build-metric [acc {name :name points :points}]
   (match

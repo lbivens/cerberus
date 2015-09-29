@@ -1,5 +1,6 @@
 (ns cerberus.orgs.view
-  (:require-macros [cljs.core.match.macros :refer [match]])
+  (:require-macros [cljs.core.async.macros :refer [go]]
+                   [cljs.core.match.macros :refer [match]])
   (:require
    [om.core :as om :include-macros true]
    [om.dom :as dom :include-macros true]
@@ -11,7 +12,7 @@
    [om-bootstrap.random :as r]
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
-   [cerberus.utils :refer [lg goto grid-row display ->state]]
+   [cerberus.utils :refer [lg li goto grid-row to-date ->state]]
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.users.api :as users]
@@ -24,29 +25,53 @@
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
 
-(defn render-resources [data owner opts]
+(defn start-of-month []
+  (let [date (js/Date.)]
+         (.setUTCDate date 1)
+         (.setUTCHours date 0)
+         (.setUTCMinutes date 0)
+         (.setUTCSeconds date 0)
+         (* (.setUTCMilliseconds date 0) 1000)))
+
+(defn now []
+  (* (.getTime (js/Date.)) 1000))
+
+(defn prepare-res [events]
+  (map (fn [{t :timestamp a :action}] [t a])
+       (sort-by :timestamp events))
+  )
+(defn render-resources [{uuid :uuid} owner opts]
   (reify
     om/IInitState
     (init-state [_]
       {})
-
+    om/IWillMount
+    (will-mount [_]
+      (go
+        (let [start (start-of-month)
+              end   (now)
+              resp (<! (http/get [root uuid (str "accounting?start=" start "&end="end)]))]
+          (if (:success resp)
+            (om/set-state! owner :acc (:body resp))))))
     om/IRenderState
-    (render-state [_ _]
+    (render-state [_ state]
       (r/well
        {}
-       (map
-        (fn [[uuid resource]]
-          (g/col
-           {:xs 12 :sm 6}
-           (p/panel
-            {:header (d/b uuid)}
-            (d/dl
-             {}
-             (map
-              (fn [e] [(d/dt (:action e))
-                       (d/dd (str (js/Date. (:time e))))])
-              (sort-by :time resource))))))
-        (sort-by first data))))))
+       (g/row
+        {}
+        (map
+         (fn [[res data]]
+           (g/col
+            {:xs 12 :sm 6 :md 4}
+            (p/panel
+             {:header (d/h3 res)
+              :list-group
+                (d/ul
+                 {:class "list-group"}
+                 (map li (prepare-res data)))})))
+         (group-by :resource (:acc state)))
+
+        )))))
 
 
 (defn mk-trigger [{actor      :actor
@@ -252,7 +277,7 @@
 
 (def sections
   {""          {:key  1 :fn #(om/build render-home %2)      :title "General"}
-   "resources" {:key  2 :fn #(om/build render-resources (:resources %2))  :title "Resources"}
+   "resources" {:key  2 :fn #(om/build render-resources %2)  :title "Resources"}
    "triggers"  {:key  3 :fn #(om/build render-triggers %1 {:opts {:id (:uuid %2)}})  :title "Triggers"}
    "metadata"  {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 

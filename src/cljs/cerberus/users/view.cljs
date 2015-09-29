@@ -178,7 +178,7 @@
    (b/button {:bs-size "xsmall"
               :className "pull-right"
               :onClick #(users/delete-sshkey uuid key-name)}
-             (r/glyphicon {:glyph "remove"}))))
+             (r/glyphicon {:glyph "trash"}))))
 
 (defn ssh-keys-panel [data element state]
   (let [uuid (:uuid data)
@@ -190,13 +190,13 @@
                                         :className "pull-right"
                                         :onClick #(om/set-state! element :add-ssh-modal true)}
                                        (r/glyphicon {:glyph "plus"})))
-               :list-group(d/ul {:class "list-group"}
-                                (map (fn [[key-name key-data]]
-                                       [(ssh-key-li
-                                         uuid
-                                         (name key-name)
-                                         key-data)])
-                                     ssh-keys ))})
+               :list-group (d/ul {:class "list-group"}
+                                 (map (fn [[key-name key-data]]
+                                        [(ssh-key-li
+                                          uuid
+                                          (name key-name)
+                                          key-data)])
+                                      ssh-keys ))})
      (add-ssh-modal uuid element state))))
 
 (defn yubi-key-li [uuid key-name]
@@ -207,7 +207,7 @@
    (b/button {:bs-size "xsmall"
               :className "pull-right"
               :onClick #(users/delete-yubikey uuid key-name)}
-             (r/glyphicon {:glyph "remove"}))))
+             (r/glyphicon {:glyph "trash"}))))
 
 (defn mfa-panel [data element state]
   (let [uuid (:uuid data)
@@ -283,7 +283,7 @@
                 (b/button {:bs-size "xsmall"
                            :className "pull-right"
                            :onClick #(users/remove-role id uuid)}
-                          (r/glyphicon {:glyph "remove"}))))
+                          (r/glyphicon {:glyph "trash"}))))
              current-roles)))))))))
 
 (defn render-orgs [app owner {:keys [id]}]
@@ -324,13 +324,16 @@
                 (d/a {href (str "#/orgs/" uuid)} (get-in orgs [uuid :name]))
                 (b/button {:bs-size "xsmall"
                            :className "pull-right"
+                           :bs-style "danger"
                            :onClick #(users/remove-org id uuid)}
-                          (r/glyphicon {:glyph "remove"}))
+                          (r/glyphicon { :glyph "trash"}))
                 (if (not= uuid (:org element))
                   (b/button {:bs-size "xsmall"
+                             :bs-style "success"
                              :className "pull-right"
                              :onClick #(users/active-org id uuid)}
-                            (r/glyphicon {:class "pull-right" :glyph "check"})))))
+                            (r/glyphicon {:glyph "check"}))
+                  " (active)")))
              current-orgs)))))))))
 
 
@@ -452,7 +455,7 @@
                        (b/button {:bs-size "xsmall"
                                   :className "pull-right"
                                   :onClick #(users/revoke-token id token-id)}
-                                 (r/glyphicon {:class "pull-right" :glyph "trash"})))))
+                                 (r/glyphicon {:glyph "trash"})))))
                    tokens)))))))))))
 
 (def sections

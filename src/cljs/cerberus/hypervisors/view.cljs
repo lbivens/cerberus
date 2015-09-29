@@ -219,10 +219,6 @@
                             (r/glyphicon {:glyph "remove"})))))
               chars))))))))))
 
-(defn render-notes [app element]
-  "stub"
-  )
-
 (defn build-metric [acc {name :name points :points}]
   (match
    [name]

@@ -234,10 +234,10 @@
 
 (def sections
   {""          {:key  1 :fn  #(om/build render-home %2)     :title "General"}
-   "metrics"   {:key  9 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "services"  {:key  3 :fn #(om/build services/render %2   {:opts {:action hypervisors/service-action}})  :title "Services"}
    "chars"     {:key  4 :fn #(om/build render-chars %2)     :title "Characteraristics"}
    ;;"notes"     {:key  5 :fn render-notes     :title "Notes"}
+   "metrics"   {:key  5 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "metadata"  {:key  6 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
 

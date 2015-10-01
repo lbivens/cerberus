@@ -108,7 +108,9 @@
           {:class "addicons"}
           (if (not (nil? maximized))
             (r/glyphicon {:glyph "remove" :class "pull-right" :on-click #(clear-add data)}))
-          (if (and maximized (not (:stash data)))
+          ;; TODO: note that false in there, we disable this for now,
+          ;; the unterlying code isn't supported.
+          (if (and false maximized (not (:stash data)))
             (r/glyphicon
              {:glyph "cloud-upload" :class "pull-right" :id "add-stash-btn"
               :on-click

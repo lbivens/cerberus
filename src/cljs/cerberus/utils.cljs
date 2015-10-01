@@ -123,3 +123,6 @@
   (d/ul
    {:class "list-group"}
    (map li (partition 2 items))))
+
+(defn to-date [date]
+  (str (js/Date. (/ date 1000))))

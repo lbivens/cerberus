@@ -252,7 +252,7 @@
         (d/thead
          {}
          (map d/td
-              ["Name" "CPU" "Memory" "Quota" ""]))
+              ["Name" "CPU" "Memory" "Quota" (d/span {:class "pull-right"} "Change")]))
 
         (apply d/tbody
                {}
@@ -275,6 +275,8 @@
                      (td :quota   #(fmt-bytes :gb %))
                      (d/td (if (not current)
                              (r/glyphicon {:glyph "transfer"
+                                           :class "pull-right"
+                                           :alt "change package"
                                            :on-click #(vms/change-package vm uuid)}))))))
                 packages))))))))
 
@@ -577,7 +579,6 @@
           (d/option {:value "allow"} "allow")
           (d/option {:value "block"} "block")))
 
-
 (defn rule-target [state]
   (condp = (:target state)
     "all" "all"
@@ -678,11 +679,21 @@
                    {:opts {:parent owner}
                     :react-key "icmp-code"})
          (action-select owner state)))
-       (row (b/button
+       (row
+        (g/col
+         {:xs 10}
+         (d/p
+          (d/br)
+          (r/glyphicon {:glyph "fire"}) " - block, "
+          (r/glyphicon {:glyph "transfer"}) " - allow,"
+          (r/glyphicon {:glyph "cloud"}) " - 'the vm'"))
+        (g/col
+         {:xs 2}
+         (b/button
              {:bs-style "primary"
               :class "fwaddbtn"
               :on-click #(add-rule state)}
-             "add rule"))
+             "add rule")))
        (row
         (g/col
          {:xs 12 :md 6}

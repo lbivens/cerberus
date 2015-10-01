@@ -1,6 +1,5 @@
 (ns cerberus.http
   (:refer-clojure :exclude [get])
-  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs-http.client]
             [cljs-http.core]
             [cerberus.utils :refer [path-vec]]

@@ -1470,3 +1470,13 @@ svg.omg > polyline.line-2 {
 
 /* ----------- END RESPONSIVE BREAKPOINTS ------------*/
 
+
+// Fix glyph icons in XS buttons (they are white when not
+// hovered)
+.btn.btn-xs>span.glyphicon {
+    color: @text-color;
+}
+
+.btn.btn-xs>span.glyphicon:hover {
+    color: white;
+}

@@ -17,9 +17,21 @@
 
 (def get (partial api/get root))
 
+(defn a-get [uuid success error]
+  (assoc (alerts success error) :always #(get uuid)))
+
 (defn delete [uuid]
-  (api/delete root [uuid] (alerts "Dataset deleted." "Failed to delete dataset.")))
+  (api/delete root [uuid]
+              (alerts "Dataset deleted." "Failed to delete dataset.")))
 
 (defn import [uuid]
-  (api/post root [] {"url" (str server "/" uuid)}
+  (api/post root [] {:url (str server "/" uuid)}
             (alerts "Dataset import started." "Dataset import failed.")))
+
+(defn add-nic [uuid nic desc]
+  (api/put root [uuid :networks nic] {:description desc}
+           (a-get uuid "Dataset network added." "Failed to add dataset network.")))
+
+(defn delete-nic [uuid nic]
+  (api/delete root [uuid :networks nic]
+              (a-get uuid "Dataset network added." "Failed to add dataset network.")))

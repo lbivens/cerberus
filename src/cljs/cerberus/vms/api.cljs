@@ -34,6 +34,12 @@
    root [uuid]
    (alerts "VM Deletion successful." "Failed to delete VM.")))
 
+(defn delete-hypervisor [uuid]
+  (api/delete
+   root [uuid :hypervisor]
+   (a-get uuid "VM successfuly removed from hypervisor."
+          "Failed to remove VM from hypervisor.")))
+
 (defn start [uuid]
   (api/put root [uuid :state] {:action :start}
            (alerts "Starting VM." "Failed to start VM.")))
@@ -63,9 +69,10 @@
   (api/delete root [uuid :snapshots snapshot]
               (alerts "Deleting Snapshot." "Failed to delete snapshot.")))
 
-(defn restore-snapshot [uuid snapshot]
-  (api/put root [uuid :snapshots snapshot] {:action "rollback"}
-           (a-get uuid "Deleting Snapshot." "Failed to delete snapshot.")))
+(defn restore-snapshot
+  ([uuid snapshot]
+   (api/put root [uuid :snapshots snapshot] {:action "rollback"}
+            (a-get uuid "Restoring Snapshot." "Failed to restore snapshot."))))
 
 (defn _backup [uuid opts]
   (api/post root [uuid :backups]
@@ -99,9 +106,13 @@
                        (if (:success resp)
                          (delete-state! [root :elements uuid :backups backup]))))))
 
-(defn restore-backup [uuid backup]
-  (api/put root [uuid :backups backup] {:action "rollback"}
-           (a-get uuid "Restoring backup." "Failed to restore backup.")))
+(defn restore-backup
+  ([uuid backup]
+   (api/put root [uuid :backups backup] {:action "rollback"}
+            (a-get uuid "Restoring backup." "Failed to restore backup.")))
+  ([uuid hypervisor backup]
+   (api/put root [uuid :backups backup] {:action "rollback" :hypervisor hypervisor}
+            (a-get uuid "Restoring backup." "Failed to restore backup."))))
 
 (defn service-action [uuid service action]
   (api/put root [uuid :services] {:service service :action action}

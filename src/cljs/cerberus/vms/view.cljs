@@ -15,6 +15,7 @@
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.orgs.api :as orgs]
+   [cerberus.hypervisors.api :as hypervisors]
    [cerberus.services :as services]
    [cerberus.metadata :as metadata]
    [cerberus.vms.api :refer [root] :as vms]
@@ -343,8 +344,9 @@
                        :on-click #(vms/snapshot (:uuid data) (:name state))} "Create")))))
         (snapshot-table (:uuid data) (:snapshots data)))))))
 
-(defn backup-row  [vm [uuid {comment :comment timestamp :timestamp
-                             state :state size :size}]]
+(defn backup-row  [vm hypervisor
+                   [uuid {comment :comment timestamp :timestamp
+                          state :state size :size}]]
   (d/tr
    (d/td (name uuid))
    (d/td comment)
@@ -356,11 +358,13 @@
                       :on-click (make-event identity)}
                      (menu-items
                       ["Incremental" #(vms/backup vm uuid (val-by-id "backup-comment"))]
-                      ["Roll Back" #(vms/restore-backup vm uuid)]
+                      (if (and hypervisor (not (empty? hypervisor)))
+                        ["Restore" #(vms/restore-backup vm hypervisor uuid)]
+                        ["Roll Back" #(vms/restore-backup vm uuid)])
 
                       ["Delete"    #(vms/delete-backup vm uuid)])))))
 
-(defn backup-table [vm backups]
+(defn backup-table [vm hypervisor backups]
   (g/col
    {:md 11}
    (table
@@ -376,37 +380,66 @@
     (apply d/tbody
            {}
            (map
-            (partial backup-row vm)
+            (partial backup-row vm hypervisor)
             (sort-by (fn [[_ {t :timestamp}]] t) backups))))))
 
-(defn render-backups [data owner opts]
+(defn render-backups [app owner {:keys [uuid]}]
   (reify
     om/IInitState
     (init-state [_]
       {:name ""})
     om/IRenderState
     (render-state [_ state]
-      (r/well
-       {}
-       (row
-        (g/col
-         {:md 12}
-         (i/input
-          {:label "New Backup"}
-          (row
-           (g/col
-            {:xs 10}
-            (i/input {:type :text
-                      :placeholder "Backup Comment"
-                      :on-change (->state owner :name)
-                      :value (:name state)
-                      :id "backup-comment"}))
-           (g/col {:xs 2}
-                  (b/button {:bs-style "primary"
-                             :wrapper-classname "col-xs-2"
-                             :disabled? (empty? (:name state))
-                             :on-click #(vms/backup (:uuid data) (:name state))} "Create")))))
-        (backup-table (:uuid data) (:backups data)))))))
+      (let [data (get-in app [root :elements uuid])]
+        (r/well
+         {}
+         (if (not (empty? (:hypervisor data)))
+           (row
+            (g/col
+             {:xs 12}
+             (d/p
+              "Once a backup is made it is possible to remove a zone from"
+              " a hypervisor without deleting the backups, that way the"
+              " zone can later on be deployed again."
+              (b/button {:bs-style "danger"
+                         :disabled? (empty? (:backups data))
+                         :on-click #(vms/delete-hypervisor (:uuid data))
+
+                         :class "pull-right"} "Delete form hypevisor"))))
+           (row
+            (g/col {}
+                   (d/p
+                    "This vm is in 'limbo' it currently has no hypervisors assigned"
+                    " that means it can be re-deployed.")
+                   (i/input {:type "select"
+                             :value (:target state)
+                             :on-change (->state owner :target)}
+                            (d/option "")
+                            (map
+                             (fn [[h-uidd {alias :alias}]]
+                               (d/option {:value h-uidd} alias))
+                             (get-in app [:hypervisors :elements])))
+                   )))
+         (row
+
+          (g/col
+           {:md 12}
+           (i/input
+            {:label "New Backup"}
+            (row
+             (g/col
+              {:xs 10}
+              (i/input {:type :text
+                        :placeholder "Backup Comment"
+                        :on-change (->state owner :name)
+                        :value (:name state)
+                        :id "backup-comment"}))
+             (g/col {:xs 2}
+                    (b/button {:bs-style "primary"
+                               :wrapper-classname "col-xs-2"
+                               :disabled? (empty? (:name state))
+                               :on-click #(vms/backup (:uuid data) (:name state))} "Create")))))
+          (backup-table uuid (:target state) (:backups data))))))))
 
 
 (defn o-state! [owner id]
@@ -756,7 +789,6 @@
    [_] acc))
 
 
-
 (defn b [f]
   #(om/build f %2))
 
@@ -767,12 +799,12 @@
                               {:opts {:uuid (:uuid %2)}})  :title "Networks"}
    "package"   {:key  3 :fn render-package   :title "Package"}
    "snapshots" {:key  4 :fn (b render-snapshots) :title "Snapshot"}
-   "backups"   {:key  5 :fn (b render-backups)   :title "Backups"}
-   "services"  {:key  6 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
-   "logs"      {:key  7 :fn (b render-logs)      :title "Logs"}
-   "fw-rules"  {:key  8 :fn (b render-fw-rules)  :title "Firewall"}
-   "metrics"   {:key  9 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
-   "metadata"  {:key 10 :fn (b metadata/render)  :title "Metadata"}})
+   "backups"   {:key  5 :fn #(om/build render-backups %1 {:opts {:uuid (:uuid %2)}})   :title "Backups"}
+   "services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
+   "logs"      {:key  8 :fn (b render-logs)      :title "Logs"}
+   "fw-rules"  {:key  9 :fn (b render-fw-rules)  :title "Firewall"}
+   "metrics"   {:key 10 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
+   "metadata"  {:key 11 :fn (b metadata/render)  :title "Metadata"}})
 
 ;; This is really ugly but something is crazy about the reify for OM here
 ;; this for will moutnt and will unmoutn are not the same and having timer in
@@ -801,8 +833,9 @@
    root sections
    vms/get
    :mount-fn (fn [uuid data]
-               (start-timer! uuid)
+               ;(start-timer! uuid)
                (orgs/list data)
+               (hypervisors/list data)
                (networks/list data))
    :name-fn  (fn [{state :state uuid :uuid {alias :alias} :config}]
                (d/div

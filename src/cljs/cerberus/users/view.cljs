@@ -264,7 +264,8 @@
             {:type "select"
              :value (:role state)
              :on-change (->state owner :role)}
-            (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) roles)))
+            (map (fn [[uuid e]] (d/option {:value uuid} (:name e)))
+                 (sort-by #(:name (second %)) roles))))
           (col
            {:xs 2 :sm 1}
            (b/button
@@ -306,7 +307,8 @@
             {:type "select"
              :value (:org state)
              :on-change (->state owner :org)}
-            (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) orgs)))
+            (map (fn [[uuid e]] (d/option {:value uuid} (:name e)))
+                 (sort-by #(:name (second %)) orgs))))
           (col
            {:xs 2 :sm 1}
            (b/button

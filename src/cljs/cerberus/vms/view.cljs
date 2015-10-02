@@ -833,7 +833,7 @@
    root sections
    vms/get
    :mount-fn (fn [uuid data]
-               ;(start-timer! uuid)
+               (start-timer! uuid)
                (orgs/list data)
                (hypervisors/list data)
                (networks/list data))

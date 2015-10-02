@@ -35,7 +35,8 @@
            {:xs 10 :sm 4}
            (i/input
             {:type "select" :id "iprange"}
-            (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) ipranges)))
+            (map (fn [[uuid e]] (d/option {:value uuid} (:name e)))
+                 (sort-by #(:name (second %)) ipranges))))
           (col
            {:xs 2 :sm 1}
            (b/button

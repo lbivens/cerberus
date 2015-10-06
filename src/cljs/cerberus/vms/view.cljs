@@ -405,7 +405,7 @@
                          :disabled? (empty? (:backups data))
                          :on-click #(vms/delete-hypervisor (:uuid data))
 
-                         :class "pull-right"} "Delete form hypevisor"))))
+                         :class "pull-right"} "Delete from hypevisor"))))
            (row
             (g/col {}
                    (d/p

@@ -670,15 +670,15 @@
                "x")
           action (if (= "allow" action)
                    (r/glyphicon {:glyph "ok"})
-                   (r/glyphicon {:glyph "remove"}))]
+                   (r/glyphicon {:glyph "fire"}))]
       (if (= direction "inbound")
         (d/tr
          (d/td target-str)
          (d/td action)
-         (d/td (r/glyphicon {:glyph "record"}) ":" filters-str)
+         (d/td (r/glyphicon {:glyph "hdd"}) ":" filters-str)
          (d/td btn))
         (d/tr
-         (d/td (r/glyphicon {:glyph "record"}))
+         (d/td (r/glyphicon {:glyph "hdd"}))
          (d/td action)
          (d/td target-str ":" filters-str)
          (d/td btn))))))
@@ -726,9 +726,9 @@
           :class "fwlegend"}
          (d/p
           (d/br)
-          (r/glyphicon {:glyph "remove"}) " block"
+          (r/glyphicon {:glyph "fire"}) " block"
           (r/glyphicon {:glyph "ok"}) " allow"
-          (r/glyphicon {:glyph "record"}) " this zone")))
+          (r/glyphicon {:glyph "hdd"}) " this zone")))
        (row
         (g/col
          {:xs 12 :md 6}

@@ -545,7 +545,7 @@
   (condp = (:target state)
     "ip" (i/input {:type "text"
                    :label (if (= (:direction state) "inbound")
-                            "Source IP" "Destination IP")
+                            "Source IP" "Dest IP")
                    :class "input-sm" :id "ip" :value (:ip state)
                    :label-classname lc :wrapper-classname wc
                    :on-change #(o-state! owner :ip)})
@@ -712,22 +712,23 @@
                    {:opts {:parent owner}
                     :react-key "icmp-code"})
          (action-select owner state)))
+        (row
+        (g/col
+         {:xs 12}
+         (b/button
+             {:bs-style "primary"
+              :class "fwaddbtn"
+              :on-click #(add-rule state)}
+             "add rule")))
        (row
         (g/col
          {:xs 10
           :class "fwlegend"}
          (d/p
           (d/br)
-          (r/glyphicon {:glyph "remove"}) " - block  "
-          (r/glyphicon {:glyph "ok"}) " - allow  "
-          (r/glyphicon {:glyph "record"}) " - 'the zone'"))
-        (g/col
-         {:xs 2}
-         (b/button
-             {:bs-style "primary"
-              :class "fwaddbtn"
-              :on-click #(add-rule state)}
-             "add rule")))
+          (r/glyphicon {:glyph "remove"}) " block"
+          (r/glyphicon {:glyph "ok"}) " allow"
+          (r/glyphicon {:glyph "record"}) " this zone")))
        (row
         (g/col
          {:xs 12 :md 6}

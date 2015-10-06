@@ -669,16 +669,16 @@
                 :on-click #(vms/delete-fw-rule uuid id)}
                "x")
           action (if (= "allow" action)
-                   (r/glyphicon {:glyph "transfer"})
-                   (r/glyphicon {:glyph "fire"}))]
+                   (r/glyphicon {:glyph "ok"})
+                   (r/glyphicon {:glyph "remove"}))]
       (if (= direction "inbound")
         (d/tr
          (d/td target-str)
          (d/td action)
-         (d/td (r/glyphicon {:glyph "cloud"}) ":" filters-str)
+         (d/td (r/glyphicon {:glyph "record"}) ":" filters-str)
          (d/td btn))
         (d/tr
-         (d/td (r/glyphicon {:glyph "cloud"}))
+         (d/td (r/glyphicon {:glyph "record"}))
          (d/td action)
          (d/td target-str ":" filters-str)
          (d/td btn))))))
@@ -714,12 +714,13 @@
          (action-select owner state)))
        (row
         (g/col
-         {:xs 10}
+         {:xs 10
+          :class "fwlegend"}
          (d/p
           (d/br)
-          (r/glyphicon {:glyph "fire"}) " - block, "
-          (r/glyphicon {:glyph "transfer"}) " - allow,"
-          (r/glyphicon {:glyph "cloud"}) " - 'the vm'"))
+          (r/glyphicon {:glyph "remove"}) " - block  "
+          (r/glyphicon {:glyph "ok"}) " - allow  "
+          (r/glyphicon {:glyph "record"}) " - 'the zone'"))
         (g/col
          {:xs 2}
          (b/button

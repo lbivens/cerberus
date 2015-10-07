@@ -195,7 +195,7 @@
              :className "pull-right"
              :on-click #(hypervisors/set-characteristic uuid (:char state) (:val state))
              :disabled? invalid?}
-            "Add Characsteristic")))
+            "Add Characteristics")))
          (row
           (g/col
            {}

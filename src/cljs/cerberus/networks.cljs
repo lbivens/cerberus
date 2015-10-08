@@ -11,7 +11,7 @@
    [cerberus.fields :refer [mk-config]]))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(networks/delete [uuid])]])
+  [["Delete" #(networks/delete uuid)]])
 
 (def config (mk-config root "Networks" actions))
 

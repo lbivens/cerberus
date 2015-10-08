@@ -56,7 +56,7 @@
        {:type :input :label "NIC Tag" :id "ipr-tag" :key :tag}
        {:type :input :label "VLAN" :id "ipr-vlan" :key :vlan :data-type :integer
         :validator #(and
-                     (not (empty? %3))
+                     (not= %3 "")
                      (not (nil? %2))
                      (not (js/isNaN  %2))
                      (<= 0 %2 4096))}

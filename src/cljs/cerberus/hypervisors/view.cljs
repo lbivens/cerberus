@@ -195,7 +195,7 @@
              :className "pull-right"
              :on-click #(hypervisors/set-characteristic uuid (:char state) (:val state))
              :disabled? invalid?}
-            "Add Characsteristic")))
+            "Add Characteristics")))
          (row
           (g/col
            {}
@@ -231,7 +231,7 @@
 (def sections
   {""          {:key  1 :fn  #(om/build render-home %2)     :title "General"}
    "services"  {:key  3 :fn #(om/build services/render %2   {:opts {:action hypervisors/service-action}})  :title "Services"}
-   "chars"     {:key  4 :fn #(om/build render-chars %2)     :title "Characteraristics"}
+   "chars"     {:key  4 :fn #(om/build render-chars %2)     :title "Characteristics"}
    ;;"notes"     {:key  5 :fn render-notes     :title "Notes"}
    "metrics"   {:key  5 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "metadata"  {:key  6 :fn #(om/build metadata/render %2)  :title "Metadata"}})
@@ -244,7 +244,6 @@
 ;; This is really ugly but something is crazy about the reify for OM here
 ;; this for will moutnt and will unmoutn are not the same and having timer in
 ;; let does not work either so lets "MAKE ALL THE THINGS GLOBAL!"
-
 (def timer (atom))
 
 (defn stop-timer! []
@@ -252,16 +251,23 @@
     (js/clearInterval @timer))
   (reset! timer nil))
 
-(defn tick [uuid]
-  (if (and
-       (= (get-in @app-state [root :selected]) uuid)
-       (= (:section @app-state) :hypervisors))
-    (hypervisors/metrics uuid)
-    (stop-timer!)))
+(defn tick [uuid local-timer]
+  (let [app @app-state]
+    (if (and
+         (not= (get-in app [root :elements uuid :metrics]) :no-metrics)
+         (= (get-in app [root :selected]) uuid)
+         (= (:section app) root))
+      (hypervisors/metrics uuid)
+      (do
+        (js/clearInterval @local-timer)
+        (stop-timer!)))))
 
 (defn start-timer! [uuid]
   (stop-timer!)
-  (reset! timer (js/setInterval #(tick uuid) 1000)))
+  (let [local-timer (atom)
+        t (js/setInterval #(tick uuid local-timer) 1000)]
+    (reset! local-timer t)
+    (reset! timer t)))
 
 (def render
   (view/make

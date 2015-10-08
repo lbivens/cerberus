@@ -405,7 +405,7 @@
                          :disabled? (empty? (:backups data))
                          :on-click #(vms/delete-hypervisor (:uuid data))
 
-                         :class "pull-right"} "Delete form hypevisor"))))
+                         :class "pull-right"} "Delete from hypervisor"))))
            (row
             (g/col {}
                    (d/p
@@ -545,7 +545,7 @@
   (condp = (:target state)
     "ip" (i/input {:type "text"
                    :label (if (= (:direction state) "inbound")
-                            "Source IP" "Destination IP")
+                            "Source IP" "Dest IP")
                    :class "input-sm" :id "ip" :value (:ip state)
                    :label-classname lc :wrapper-classname wc
                    :on-change #(o-state! owner :ip)})
@@ -669,16 +669,16 @@
                 :on-click #(vms/delete-fw-rule uuid id)}
                "x")
           action (if (= "allow" action)
-                   (r/glyphicon {:glyph "transfer"})
+                   (r/glyphicon {:glyph "ok"})
                    (r/glyphicon {:glyph "fire"}))]
       (if (= direction "inbound")
         (d/tr
          (d/td target-str)
          (d/td action)
-         (d/td (r/glyphicon {:glyph "cloud"}) ":" filters-str)
+         (d/td (r/glyphicon {:glyph "hdd"}) ":" filters-str)
          (d/td btn))
         (d/tr
-         (d/td (r/glyphicon {:glyph "cloud"}))
+         (d/td (r/glyphicon {:glyph "hdd"}))
          (d/td action)
          (d/td target-str ":" filters-str)
          (d/td btn))))))
@@ -712,21 +712,23 @@
                    {:opts {:parent owner}
                     :react-key "icmp-code"})
          (action-select owner state)))
-       (row
+        (row
         (g/col
-         {:xs 10}
-         (d/p
-          (d/br)
-          (r/glyphicon {:glyph "fire"}) " - block, "
-          (r/glyphicon {:glyph "transfer"}) " - allow,"
-          (r/glyphicon {:glyph "cloud"}) " - 'the vm'"))
-        (g/col
-         {:xs 2}
+         {:xs 12}
          (b/button
              {:bs-style "primary"
               :class "fwaddbtn"
               :on-click #(add-rule state)}
              "add rule")))
+       (row
+        (g/col
+         {:xs 10
+          :class "fwlegend"}
+         (d/p
+          (d/br)
+          (r/glyphicon {:glyph "fire"}) " block"
+          (r/glyphicon {:glyph "ok"}) " allow"
+          (r/glyphicon {:glyph "hdd"}) " this zone")))
        (row
         (g/col
          {:xs 12 :md 6}
@@ -817,16 +819,23 @@
     (js/clearInterval @timer))
   (reset! timer nil))
 
-(defn tick [uuid]
-  (if (and
-       (= (get-in @app-state [root :selected]) uuid)
-       (= (:section @app-state) :vms))
-    (vms/metrics uuid)
-    (stop-timer!)))
+(defn tick [uuid local-timer]
+  (let [app @app-state]
+    (if (and
+         (not= (get-in app [root :elements uuid :metrics]) :no-metrics)
+         (= (get-in app [root :selected]) uuid)
+         (= (:section app) :vms))
+      (vms/metrics uuid)
+      (do
+        (js/clearInterval @local-timer)
+        (stop-timer!)))))
 
 (defn start-timer! [uuid]
   (stop-timer!)
-  (reset! timer (js/setInterval #(tick uuid) 1000)))
+  (let [local-timer (atom)
+        t (js/setInterval #(tick uuid local-timer) 1000)]
+    (reset! local-timer t)
+    (reset! timer t)))
 
 (def render
   (view/make

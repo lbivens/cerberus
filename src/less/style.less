@@ -808,6 +808,11 @@ table .filoment tr td:first-of-type {
     padding-left: 20px;
 }
 
+// Machine general view label color
+.list-group .span-label {
+    color: #5d80a7;
+}
+
 // up down chevron padding and font size
 span.glyphicon.glyphicon-chevron-up, span.glyphicon.glyphicon-chevron-down {
     padding-left: 5px;
@@ -830,13 +835,18 @@ span.glyphicon.glyphicon-transfer {
 
 // Firewall add button
 button.fwaddbtn.btn.btn-primary {
-    margin: 20px;
+    margin: 30px 0 15px 0;
     float: right;
 }
 
 // Give the select form control icon (firewall) a link hand to show its clickable
 select, select.form-control {
   cursor: pointer;
+}
+
+// Firewall legend padding
+.fwlegend span.glyphicon {
+    padding-left: 10px;
 }
 
 // Firewall rule delete button
@@ -1330,6 +1340,12 @@ svg.omg > text.label {
     font-size: 0.5em;
 }
 
+svg.omg > text.label.min {
+}
+
+svg.omg > text.label.max {
+}
+
 svg.omg > polyline {
     stroke-width: 1px;
 }
@@ -1338,8 +1354,19 @@ svg.omg > polyline.axis {
     stroke: @fifo-grey;
 }
 
+svg.omg > polyline.axis.x {
+}
+
+svg.omg > polyline.axis.y {
+}
+
 svg.omg > polyline.line {
     stroke: @fifo-light;
+    stroke-width: 1px;
+}
+
+svg.omg > polyline.line-0 {
+    stroke: @addview-color-active;
     stroke-width: 1px;
 }
 
@@ -1351,6 +1378,24 @@ svg.omg > polyline.line-1 {
 svg.omg > polyline.line-2 {
     stroke: @fifo-dark;
     stroke-width: 1px;
+}
+// // send line graph color
+// svg.omg > polyline.line.line-send.line-0 {
+//     stroke: #0080A7;
+// }
+
+// receive line graph color
+svg.omg > polyline.line.line-recv.line-1 {
+    stroke: #FFB586;
+}
+
+polyline.line.line-nwait.line-1 {
+    stroke: purple;
+}
+
+// upper limit graph line color
+polyline.line.line-effective.line-2 {
+    stroke: #FFB586;
 }
 
 

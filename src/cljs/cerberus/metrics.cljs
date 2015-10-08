@@ -36,18 +36,18 @@
             y 10]
         (d/svg
          {:class   "omg"
-          :viewBox "0 0 200 100"}
+          :viewBox "0 0 200 80"}
          ;; max text
-         (d/text {:x 0 :y 0 :class "label max"} (Math/round max))
+         (d/text {:x 10 :y -15 :class "label max"} (Math/round max))
          ;; min text
          (d/text {:x 10 :y 100 :class "label min"} 0)
          ;; x-line
          (d/polyline
-          {:points (mkp [[(- x 4) (- 101 y)] [(+ 120 x) (- 101 y)]])
+          {:points (mkp [[(- x 4) (- 102 y)] [(+ 120 x) (- 102 y)]])
            :class "axis x"})
          ;;y - line
          (d/polyline
-          {:points (mkp [[(- x 1) (* -1 y)] [(- x 1) (- 100 (/ y 2))]])
+          {:points (mkp [[(- x 4) (* -1 y)] [(- x 4) (- 97 (/ y 2))]])
            :class "axis y"})
          (map-indexed
           (fn [idx [line points]]
@@ -82,6 +82,11 @@
     (render-state [_ _]
       (r/well
        {}
-       (row
-        (let [metrics (map normalize-metrics (reduce build-metric {} (map process-metric data)))]
-          (om/build-all point-view metrics)))))))
+       (if (or (not data) (= data :no-metrics))
+         (row
+          (g/col
+           {:xs 12}
+           (d/p "No metric storage seems to be configured please install DalmateirnDB and Tachyon to use this feature")))
+         (row
+          (let [metrics (map normalize-metrics (reduce build-metric {} (map process-metric data)))]
+            (om/build-all point-view metrics))))))))

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>FiFo VNC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Project FiFo administrative console">
+    <meta name="author" content="http://project-fifo.net">
+
+    <style>
+      header, footer {
+        position: fixed;
+        width: 100%;
+      }
+
+      header {
+        top: 0px;
+      }
+
+      footer {
+        bottom: 0px;
+      }
+
+      .main {
+        padding-top: 30px;
+      }
+
+      .alert-error {
+        color: #a94442;
+        background-color: #f2dede;
+        border-color: #ebccd1;
+      }
+
+      .alert-error hr {
+        border-top-color: #e4b9c0;
+      }
+
+      .alert-error .alert-link {
+        color: #843534;
+      }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-3">
+             VNC Console
+          </div>
+          <div class="col-md-9 text-right" style="line-height: 41px;">
+            <input class="btn btn-default" type="button" value="Send Ctrl+Alt+Del" id="sendCtrlAltDelButton">
+          </div>
+        </div>
+        <hr>
+      </div>
+    </header>
+
+    <div class="main container">
+      <div id="noVNC_status_bar">
+        <div id="noVNC_status" class="alert alert-info">
+          Loading
+        </div>
+      </div>
+      <div id="noVNC_screen"><center>
+        <canvas id="noVNC_canvas" width="100%" style="border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
+          Canvas not supported.
+        </canvas>
+      </center></div>
+    </div>
+
+    <footer>
+      <div class="container">
+        <hr>
+        <p class="copy"> &copy; <a href="http://project-fifo.net">Project FiFo</a></p>
+      </div>
+    </footer>
+
+    <script src="stuff/vnc/util.js"></script>
+    <script src="stuff/vnc/webutil.js"></script>
+    <script src="stuff/vnc/base64.js"></script>
+    <script src="stuff/vnc/websock.js"></script>
+    <script src="stuff/vnc/des.js"></script>
+    <script src="stuff/vnc/input.js"></script>
+    <script src="stuff/vnc/display.js"></script>
+    <script src="stuff/vnc/rfb.js"></script>
+    <script src="stuff/vnc/jsunzip.js"></script>
+
+    <script src="/stuff/jquery.min.js"></script>
+    <script src="/stuff/jquery.cookie.js"></script>
+    <script src="/stuff/jquery.getUrlParam.js"></script>
+
+    <script src="config/config.js"></script>
+    <script src="stuff/vnc/vnc.js"></script>
+    <script src="stuff/vnc.js"></script>
+
+</html>

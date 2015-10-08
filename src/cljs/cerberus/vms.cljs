@@ -28,17 +28,18 @@
         (let [ott (get-in response [:body :token])]
           (.open js/window (str path "&ott=" ott)))))))
 
-
 (defn actions [e]
   (let [uuid (:uuid e)
         locked (get-in e [:raw :metadata :cerberus :locked] false)
         set-lock (partial vms/update-metadata uuid [:cerberus :locked])
         delete #(vms/delete uuid)
         hypervisor (get-in e [:raw :hypervisor])
+        type (get-in e [:raw :config :type])
         state (get-in e [:raw :state])]
+    (pr type)
     (if (or (not hypervisor) (empty? hypervisor))
       []
-      [["Console" #(open-with-ott (str "./console.html?uuid=" uuid))]
+      [["Console" #(open-with-ott (str "./" (if (= type "kvm") "vnc" "console")  ".html?uuid=" uuid))]
        (if locked
          ["Unlock" #(set-lock false)]
          ["Lock" #(set-lock true)])

@@ -46,8 +46,8 @@
 
 (defn set-characteristic [uuid char val]
   (api/put root [uuid :characteristics] {char val}
-           (a-get uuid "Characteristic set." "Failed to set cgaracteristic.")))
+           (a-get uuid "Characteristic set." "Failed to set characteristic.")))
 
 (defn delete-characteristic [uuid char]
   (api/delete root [uuid :characteristics char]
-              (a-get uuid "Characteristic deleted." "Failed to delete cgaracteristic.")))
+              (a-get uuid "Characteristic deleted." "Failed to delete characteristic.")))

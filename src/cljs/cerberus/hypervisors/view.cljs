@@ -195,7 +195,7 @@
              :className "pull-right"
              :on-click #(hypervisors/set-characteristic uuid (:char state) (:val state))
              :disabled? invalid?}
-            "Add Characsteristic")))
+            "Add Characteristics")))
          (row
           (g/col
            {}
@@ -231,7 +231,7 @@
 (def sections
   {""          {:key  1 :fn  #(om/build render-home %2)     :title "General"}
    "services"  {:key  3 :fn #(om/build services/render %2   {:opts {:action hypervisors/service-action}})  :title "Services"}
-   "chars"     {:key  4 :fn #(om/build render-chars %2)     :title "Characteraristics"}
+   "chars"     {:key  4 :fn #(om/build render-chars %2)     :title "Characteristics"}
    ;;"notes"     {:key  5 :fn render-notes     :title "Notes"}
    "metrics"   {:key  5 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "metadata"  {:key  6 :fn #(om/build metadata/render %2)  :title "Metadata"}})

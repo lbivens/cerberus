@@ -344,6 +344,14 @@
                        :on-click #(vms/snapshot (:uuid data) (:name state))} "Create")))))
         (snapshot-table (:uuid data) (:snapshots data)))))))
 
+
+(defn show-state [state]
+  (condp = state
+    "uploading" (r/label {:bs-style "warning"} state)
+    "completed" (r/label {:bs-style "success"} state)
+    "failed" (r/label {:bs-style "danger"} state)
+    (r/label {:bs-style "default"} state)))
+
 (defn backup-row  [vm hypervisor
                    [uuid {comment :comment timestamp :timestamp
                           state :state size :size}]]
@@ -351,7 +359,7 @@
    (d/td (name uuid))
    (d/td comment)
    (d/td (str (js/Date. (/ timestamp 1000))))
-   (d/td state)
+   (d/td (show-state state))
    (d/td (fmt-bytes :b size))
    (d/td {:class "actions no-carret"}
          (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})

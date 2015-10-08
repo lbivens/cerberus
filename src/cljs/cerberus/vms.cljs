@@ -23,21 +23,33 @@
         locked (get-in e [:raw :metadata :cerberus :locked] false)
         set-lock (partial vms/update-metadata uuid [:cerberus :locked])
         delete #(vms/delete uuid)
+        hypervisor (get-in e [:raw :hypervisor])
         state (get-in e [:raw :state])]
-    [(if locked
-       ["Unlock" #(set-lock false)]
-       ["Lock" #(set-lock true)])
-     :divider
-     (if (= state "running")
-       ["Stop" {:class (if locked "disabled")} #(vms/stop uuid)]
-       ["Start" {:class (if locked "disabled")} #(vms/start uuid)])
-     (if (= state "running")
-       ["Reboot" {:class (if locked "disabled")} #(vms/reboot uuid)])
-     :divider
-     ["Delete" {:class (if locked "disabled")} #(set-state! [:delete] uuid)]]))
+    (if (or (not hypervisor) (empty? hypervisor))
+      []
+      [(if locked
+         ["Unlock" #(set-lock false)]
+         ["Lock" #(set-lock true)])
+       :divider
+       (if (= state "running")
+         ["Stop" {:class (if locked "disabled")} #(vms/stop uuid)]
+         ["Start" {:class (if locked "disabled")} #(vms/start uuid)])
+       (if (= state "running")
+         ["Reboot" {:class (if locked "disabled")} #(vms/reboot uuid)])
+       :divider
+       ["Delete" {:class (if locked "disabled")} #(set-state! [:delete] uuid)]])))
 
 (defn get-ip [vm]
   (:ip (first (filter (fn [{p :primary}] p) (get-in vm [:config :networks])))))
+
+(def state-map
+  {"running" "success"
+   "stopped" "default"
+   "faiiled" "danger"})
+
+(defn map-state [state]
+  (let [style (or (state-map state) "default")]
+    (r/label {:bs-style style} state)))
 
 (def config
   (mk-config
@@ -54,7 +66,7 @@
                 :key (partial api/get-sub-element :orgs :owner :name)}
    :cpu        {:title "CPU" :key [:config :cpu_cap] :type :percent :show false}
    :ram        {:title "Memory" :key [:config :ram] :type [:bytes :mb] :show false}
-   :state      {:title "State" :key :state :type :string}
+   :state      {:title "State" :key :state :type :string  :render-fn map-state}
    :hypervisor {:title "Hypervisor" :type :string :show false
                 :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}))
 

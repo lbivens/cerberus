@@ -84,14 +84,19 @@
       (cell-opt :style e)
       (cell-opt :class e)))
 
-(defn tbl-cell [set-filter {txt :text quick-filter :quick-filter filter-txt :filter-text :as e }]
+(defn tbl-cell [set-filter {txt :text render-fn :render-fn quick-filter :quick-filter filter-txt :filter-text :as e }]
   (if quick-filter
     (d/td (cell-attrs e)
           (r/glyphicon {:glyph "pushpin"
                         :class "filterby"
-                        :on-click (make-event #(set-filter (str (name (:id e)) ":" filter-txt)))}) " " txt)
+                        :on-click (make-event #(set-filter (str (name (:id e)) ":" filter-txt)))}) " "
+                        (if render-fn
+                          (render-fn txt)
+                          txt))
     (d/td (cell-attrs e)
-          txt)))
+          (if render-fn
+            (render-fn txt)
+            txt))))
 
 (defn tbl-row [data owner {:keys [root actions fields set-filter]}]
   (reify

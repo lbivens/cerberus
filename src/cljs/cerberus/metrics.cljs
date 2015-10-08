@@ -82,6 +82,11 @@
     (render-state [_ _]
       (r/well
        {}
-       (row
-        (let [metrics (map normalize-metrics (reduce build-metric {} (map process-metric data)))]
-          (om/build-all point-view metrics)))))))
+       (if (or (not data) (= data :no-metrics))
+         (row
+          (g/col
+           {:xs 12}
+           (d/p "No metric storage seems to be configured please install DalmateirnDB and Tachyon to use this feature")))
+         (row
+          (let [metrics (map normalize-metrics (reduce build-metric {} (map process-metric data)))]
+            (om/build-all point-view metrics))))))))

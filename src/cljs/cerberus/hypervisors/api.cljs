@@ -31,8 +31,14 @@
            (a-get uuid "Service state changed." "Failed to change service state.")))
 
 (defn metrics [uuid]
-  (api/to-state [root :elements uuid :metrics]
-                (http/get [root uuid :metrics])))
+  (go
+    (let [resp (<! (http/get [root uuid :metrics]))]
+      (condp = (:status resp)
+        401 (api/check-login)
+        503 (set-state! [root :elements uuid :metrics] :no-metrics)
+        500 (set-state! [root :elements uuid :metrics] :no-metrics)
+        200 (set-state! [root :elements uuid :metrics] (js->clj (:body resp)))
+        nil))))
 
 (defn set-config [uuid config]
   (api/put root [uuid :config] config

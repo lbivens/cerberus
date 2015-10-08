@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+   [cljs.core.async :refer [<!]]
    [om.core :as om :include-macros true]
    [cerberus.vms.api :refer [root]]
    [om-bootstrap.button :as b]
@@ -18,6 +19,16 @@
    [cerberus.fields :refer [mk-config]]
    [cerberus.state :refer [set-state!]]))
 
+(def token-path "sessions/one_time_token")
+
+(defn open-with-ott [path]
+  (go
+    (let [response (<! (http/get token-path))]
+      (if (= 200 (:status response))
+        (let [ott (get-in response [:body :token])]
+          (.open js/window (str path "&ott=" ott)))))))
+
+
 (defn actions [e]
   (let [uuid (:uuid e)
         locked (get-in e [:raw :metadata :cerberus :locked] false)
@@ -27,7 +38,8 @@
         state (get-in e [:raw :state])]
     (if (or (not hypervisor) (empty? hypervisor))
       []
-      [(if locked
+      [["Console" #(open-with-ott (str "./console.html?uuid=" uuid))]
+       (if locked
          ["Unlock" #(set-lock false)]
          ["Lock" #(set-lock true)])
        :divider

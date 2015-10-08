@@ -27,6 +27,8 @@
 (defroutes routes
   (resources "/")
   (resources "/react" {:root "react"})
+  ;(GET "/console.html" req (console))
+  ;(GET "/vnc.html" req (console))
   (GET "/*" req (page)))
 
 (def http-handler

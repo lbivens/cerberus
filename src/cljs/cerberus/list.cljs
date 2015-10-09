@@ -54,6 +54,7 @@
      :filter (not= (:filter field) false)
      :filter-text (get-filter-field field e)
      :title (:title field)
+     :render-fn (:render-fn field)
      :text txt
      :id (:id field)
      :class (:class field)

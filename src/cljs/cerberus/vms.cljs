@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+   [cljs.core.async :refer [<!]]
    [om.core :as om :include-macros true]
    [cerberus.vms.api :refer [root]]
    [om-bootstrap.button :as b]
@@ -18,26 +19,50 @@
    [cerberus.fields :refer [mk-config]]
    [cerberus.state :refer [set-state!]]))
 
+(def token-path "sessions/one_time_token")
+
+(defn open-with-ott [path]
+  (go
+    (let [response (<! (http/get token-path))]
+      (if (= 200 (:status response))
+        (let [ott (get-in response [:body :token])]
+          (.open js/window (str path "&ott=" ott)))))))
+
 (defn actions [e]
   (let [uuid (:uuid e)
         locked (get-in e [:raw :metadata :cerberus :locked] false)
         set-lock (partial vms/update-metadata uuid [:cerberus :locked])
         delete #(vms/delete uuid)
+        hypervisor (get-in e [:raw :hypervisor])
+        type (get-in e [:raw :config :type])
         state (get-in e [:raw :state])]
-    [(if locked
-       ["Unlock" #(set-lock false)]
-       ["Lock" #(set-lock true)])
-     :divider
-     (if (= state "running")
-       ["Stop" {:class (if locked "disabled")} #(vms/stop uuid)]
-       ["Start" {:class (if locked "disabled")} #(vms/start uuid)])
-     (if (= state "running")
-       ["Reboot" {:class (if locked "disabled")} #(vms/reboot uuid)])
-     :divider
-     ["Delete" {:class (if locked "disabled")} #(set-state! [:delete] uuid)]]))
+    (pr type)
+    (if (or (not hypervisor) (empty? hypervisor))
+      []
+      [["Console" #(open-with-ott (str "./" (if (= type "kvm") "vnc" "console")  ".html?uuid=" uuid))]
+       (if locked
+         ["Unlock" #(set-lock false)]
+         ["Lock" #(set-lock true)])
+       :divider
+       (if (= state "running")
+         ["Stop" {:class (if locked "disabled")} #(vms/stop uuid)]
+         ["Start" {:class (if locked "disabled")} #(vms/start uuid)])
+       (if (= state "running")
+         ["Reboot" {:class (if locked "disabled")} #(vms/reboot uuid)])
+       :divider
+       ["Delete" {:class (if locked "disabled")} #(set-state! [:delete] uuid)]])))
 
 (defn get-ip [vm]
   (:ip (first (filter (fn [{p :primary}] p) (get-in vm [:config :networks])))))
+
+(def state-map
+  {"running" "success"
+   "stopped" "default"
+   "faiiled" "danger"})
+
+(defn map-state [state]
+  (let [style (or (state-map state) "default")]
+    (r/label {:bs-style style} state)))
 
 (def config
   (mk-config
@@ -54,7 +79,7 @@
                 :key (partial api/get-sub-element :orgs :owner :name)}
    :cpu        {:title "CPU" :key [:config :cpu_cap] :type :percent :show false}
    :ram        {:title "Memory" :key [:config :ram] :type [:bytes :mb] :show false}
-   :state      {:title "State" :key :state :type :string}
+   :state      {:title "State" :key :state :type :string  :render-fn map-state}
    :hypervisor {:title "Hypervisor" :type :string :show false
                 :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}))
 

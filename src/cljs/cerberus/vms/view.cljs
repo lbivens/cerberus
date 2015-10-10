@@ -854,7 +854,7 @@
                (orgs/list data)
                (hypervisors/list data)
                (networks/list data))
-   :name-fn  (fn [{state :state uuid :uuid {alias :alias} :config}]
+   :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config}]
                (d/div
                 {}
                 alias " "
@@ -882,5 +882,5 @@
                   {:bs-size "small"
                    :bs-style "danger"
                    :on-click #(vms/delete uuid)
-                   :disabled? (not= state "stopped")}
+                   :disabled? (and (not= state "stopped") (not (empty? hypervisor)))}
                   (r/glyphicon {:glyph "trash"})))))))

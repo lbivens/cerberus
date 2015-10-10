@@ -38,7 +38,7 @@
         state (get-in e [:raw :state])]
     (pr type)
     (if (or (not hypervisor) (empty? hypervisor))
-      []
+      [["Delete" {:class (if locked "disabled")} #(set-state! [:delete] uuid)]]
       [["Console" #(open-with-ott (str "./" (if (= type "kvm") "vnc" "console")  ".html?uuid=" uuid))]
        (if locked
          ["Unlock" #(set-lock false)]

@@ -35,42 +35,40 @@
 
 (defn render [data]
   (reify
-        om/IDisplayName
+    om/IDisplayName
     (display-name [_]
       "addnetworkc")
+    om/IWillMount
+    (will-mount [_]
+      (datasets/list data)
+      (go
+        (let [resp (<! (http/get (global/get "datasets" "http://datasets.at/images") {:with-credentials? false :headers {"Accept" "datalication/json"}}))]
+          (if (:success resp)
+            (om/transact! data :remote-datasets (constantly (:body resp)))
+            (dbg/error "[datasets/import] error: " resp)))))
     om/IRenderState
-    (render-state [_ _]
-      (let [datasets (:remote-datasets data)
-            installed? (get-in data [:datasets :elements] {})
-            picked? (or (:data data) #{})]
-        (if (empty installed?)
-          (datasets/list data))
-        (if (not datasets)
-          (go
-            (let [resp (<! (http/get (global/get "datasets" "http://datasets.at/images") {:with-credentials? false :headers {"Accept" "datalication/json"}}))]
-              (if (:success resp)
-                (om/transact! data :remote-datasets (constantly (:body resp)))
-                (dbg/error "[datasets/import] error: " resp)))))
+    (render-state [_ datasets]
+      (let [datasets   (:remote-datasets data)
+            installed? (or  (get-in data [:datasets :elements]) {})
+            picked?    (or (:data data) #{})]
+        (pr installed?)
         (table
-         {:striped? true :condensed? true :hover? true :responsive? true :id "remote-datasets"}
+         {:striped? true :condensed? true
+          :hover? true :responsive? true :id "remote-datasets"}
          (d/thead
           (d/td "Name")
           (d/td "Version")
           (d/td "Published")
-          (d/td "Size")
-          ;(d/td "Age")
-          ;(d/td "Creator")
-          )
+          (d/td "Size"))
          (d/tbody
           (map
            (fn [{uuid :uuid :as e}]
              (d/tr
               {:on-click #(om/transact! data (partial toggle-dataset uuid))
-               :class  (if (installed? uuid) "installed" (if (picked? uuid) "selected" "not-selected"))}
+               :class  (if (installed? uuid) "installed"
+                           (if (picked? uuid) "selected" "not-selected"))}
               (d/td (:name e) " (" (type-name (:type e)) ")")
               (d/td (:version e))
               (d/td (:published_at e))
-              (d/td (fields/fmt-bytes :b (get-in e [:files 0 :size])))
-              ;(d/td "Age")
-              ;(d/td "Creator")
-              )) datasets)))))))
+              (d/td (fields/fmt-bytes :b (get-in e [:files 0 :size])))))
+           datasets)))))))

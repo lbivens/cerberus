@@ -156,7 +156,10 @@
            (storage pools (:Disks sysinfo)))
           (g/col
            {:md 4}
-           (p/panel {:header "Networks"}))))))))
+           (p/panel
+            {:header "Networks"}
+            (d/ul
+             (map  d/li (:networks element)))))))))))
 
 (defn render-chars [element owner opts]
   (reify

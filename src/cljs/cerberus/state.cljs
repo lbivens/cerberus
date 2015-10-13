@@ -46,7 +46,7 @@
   (delete-state! :token)
   (doall
    (map #(if (get-in @app-state [% :elements])
-           (delete-state! [% :elements]))) (keys @app-state)))
+           (delete-state! [% :elements])) (keys @app-state))))
 
 (defn print-state []
-  (dbg/debug @app-state))
+  (pr @app-state))

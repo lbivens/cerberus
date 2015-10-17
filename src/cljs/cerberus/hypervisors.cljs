@@ -13,8 +13,19 @@
 (defn actions [{uuid :uuid}]
   [["Delete" #(hypervisors/delete uuid)]])
 
-(def config (mk-config root "Hypervisors" actions
-                       :name {:title "Name" :key :alias :order -20}))
+(def config
+  (mk-config
+   root "Hypervisors" actions
+   :name {:title "Name" :key :alias :order -20}
+   :version {:title "Version" :key :version :order 1}
+   :os-version {:title "OS Version" :key [:sysinfo (keyword "Live Image")] :order 2}
+   :used-men {:title "Used Memory" :key [:resources :provisioned-memory]
+              :type [:bytes :mb] :order 3}
+   :reserved-men {:title "Reserved Memory" :key [:resources :reserved-memory]
+                  :type [:bytes :mb] :order 4}
+   :free-men {:title "Free Memory" :key [:resources :free-memory]
+              :type [:bytes :mb]  :order 5}
+   ))
 
 (set-state! [root :fields] (initial-state config))
 

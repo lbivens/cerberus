@@ -882,5 +882,6 @@
                   {:bs-size "small"
                    :bs-style "danger"
                    :on-click #(vms/delete uuid)
-                   :disabled? (and (not= state "stopped") (not (empty? hypervisor)))}
+                   :disabled? (or (not= state "failed")
+                                  (and (not= state "stopped") (not (empty? hypervisor))))}
                   (r/glyphicon {:glyph "trash"})))))))

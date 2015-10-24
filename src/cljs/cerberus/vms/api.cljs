@@ -30,10 +30,8 @@
     (let [resp (<! (http/get [root uuid :metrics]))]
       (condp = (:status resp)
         401 (api/check-login)
-        503 (set-state! [root :elements uuid :metrics] :no-metrics)
-        500 (set-state! [root :elements uuid :metrics] :no-metrics)
         200 (set-state! [root :elements uuid :metrics] (js->clj (:body resp)))
-        nil))))
+        (set-state! [root :elements uuid :metrics] :no-metrics)))))
 
 (defn delete [uuid]
   (api/delete

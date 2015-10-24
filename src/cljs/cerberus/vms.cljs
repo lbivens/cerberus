@@ -36,7 +36,6 @@
         hypervisor (get-in e [:raw :hypervisor])
         type (get-in e [:raw :config :type])
         state (get-in e [:raw :state])]
-    (pr type)
     (if (or (not hypervisor) (empty? hypervisor))
       [["Delete" {:class (if locked "disabled")} #(set-state! [:delete] uuid)]]
       [["Console" #(open-with-ott (str "./" (if (= type "kvm") "vnc" "console")  ".html?uuid=" uuid))]
@@ -58,7 +57,7 @@
 (def state-map
   {"running" "success"
    "stopped" "default"
-   "faiiled" "danger"})
+   "failed" "danger"})
 
 (defn map-state [state]
   (let [style (or (state-map state) "default")]

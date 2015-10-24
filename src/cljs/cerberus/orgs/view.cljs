@@ -37,10 +37,10 @@
   (* (.getTime (js/Date.)) 1000))
 
 (defn prepare-res [events]
-  (map (fn [{t :timestamp a :action}] [t a])
-       (sort-by :timestamp events))
-  )
-(defn render-resources [{uuid :uuid} owner opts]
+  (map (fn [{t :timestamp a :action}] [(str (js/Date. (/  t 1000))) a])
+       (sort-by :timestamp events)))
+
+(defn render-accounting [{uuid :uuid} owner opts]
   (reify
     om/IInitState
     (init-state [_]
@@ -253,6 +253,7 @@
   (reify
     om/IRenderState
     (render-state [_ _]
+      (pr data)
       (r/well
        {}
        (g/row
@@ -267,6 +268,12 @@
         (g/col
          {:sm 6}
          (p/panel
+          {:header (d/h3 "Resources")
+           :list-group
+           (apply lg (flatten (map (fn [[n v]] [(name n) v]) (:resources data))))}))
+        (g/col
+         {:sm 6}
+         (p/panel
           {:header (d/h3 "Triggers")
            :list-group
            (lg
@@ -276,10 +283,10 @@
             "Dataset Creation" (count (filter (fn [[_ {t :trigger}]] (= t "dataset_create")) ts)))})))))))
 
 (def sections
-  {""          {:key  1 :fn #(om/build render-home %2)      :title "General"}
-   "resources" {:key  2 :fn #(om/build render-resources %2)  :title "Resources"}
-   "triggers"  {:key  3 :fn #(om/build render-triggers %1 {:opts {:id (:uuid %2)}})  :title "Triggers"}
-   "metadata"  {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+  {""           {:key  1 :fn #(om/build render-home %2)        :title "General"}
+   "accounting" {:key  2 :fn #(om/build render-accounting %2)  :title "Accounting"}
+   "triggers"   {:key  3 :fn #(om/build render-triggers %1 {:opts {:id (:uuid %2)}})  :title "Triggers"}
+   "metadata"   {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
 (def render
   (view/make

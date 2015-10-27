@@ -12,7 +12,7 @@
    [om-bootstrap.random :as r]
    [om-bootstrap.nav :as n]
    [om-bootstrap.input :as i]
-   [cerberus.utils :refer [lg li goto grid-row to-date ->state]]
+   [cerberus.utils :refer [lg li goto row grid-row to-date ->state str->int]]
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.users.api :as users]
@@ -73,6 +73,74 @@
 
         )))))
 
+(defn render-resources [element owner opts]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "hypervisor-resources")
+    om/IInitState
+    (init-state [_]
+      {})
+    om/IRenderState
+    (render-state [_ state]
+      (let [chars    (:resources element)
+            uuid     (:uuid element)
+            invalid? (or (empty? (:res state))  (empty? (:val state)))]
+        (r/well
+         {}
+         (row
+          (g/col
+           {:md 3}
+           (i/input
+            {:type "text"
+             :placeholder "resource"
+             :value (:res state)
+             :on-change (->state owner :res)}))
+          (g/col
+           {:md 5}
+           (i/input
+            {:type "text"
+             :placeholder "Value"
+             :value (:val state)
+             :on-change (->state owner :val)}))
+          (g/col
+           {:md 2}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :on-click #(orgs/inc-resource uuid (:res state) (str->int (:val state)))
+             :disabled? invalid?}
+            "Increase"))
+          (g/col
+           {:md 2}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :on-click #(orgs/dec-resource uuid (:res state) (str->int (:val state)))
+             :disabled? invalid?}
+            "Decrease")))
+         (row
+          (g/col
+           {}
+           (table
+            {}
+            (d/thead
+             (d/tr
+              (d/th "Resource")
+              (d/th "Value")
+              (d/th "")))
+            (d/tbody
+             (map
+              (fn [[c v]]
+                (d/tr
+                 (d/td (name c))
+                 (d/td v)
+                 (d/td
+                  (b/button {:bs-size "xsmall"
+                             :className "pull-right"
+                             :on-click #(orgs/delete-resource uuid (name c))}
+                            (r/glyphicon {:glyph "remove"})))))
+              chars))))))))))
 
 (defn mk-trigger [{actor      :actor
                    action     :action
@@ -283,10 +351,11 @@
             "Dataset Creation" (count (filter (fn [[_ {t :trigger}]] (= t "dataset_create")) ts)))})))))))
 
 (def sections
-  {""           {:key  1 :fn #(om/build render-home %2)        :title "General"}
-   "accounting" {:key  2 :fn #(om/build render-accounting %2)  :title "Accounting"}
-   "triggers"   {:key  3 :fn #(om/build render-triggers %1 {:opts {:id (:uuid %2)}})  :title "Triggers"}
-   "metadata"   {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+  {""           {:key 1 :title "General"    :fn #(om/build render-home       %2)}
+   "resources"  {:key 2 :title "Resources"  :fn #(om/build render-resources  %2)}
+   "accounting" {:key 3 :title "Accounting" :fn #(om/build render-accounting %2)}
+   "triggers"   {:key 4 :title "Triggers"   :fn #(om/build render-triggers   %1 {:opts {:id (:uuid %2)}})}
+   "metadata"   {:key 5 :title "Metadata"   :fn #(om/build metadata/render   %2)}})
 
 (def render
   (view/make

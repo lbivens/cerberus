@@ -354,23 +354,24 @@
 
 (defn backup-row  [vm hypervisor
                    [uuid {comment :comment timestamp :timestamp
-                          state :state size :size}]]
-  (d/tr
-   (d/td (name uuid))
-   (d/td comment)
-   (d/td (str (js/Date. (/ timestamp 1000))))
-   (d/td (show-state state))
-   (d/td (fmt-bytes :b size))
-   (d/td {:class "actions no-carret"}
-         (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
-                      :on-click (make-event identity)}
-                     (menu-items
-                      ["Incremental" #(vms/backup vm uuid (val-by-id "backup-comment"))]
-                      (if (and hypervisor (not (empty? hypervisor)))
-                        ["Restore" #(vms/restore-backup vm hypervisor uuid)]
-                        ["Roll Back" #(vms/restore-backup vm uuid)])
+                          state :state size :size files :files}]]
+  (let [size (or size (reduce + (map :size files)))]
+    (d/tr
+     (d/td (name uuid))
+     (d/td comment)
+     (d/td (str (js/Date. (/ timestamp 1000))))
+     (d/td (show-state state))
+     (d/td (fmt-bytes :b size))
+     (d/td {:class "actions no-carret"}
+           (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                        :on-click (make-event identity)}
+                       (menu-items
+                        ["Incremental" #(vms/backup vm uuid (val-by-id "backup-comment"))]
+                        (if (and hypervisor (not (empty? hypervisor)))
+                          ["Restore" #(vms/restore-backup vm hypervisor uuid)]
+                          ["Roll Back" #(vms/restore-backup vm uuid)])
 
-                      ["Delete"    #(vms/delete-backup vm uuid)])))))
+                        ["Delete"    #(vms/delete-backup vm uuid)]))))))
 
 (defn backup-table [vm hypervisor backups]
   (g/col

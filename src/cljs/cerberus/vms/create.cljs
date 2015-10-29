@@ -5,12 +5,14 @@
    [om-bootstrap.grid :as g]
    [om-bootstrap.nav :as n]
    [om-bootstrap.table :refer [table]]
+   [om-bootstrap.input :as i]
+   [om-bootstrap.button :as b]
    [cerberus.networks.api :as networks]
    [cerberus.datasets.api :as datasets]
    [cerberus.packages.api :as packages]
    [cerberus.create :as create]
    [cerberus.state :refer [app-state]]
-   [cerberus.utils :refer [make-event val-by-id]]))
+   [cerberus.utils :refer [make-event val-by-id ->state]]))
 
 
 (def spec-alias {:label "Alias" :id "vm-alias" :key [:config :alias]})
@@ -51,7 +53,7 @@
     (display-name [_]
       "createvmc")
     om/IRenderState
-    (render-state [_ _]
+    (render-state [_ state]
       (let [tab (get-in data [:key] 1)
             mkopts (partial mkopts data)
             validate-data! #(create/validate-data! % spec)]
@@ -138,4 +140,43 @@
                                  (d/td name)))
                               (sort-by :name (vals (get-in data [:networks :elements]))))))))
                     networks))))
-             5 (d/div "Advanced")))))))))
+             5 (g/grid
+                {:md 10}
+                (g/row
+                 {}
+                 (g/col
+                  {:xs 12}
+                  (d/h4 "Metadata")))
+                (g/row
+                 {}
+                 (g/col
+                  {:sm 4}
+                  (i/input {:type "text" :value (:meta-name state) :placeholder "Name"
+                            :on-change (->state owner :meta-name)}))
+                 (g/col
+                  {:sm 4}
+                  (i/input {:type "text" :value (:meta-val state) :placeholder "Value"
+                            :on-change (->state owner :meta-val)}))
+                 (g/col
+                  {:sm 2}
+                  (b/button
+                   {:bs-style "primary"
+                    :on-click #(om/update! data [:data :config :metadata (:meta-name state)] (:meta-val state))
+                    :disabled? (or (empty? (:meta-name state)) (empty? (:meta-val state)))}
+                   "Add")))
+                (g/row
+                 {}
+                 (g/col
+                  {:sm 10}
+                  (table
+                   {:condensed? true}
+                   (d/thead
+                    (d/tr
+                     (d/th "Key")
+                     (d/th "Value")))
+                   (d/tbody
+                    (map (fn [[r v]]
+                           (d/tr
+                            (d/td r)
+                            (d/td v)))
+                         (get-in data [:data :config :metadata])))))))))))))))

@@ -11,6 +11,7 @@
    [cerberus.datasets.api :as datasets]
    [cerberus.packages.api :as packages]
    [cerberus.create :as create]
+   [clojure.string :refer [split]]
    [cerberus.state :refer [app-state]]
    [cerberus.utils :refer [make-event val-by-id ->state]]))
 
@@ -81,8 +82,7 @@
              1 (d/form
                 {:class "form-horizontal"}
                 (create/input data spec spec-alias)
-                (create/input data spec spec-hostname)
-                )
+                (create/input data spec spec-hostname))
              2 (table
                 {}
                 (d/thead
@@ -139,7 +139,23 @@
                                                           (validate-data! (assoc-in data [:data :config :networks nic] uuid))))}
                                  (d/td name)))
                               (sort-by :name (vals (get-in data [:networks :elements]))))))))
-                    networks))))
+                    networks)))
+                (g/row
+                 {}
+                 (g/col
+                  {:sm 8}
+                  (i/input {:type "text" :value (:resolvers state) :placeholder "8.8.8.8,8.8.4.4"
+                            :on-change (->state owner :resolvers)}))
+                 (g/col
+                  {:sm 2}
+                  (let [rs (split (:resolvers state) #",")
+                        current (get-in data [:data :config :resolvers])
+                        unchanged? (= current rs)]
+                    (b/button
+                     {:bs-style (if unchanged?  "success"  "primary")
+                      :on-click #(om/update! data [:data :config :resolvers] rs)
+                      :disabled? (or unchanged? (empty? (:resolvers state)))}
+                     "Set Resolvers")))))
              5 (g/grid
                 {:md 10}
                 (g/row

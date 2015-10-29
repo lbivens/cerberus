@@ -61,7 +61,7 @@
   (fn post-success-fn* [resp]
     (let [body (:body resp)
           uuid (:uuid body)]
-      (howl/join uuid){lists,foldl,3,[{file,"lists.erl"},{line,1262}]}
+      (howl/join uuid)
       (set-state! [root :elements uuid] body))))
 
 (defn post

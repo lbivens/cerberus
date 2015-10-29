@@ -354,8 +354,9 @@
 
 (defn backup-row  [vm hypervisor
                    [uuid {comment :comment timestamp :timestamp
-                          state :state size :size files :files}]]
-  (let [size (or size (reduce + (map :size files)))]
+                          state :state old-size :size files :files}]]
+  (let [size (reduce + (map #(:size (second %)) files))
+        size (if (= 0 size) old-size size)]
     (d/tr
      (d/td (name uuid))
      (d/td comment)

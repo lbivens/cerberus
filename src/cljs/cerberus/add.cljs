@@ -159,7 +159,6 @@
       "addc")
     om/IRenderState
     (render-state [_ _]
-      (pr data)
       (g/grid
        {:id "add-view"
         :class (if (:maximized data) "add-open" "add-closed")}

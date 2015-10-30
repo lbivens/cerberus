@@ -30,7 +30,7 @@ function sendCtrlAltDel() {
 }
 
 $(function () {
-  var fifoApiEndpoint = 'api/' + (Config.apiVersion || '1');
+  var fifoApiEndpoint = 'api/' + (Config.apiVersion || '2');
   var path;
 
   $D('sendCtrlAltDelButton').style.display = "inline";
@@ -40,7 +40,12 @@ $(function () {
 
   var uuid = $(document).getUrlParam("uuid");
   var ott = $(document).getUrlParam("ott");
-  var host = Config["ws"].replace(/wss?:\/\//, "") || window.location.host;
+  var host;
+  if (Config["ws"]) {
+    host = Config["ws"].replace(/wss?:\/\//, "")
+  } else {
+    host = window.location.host;
+  }
   var port = "";//$(document).getUrlParam("port") || WebUtil.getQueryVar('port', window.location.port);
   if (port == "") {
     if (window.location.protocol === "https:") {

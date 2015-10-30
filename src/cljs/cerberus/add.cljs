@@ -19,45 +19,49 @@
    [cerberus.dtrace.create :as dtrace]
    [cerberus.orgs.create :as orgs]
    [cerberus.clients.create :as clients]
+   [cerberus.groupings.create :as groupings]
    [cerberus.roles.create :as roles]
    [cerberus.datasets.create :as datasets]
    [cerberus.vms.create :as vms]))
 
 (def add-renderer
-  {:vms      vms/render
-   :users    users/render
-   :roles    roles/render
-   :orgs     orgs/render
-   :clients  clients/render
-   :packages packages/render
-   :networks networks/render
-   :ipranges ipranges/render
-   :dtrace   dtrace/render
-   :datasets datasets/render})
+  {:vms       vms/render
+   :users     users/render
+   :roles     roles/render
+   :orgs      orgs/render
+   :clients   clients/render
+   :groupings groupings/render
+   :packages  packages/render
+   :networks  networks/render
+   :ipranges  ipranges/render
+   :dtrace    dtrace/render
+   :datasets  datasets/render})
 
 (def add-title
-  {:vms      "New Machine"
-   :users    "New User"
-   :roles    "New Role"
-   :orgs     "New Organisation"
-   :clients  "New Client"
-   :packages "New Package"
-   :networks "New Network"
-   :ipranges "New IP-Range"
-   :dtrace   "New DTrace Script"
-   :datasets "Import Dataset"})
+  {:vms       "New Machine"
+   :users     "New User"
+   :roles     "New Role"
+   :orgs      "New Organisation"
+   :clients   "New Client"
+   :groupings "New Grouping"
+   :packages  "New Package"
+   :networks  "New Network"
+   :ipranges  "New IP-Range"
+   :dtrace    "New DTrace Script"
+   :datasets  "Import Dataset"})
 
 (def submit-text
-  {:vms      "Create"
-   :users    "Add User"
-   :roles    "Add Role"
-   :orgs     "Add Organisation"
-   :clients  "add Client"
-   :packages "Add Package"
-   :networks "Add Network"
-   :ipranges "Add IP-Range"
-   :dtrace   "Add DTrace Script"
-   :datasets "Import"})
+  {:vms       "Create"
+   :users     "Add User"
+   :roles     "Add Role"
+   :orgs      "Add Organisation"
+   :clients   "Add Client"
+   :groupings "Add Grouping"
+   :packages  "Add Package"
+   :networks  "Add Network"
+   :ipranges  "Add IP-Range"
+   :dtrace    "Add DTrace Script"
+   :datasets  "Import"})
 
 (def add-submit
   {:datasets datasets/submit})

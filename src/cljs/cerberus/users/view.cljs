@@ -42,7 +42,6 @@
                       :password-validate
                       :password1-val
                       owner %)})
-
       (i/input
        {:type "password" :label "Confirm"
         :id "changepass2"

@@ -15,6 +15,7 @@
    [cerberus.roles.api :as roles]
    [cerberus.orgs.api :as orgs]
    [cerberus.clients.api :as clients]
+   [cerberus.groupings.api :as groupings]
 
    [cerberus.config :as config]
    [goog.history.EventType :as EventType]
@@ -196,6 +197,21 @@
   (set-state! [:clients :selected] (:uuid params))
   (set-state! [:clients :section] (:section params))
   (set-view! :clients :show))
+
+(defroute "/groupings" {:as params}
+  (set-view! :groupings :list))
+
+(defroute "/groupings/:uuid" {:as params}
+  (groupings/get (:uuid params))
+  (set-state! [:groupings :selected] (:uuid params))
+  (set-state! [:groupings :section] "")
+  (set-view! :groupings :show))
+
+(defroute "/groupings/:uuid/:section" {:as params}
+  (groupings/get (:uuid params))
+  (set-state! [:groupings :selected] (:uuid params))
+  (set-state! [:groupings :section] (:section params))
+  (set-view! :groupings :show))
 
 (let [h (History.)]
   (goog.events/listen h EventType/NAVIGATE #(secretary/dispatch! (.-token %)))

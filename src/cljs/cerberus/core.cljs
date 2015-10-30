@@ -28,6 +28,7 @@
    [cerberus.roles :as roles]
    [cerberus.orgs :as orgs]
    [cerberus.clients :as clients]
+   [cerberus.groupings :as groupings]
    [cerberus.config :as conf]
    [cerberus.add :as add]
    [cerberus.howl :as howl]
@@ -127,6 +128,7 @@
           ["Networks" "#/networks"]
           ["IP Ranges" "#/ipranges"]
           #_["DTrace" "#/dtrace"]
+          ["Stacks & Clusters" "#/groupings"]
           :divider
           ["Logout" #(conf/logout)]
           ;;["Logout & Reset UI" #(conf/clear)]
@@ -169,6 +171,7 @@
     :roles       (om/build roles/render data)
     :orgs        (om/build orgs/render data)
     :clients     (om/build clients/render data)
+    :groupings   (om/build groupings/render data)
     (goto "/vms")))
 
 

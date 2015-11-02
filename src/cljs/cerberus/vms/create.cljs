@@ -166,8 +166,14 @@
                  {}
                  (g/col
                   {:xs 12}
-                  (i/input {:type "select" :value (:grouping state) :placeholder "8.8.8.8,8.8.4.4"
-                            :on-change (->state owner :grouping)}
+                  (i/input {:type "select" :value (get-in data [:data :config :grouping])
+                            :id "vm-create-cluster"
+                            :on-change
+                            (make-event (fn [e]
+                                          (let [v (val-by-id "vm-create-cluster")]
+                                            (if (empty? v)
+                                              (om/update! data [:data :config] #(dissoc % :grouping))
+                                              (om/update! data [:data :config :grouping] v)))))}
                            (d/option "")
                            (map #(d/option {:value (:uuid %)}  (:name %)) (filter #(= (:type %) "cluster") (map second groupings))))))
                 (g/row

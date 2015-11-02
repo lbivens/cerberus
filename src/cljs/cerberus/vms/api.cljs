@@ -13,7 +13,7 @@
 
 
 (def list-fields
-  "alias,uuid,config,state,dataset,package,metadata,dataset,hypervisor,owner")
+  "alias,uuid,config,state,dataset,package,metadata,dataset,hypervisor,owner,vm_type")
 
 (defn list [data]
   (api/list data root list-fields))

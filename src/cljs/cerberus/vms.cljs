@@ -72,15 +72,22 @@
    :package    {:title "Package" :type :string :order -14
                 :key (partial api/get-sub-element :packages :package :name)}
    :dataset    {:title "Dataset" :type :string :order -12
-                :key (partial api/get-sub-element :datasets :dataset
-                              #(str (:name %) "-" (:version %)))}
+                :key (fn [vm]
+                       (if (= (:vm_type vm) "docker")
+                         (:dataset vm)
+                         (api/get-sub-element :datasets :dataset
+                                              #(str (:name %) " " (:version %))
+                                              vm)))}
    :owner      {:title "Owner" :type :string :order -10
                 :key (partial api/get-sub-element :orgs :owner :name)}
    :cpu        {:title "CPU" :key [:config :cpu_cap] :type :percent :show false}
    :ram        {:title "Memory" :key [:config :ram] :type [:bytes :mb] :show false}
    :state      {:title "State" :key :state :type :string  :render-fn map-state}
    :hypervisor {:title "Hypervisor" :type :string :show false
-                :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}))
+                :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}
+   :cluster    {:title "Cluster" :type :string :show false
+                :key (partial api/get-sub-element :groupings #(first (:groupings %)) :name)}
+))
 
 (set-state! [root :fields] (initial-state config))
 

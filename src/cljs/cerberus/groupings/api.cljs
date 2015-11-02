@@ -10,7 +10,7 @@
 (def root :groupings)
 
 (def list-fields
-  "uuid,name,groupings,elements")
+  "uuid,name,groupings,elements,type")
 
 (defn list [data]
   (api/list data root list-fields))

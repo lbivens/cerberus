@@ -98,7 +98,13 @@
        (row
         (g/col
          {:md 6}
-         (pr-str element)))))))
+         (p/panel
+          {:header (d/h3 "General")
+           :list-group
+           (lg
+            "Name"                   (:name element)
+            "UUDI"                   (:uuid element)
+            "Type"                   (:type element))})))))))
 
 
 (defn render-elements [app owner {:keys [type element id root]}]

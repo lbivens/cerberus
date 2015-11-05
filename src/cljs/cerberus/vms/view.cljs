@@ -16,6 +16,7 @@
    [cerberus.api :as api]
    [cerberus.orgs.api :as orgs]
    [cerberus.hypervisors.api :as hypervisors]
+   [cerberus.datasets.api :as datasets]
    [cerberus.services :as services]
    [cerberus.metadata :as metadata]
    [cerberus.vms.api :refer [root] :as vms]
@@ -121,6 +122,83 @@
               "DNS Domain"     (:dns_domain conf)
               "Resolvers"      (cstr/join ", " (:resolvers conf))
               "Firewall Rules" (count (:fw_rules conf)))}))))))))
+
+(defn render-imaging [data owner opts]
+  (reify
+    om/IInitState
+    (init-state [_]
+      {})
+    om/IRenderState
+    (render-state [_ state]
+      (let [valid (not
+                   (or
+                    (empty? (:name state))
+                    (empty? (:version state))
+                    (empty? (:os state))
+                    (empty? (:desc state))))]
+        (r/well
+         {}
+         (g/row
+          {}
+          (g/col
+           {}
+           (d/p
+            "To create a new image follow this steps:"
+            (d/ol
+             (d/li "Make sure everything is working fine on the vm")
+             (d/li "Execute sm-prepare-image to make the vm image-ready")
+             (d/li "Create a snapshot of the vm")
+             (d/li "Set the data of the image, filling the form")
+             (d/li "Choose the snapshot you want to base the image on"))
+            "Then, wait until the image is ready, the datasets page will reflect that state. After that, a new vm could be created with the new image. More info " (d/a {:href "#"} "here") "."
+            (pr-str ))))
+         (g/row
+          {}
+          (g/col
+           {:xs 8}
+           (i/input {:type "text" :placeholder "Name"
+                     :value (:name state) :on-change (->state owner :name)}))
+          (g/col
+           {:xs 2}
+           (i/input {:type "text" :placeholder "Version"
+                     :value (:version state) :on-change (->state owner :version)}))
+          (g/col
+           {:xs 2}
+           (i/input {:type "text" :placeholder "OS"
+                     :value (:os state) :on-change (->state owner :os)}))
+          (g/col
+           {:xs 12}
+           (i/input {:type "text" :placeholder "Description"
+                     :value (:desc state) :on-change (->state owner :desc)})))
+         (g/row
+          {}
+          (g/col
+           {}
+           (table
+            {}
+            (d/thead
+             (d/tr
+              (d/th "Name")
+              (d/th "Date")
+              (d/th "Size")
+              (d/th "")))
+            (d/tbody
+             (map (fn [[uuid {comment :comment timestamp :timestamp
+                              state :state size :size}]]
+                    (d/tr
+                     (d/td comment)
+                     (d/td (str (js/Date. (/ timestamp 1000))))
+                     (d/td (fmt-bytes :b size))
+                     (d/td (b/button
+                            {:bs-style "primary"
+                             :bs-size "small"
+                             :className "pull-right fbutown"
+                             :on-click #(datasets/from-vm (:uuid data) uuid (:name state) (:version state) (:os state) (:descs state))
+                             :disabled? (not valid)}
+                            "Create Image"))))
+                  (filter
+                   #(= "completed" (:state (second %)))
+                   (sort-by #(:timestamp (second %)) (:snapshots data)))))))))))))
 
 (defn render-logs [data owner opts]
   (reify
@@ -811,7 +889,8 @@
                               {:opts {:uuid (:uuid %2)}})  :title "Networks"}
    "package"   {:key  3 :fn render-package   :title "Package"}
    "snapshots" {:key  4 :fn (b render-snapshots) :title "Snapshot"}
-   "backups"   {:key  5 :fn #(om/build render-backups %1 {:opts {:uuid (:uuid %2)}})   :title "Backups"}
+   "imaging"   {:key  5 :fn (b render-imaging) :title "Imaging"}
+   "backups"   {:key  6 :fn #(om/build render-backups %1 {:opts {:uuid (:uuid %2)}})   :title "Backups"}
    "services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
    "logs"      {:key  8 :fn (b render-logs)      :title "Logs"}
    "fw-rules"  {:key  9 :fn (b render-fw-rules)  :title "Firewall"}
@@ -831,11 +910,11 @@
 
 (defn tick [uuid local-timer]
   (let [app @app-state]
-    (if (and
-         (not= (get-in app [root :elements uuid :metrics]) :no-metrics)
-         (= (get-in app [root :selected]) uuid)
-         (= (:section app) :vms))
-      (vms/metrics uuid)
+    (if (or
+         (= (get-in app [root :elements uuid :metrics]) :no-metrics)
+         (not= (get-in app [root :selected]) uuid)
+         (not= (:section app) :vms)
+         (= (type (vms/metrics uuid)) cljs.core.async.impl.channels/ManyToManyChannel))
       (do
         (js/clearInterval @local-timer)
         (stop-timer!)))))

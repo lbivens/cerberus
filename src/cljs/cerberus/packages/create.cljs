@@ -56,9 +56,9 @@
 (defn mk-rule [{:keys [weight attribute condition low high value]}]
   (condp = (rule-type weight)
     :scale  (if (valid attribute low high)
-              {:weight "scale" :attribute attribute :low low :high high})
+              {:weight "scale" :attribute attribute :low (str->int low) :high (str->int high)})
     :random (if (valid attribute low high)
-              {:weight "random" :low low :high high})
+              {:weight "random" :low (str->int low) :high (str->int high)})
     :normal (if (valid attribute condition value)
               {:weight weight :attribute attribute :condition condition
                :value (convert-value condition value)})

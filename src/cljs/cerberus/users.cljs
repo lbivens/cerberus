@@ -4,6 +4,7 @@
    [om.core :as om :include-macros true]
    [cerberus.list :as jlist]
    [cerberus.users.api :refer [root] :as users]
+   [cerberus.orgs.api :as orgs]
    [om-bootstrap.random :as r]
    [cerberus.users.view :as view]
    [cerberus.api :as api]
@@ -33,7 +34,8 @@
       (om/update! data [root :filter] "")
       (om/update! data [root :filted] [])
       (om/update! data [root :sort] {})
-      (users/list data))
+      (users/list data)
+      (orgs/list data))
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)

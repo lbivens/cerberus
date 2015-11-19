@@ -8,6 +8,11 @@
    [om-bootstrap.button :as b]
    [om-bootstrap.random :as r]
    [cerberus.vms.api :as vms]
+   [cerberus.orgs.api :as orgs]
+   [cerberus.datasets.api :as datasets]
+   [cerberus.packages.api :as packages]
+   [cerberus.hypervisors.api :as hypervisors]
+   
    [om-bootstrap.modal :as md]
    [om-tools.dom :as d :include-macros true]
 
@@ -116,6 +121,7 @@
                                         (set-state! [:delete] nil))}
                           "delete"))}
       "Are you sure that you want to delete the VM " (d/strong (get-in vm [:config :alias])) " (" id ")?" ))))
+
 (defn render [data owner opts]
   (reify
     om/IDisplayName
@@ -126,7 +132,11 @@
       (om/update! data [root :filter] "")
       (om/update! data [root :filted] [])
       (om/update! data [root :sort] {})
-      (vms/list data))
+      (vms/list data)
+      (orgs/list data)
+      (packages/list data)
+      (datasets/list data)
+      (hypervisors/list data))
     om/IRenderState
     (render-state [_ state]
       (condp = (:view data)

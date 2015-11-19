@@ -124,7 +124,7 @@
       (if-let [sub (get-in @app-state [root :elements uuid])]
         (value-by-key path sub)
         (do
-          (to-state [root :elements uuid] (http/get [root uuid]))
+          ;(to-state [root :elements uuid] (http/get [root uuid]))
           uuid)))))
 
 (defn request-and-get

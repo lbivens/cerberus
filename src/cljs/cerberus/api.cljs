@@ -26,9 +26,9 @@
 
 (defn full-list
   ([path]
-   (http/get path {"x-full-list" "true"}))
+   (http/get (str path "?full-list=true")))
   ([path fields]
-   (http/get path {"x-full-list" "true" "x-full-list-fields" fields})))
+   (http/get (str path "?full-list=true&full-list-fields=" fields))))
 
 (defn list
   ([data root]

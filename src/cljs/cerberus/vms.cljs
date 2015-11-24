@@ -12,26 +12,17 @@
    [cerberus.datasets.api :as datasets]
    [cerberus.packages.api :as packages]
    [cerberus.hypervisors.api :as hypervisors]
-   
+
    [om-bootstrap.modal :as md]
    [om-tools.dom :as d :include-macros true]
 
    [cerberus.api :as api]
    [cerberus.http :as http]
    [cerberus.list :as jlist]
-   [cerberus.vms.view :as view]
+   [cerberus.vms.view :as view :refer [open-with-ott]]
    [cerberus.utils :refer [initial-state make-event]]
    [cerberus.fields :refer [mk-config]]
    [cerberus.state :refer [set-state!]]))
-
-(def token-path "sessions/one_time_token")
-
-(defn open-with-ott [path]
-  (go
-    (let [response (<! (http/get token-path))]
-      (if (= 200 (:status response))
-        (let [ott (get-in response [:body :token])]
-          (.open js/window (str path "&ott=" ott)))))))
 
 (defn actions [e]
   (let [uuid (:uuid e)

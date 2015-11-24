@@ -1,6 +1,8 @@
 (ns cerberus.vms.view
-  (:require-macros [cljs.core.match.macros :refer [match]])
+  (:require-macros [cljs.core.match.macros :refer [match]]
+                   [cljs.core.async.macros :refer [go]])
   (:require
+   [cljs.core.async :refer [<!]]
    [clojure.string :as cstr]
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
@@ -29,6 +31,14 @@
    [cerberus.utils :refer [make-event menu-items]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
+(def token-path "sessions/one_time_token")
+
+(defn open-with-ott [path]
+  (go
+    (let [response (<! (http/get token-path))]
+      (if (= 200 (:status response))
+        (let [ott (get-in response [:body :token])]
+          (.open js/window (str path "&ott=" ott)))))))
 (def sub-element (partial api/get-sub-element))
 
 (defn get-package [element]
@@ -930,7 +940,7 @@
   (view/make
    root sections
    vms/get
-   :mount-fn (fn [uuid data]
+   :mount-fn (fn [uuid {:type type :as  data}]
                (start-timer! uuid)
                (orgs/list data)
                (hypervisors/list data)
@@ -944,15 +954,21 @@
                  (b/button
                   {:bs-size "small"
                    :bs-style "primary"
-                   :on-click #(vms/stop uuid)
-                   :disabled? (= state "stopped")}
-                  (r/glyphicon {:glyph "stop"}))
+                   :on-click #(open-with-ott (str "./" (if (= type "kvm") "vnc" "console")  ".html?uuid=" uuid))
+                   :disabled? (not= state "running")}
+                  (r/glyphicon {:glyph "modal-window"}))
                  (b/button
                   {:bs-size "small"
                    :bs-style "primary"
                    :on-click #(vms/start uuid)
                    :disabled? (= state "running")}
                   (r/glyphicon {:glyph "play"}))
+                 (b/button
+                  {:bs-size "small"
+                   :bs-style "primary"
+                   :on-click #(vms/stop uuid)
+                   :disabled? (= state "stopped")}
+                  (r/glyphicon {:glyph "stop"}))
                  (b/button
                   {:bs-size "small"
                    :bs-style "primary"
@@ -965,3 +981,6 @@
                    :on-click #(vms/delete uuid)
                    :disabled? (= state "running")}
                   (r/glyphicon {:glyph "trash"})))))))
+
+
+

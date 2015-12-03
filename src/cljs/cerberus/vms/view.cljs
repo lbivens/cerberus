@@ -39,6 +39,7 @@
       (if (= 200 (:status response))
         (let [ott (get-in response [:body :token])]
           (.open js/window (str path "&ott=" ott)))))))
+
 (def sub-element (partial api/get-sub-element))
 
 (defn get-package [element]
@@ -118,10 +119,10 @@
             {:header (d/h3 "Disk")
              :list-group
              (lg
-              "Quota"        (->> (:quota conf) (fmt-bytes :gb))
-              "I/O Priority" (:zfs_io_priority conf)
-              "Backups"      (count (:backups conf))
-              "Snapshots"     (count (:snapshots conf)))}))
+              "Quota"         (->> (:quota conf) (fmt-bytes :gb))
+              "I/O Priority"  (:zfs_io_priority conf)
+              "Backups"       (count (:backups element))
+              "Snapshots"     (count (:snapshots element)))}))
           (g/col
            {:sm 6 :md 4}
            (p/panel

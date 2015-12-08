@@ -31,7 +31,7 @@
         first (ip->int (first-ip data))
         last (ip->int (last-ip data))]
     (and
-     (< network first last net-last)
+     (<= network first last net-last)
      (< network gateway net-last)
      (= network (bit-and network netmask)))))
 

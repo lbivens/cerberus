@@ -42,7 +42,7 @@
     (will-mount [_]
       (datasets/list data)
       (go
-        (let [resp (<! (http/get (global/get "datasets" "http://datasets.at/images") {:with-credentials? false :headers {"Accept" "datalication/json"}}))]
+        (let [resp (<! (http/get (global/get "datasets" "http://datasets.at/images") {:with-credentials? false :headers {"Accept" "application/json"}}))]
           (if (:success resp)
             (om/transact! data :remote-datasets (constantly (:body resp)))
             (dbg/error "[datasets/import] error: " resp)))))

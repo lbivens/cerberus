@@ -52,7 +52,9 @@
   (reify
     om/IInitState
     (init-state [_]
-      {:org (or (first (first (get-in app [:orgs :elements]))) "")})
+      (let [uuid (get-in app [root :selected])]
+        {:org (or (first (first (get-in app [:orgs :elements]))) "")
+         :alias (get-in app [root :elements uuid :config :alias])}))
     om/IRenderState
     (render-state [_ state]
       (let [uuid (get-in app [root :selected])
@@ -68,6 +70,21 @@
             services (:services element)]
         (r/well
          {}
+         (row
+          (g/col
+           {:md 8}
+           (i/input
+            {:type "text"
+             :value (:alias state)
+             :on-change (->state owner :alias)}))
+          (g/col
+           {:md :4}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right fbutown"
+             :on-click #(vms/change-alias uuid (:alias state))
+             :disabled? (empty? (:alias state))}
+            "change-alias")))
          (row
           (g/col
            {:md 8}

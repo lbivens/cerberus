@@ -11,7 +11,6 @@
 
 (def root :vms)
 
-
 (def list-fields
   "alias,uuid,config,state,dataset,package,metadata,dataset,hypervisor,owner,vm_type")
 
@@ -126,6 +125,13 @@
   (api/put root [uuid :package] {:package package}
            (a-get uuid "Changing VM package." "Failed to change VM package.")))
 
+(defn change-config [uuid config]
+  (api/put root [uuid :config] config
+           (a-get uuid "Changing VM configuration." "Failed to change the VM configuration.")))
+
+(defn change-alias [uuid alias]
+  (change-config uuid {:alias alias}))
+
 (defn add-network [uuid network]
   (api/post root [uuid :nics] {:network network}
             (a-get uuid "Adding network." "Failed to add network.")))
@@ -139,7 +145,6 @@
            (a-get uuid "Marking network as primary." "Failed to mark network as primary.")))
 
 (def update-metadata (partial api/update-metadata root))
-
 
 (defn set-owner [uuid org]
   (api/put root [uuid :owner] {:org org}

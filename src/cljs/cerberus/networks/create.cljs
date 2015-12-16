@@ -3,7 +3,6 @@
    [om.core :as om :include-macros true]
    [cerberus.create :as create]))
 
-
 (defn render [app]
   (reify
     om/IDisplayName

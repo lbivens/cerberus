@@ -1,6 +1,8 @@
 (ns cerberus.vms.view
-  (:require-macros [cljs.core.match.macros :refer [match]])
+  (:require-macros [cljs.core.match.macros :refer [match]]
+                   [cljs.core.async.macros :refer [go]])
   (:require
+   [cljs.core.async :refer [<!]]
    [clojure.string :as cstr]
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
@@ -16,6 +18,7 @@
    [cerberus.api :as api]
    [cerberus.orgs.api :as orgs]
    [cerberus.hypervisors.api :as hypervisors]
+   [cerberus.datasets.api :as datasets]
    [cerberus.services :as services]
    [cerberus.metadata :as metadata]
    [cerberus.vms.api :refer [root] :as vms]
@@ -27,6 +30,15 @@
    [cerberus.metrics :as metrics]
    [cerberus.utils :refer [make-event menu-items]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
+
+(def token-path "sessions/one_time_token")
+
+(defn open-with-ott [path]
+  (go
+    (let [response (<! (http/get token-path))]
+      (if (= 200 (:status response))
+        (let [ott (get-in response [:body :token])]
+          (.open js/window (str path "&ott=" ott)))))))
 
 (def sub-element (partial api/get-sub-element))
 
@@ -40,7 +52,9 @@
   (reify
     om/IInitState
     (init-state [_]
-      {:org (or (first (first (get-in app [:orgs :elements]))) "")})
+      (let [uuid (get-in app [root :selected])]
+        {:org (or (first (first (get-in app [:orgs :elements]))) "")
+         :alias (get-in app [root :elements uuid :config :alias])}))
     om/IRenderState
     (render-state [_ state]
       (let [uuid (get-in app [root :selected])
@@ -56,6 +70,21 @@
             services (:services element)]
         (r/well
          {}
+         (row
+          (g/col
+           {:md 8}
+           (i/input
+            {:type "text"
+             :value (:alias state)
+             :on-change (->state owner :alias)}))
+          (g/col
+           {:md :4}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right fbutown"
+             :on-click #(vms/change-alias uuid (:alias state))
+             :disabled? (empty? (:alias state))}
+            "change-alias")))
          (row
           (g/col
            {:md 8}
@@ -107,10 +136,10 @@
             {:header (d/h3 "Disk")
              :list-group
              (lg
-              "Quota"        (->> (:quota conf) (fmt-bytes :gb))
-              "I/O Priority" (:zfs_io_priority conf)
-              "Backups"      (count (:backups conf))
-              "Snapshots"     (count (:snapshots conf)))}))
+              "Quota"         (->> (:quota conf) (fmt-bytes :gb))
+              "I/O Priority"  (:zfs_io_priority conf)
+              "Backups"       (count (:backups element))
+              "Snapshots"     (count (:snapshots element)))}))
           (g/col
            {:sm 6 :md 4}
            (p/panel
@@ -121,6 +150,83 @@
               "DNS Domain"     (:dns_domain conf)
               "Resolvers"      (cstr/join ", " (:resolvers conf))
               "Firewall Rules" (count (:fw_rules conf)))}))))))))
+
+(defn render-imaging [data owner opts]
+  (reify
+    om/IInitState
+    (init-state [_]
+      {})
+    om/IRenderState
+    (render-state [_ state]
+      (let [valid (not
+                   (or
+                    (empty? (:name state))
+                    (empty? (:version state))
+                    (empty? (:os state))
+                    (empty? (:desc state))))]
+        (r/well
+         {}
+         (g/row
+          {}
+          (g/col
+           {}
+           (d/p
+            "To create a new image follow this steps:"
+            (d/ol
+             (d/li "Make sure everything is working fine on the vm")
+             (d/li "Execute sm-prepare-image to make the vm image-ready")
+             (d/li "Create a snapshot of the vm")
+             (d/li "Set the data of the image, filling the form")
+             (d/li "Choose the snapshot you want to base the image on"))
+            "Then, wait until the image is ready, the datasets page will reflect that state. After that, a new vm could be created with the new image. More info " (d/a {:href "#"} "here") "."
+            (pr-str ))))
+         (g/row
+          {}
+          (g/col
+           {:xs 8}
+           (i/input {:type "text" :placeholder "Name"
+                     :value (:name state) :on-change (->state owner :name)}))
+          (g/col
+           {:xs 2}
+           (i/input {:type "text" :placeholder "Version"
+                     :value (:version state) :on-change (->state owner :version)}))
+          (g/col
+           {:xs 2}
+           (i/input {:type "text" :placeholder "OS"
+                     :value (:os state) :on-change (->state owner :os)}))
+          (g/col
+           {:xs 12}
+           (i/input {:type "text" :placeholder "Description"
+                     :value (:desc state) :on-change (->state owner :desc)})))
+         (g/row
+          {}
+          (g/col
+           {}
+           (table
+            {}
+            (d/thead
+             (d/tr
+              (d/th "Name")
+              (d/th "Date")
+              (d/th "Size")
+              (d/th "")))
+            (d/tbody
+             (map (fn [[uuid {comment :comment timestamp :timestamp
+                              state :state size :size}]]
+                    (d/tr
+                     (d/td comment)
+                     (d/td (str (js/Date. (/ timestamp 1000))))
+                     (d/td (fmt-bytes :b size))
+                     (d/td (b/button
+                            {:bs-style "primary"
+                             :bs-size "small"
+                             :className "pull-right fbutown"
+                             :on-click #(datasets/from-vm (:uuid data) uuid (:name state) (:version state) (:os state) (:descs state))
+                             :disabled? (not valid)}
+                            "Create Image"))))
+                  (filter
+                   #(= "completed" (:state (second %)))
+                   (sort-by #(:timestamp (second %)) (:snapshots data)))))))))))))
 
 (defn render-logs [data owner opts]
   (reify
@@ -354,23 +460,25 @@
 
 (defn backup-row  [vm hypervisor
                    [uuid {comment :comment timestamp :timestamp
-                          state :state size :size}]]
-  (d/tr
-   (d/td (name uuid))
-   (d/td comment)
-   (d/td (str (js/Date. (/ timestamp 1000))))
-   (d/td (show-state state))
-   (d/td (fmt-bytes :b size))
-   (d/td {:class "actions no-carret"}
-         (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
-                      :on-click (make-event identity)}
-                     (menu-items
-                      ["Incremental" #(vms/backup vm uuid (val-by-id "backup-comment"))]
-                      (if (and hypervisor (not (empty? hypervisor)))
-                        ["Restore" #(vms/restore-backup vm hypervisor uuid)]
-                        ["Roll Back" #(vms/restore-backup vm uuid)])
+                          state :state old-size :size files :files}]]
+  (let [size (reduce + (map #(:size (second %)) files))
+        size (if (= 0 size) old-size size)]
+    (d/tr
+     (d/td (name uuid))
+     (d/td comment)
+     (d/td (str (js/Date. (/ timestamp 1000))))
+     (d/td (show-state state))
+     (d/td (fmt-bytes :b size))
+     (d/td {:class "actions no-carret"}
+           (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
+                        :on-click (make-event identity)}
+                       (menu-items
+                        ["Incremental" #(vms/backup vm uuid (val-by-id "backup-comment"))]
+                        (if (and hypervisor (not (empty? hypervisor)))
+                          ["Restore" #(vms/restore-backup vm hypervisor uuid)]
+                          ["Roll Back" #(vms/restore-backup vm uuid)])
 
-                      ["Delete"    #(vms/delete-backup vm uuid)])))))
+                        ["Delete"    #(vms/delete-backup vm uuid)]))))))
 
 (defn backup-table [vm hypervisor backups]
   (g/col
@@ -809,7 +917,8 @@
                               {:opts {:uuid (:uuid %2)}})  :title "Networks"}
    "package"   {:key  3 :fn render-package   :title "Package"}
    "snapshots" {:key  4 :fn (b render-snapshots) :title "Snapshot"}
-   "backups"   {:key  5 :fn #(om/build render-backups %1 {:opts {:uuid (:uuid %2)}})   :title "Backups"}
+   "imaging"   {:key  5 :fn (b render-imaging) :title "Imaging"}
+   "backups"   {:key  6 :fn #(om/build render-backups %1 {:opts {:uuid (:uuid %2)}})   :title "Backups"}
    "services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
    "logs"      {:key  8 :fn (b render-logs)      :title "Logs"}
    "fw-rules"  {:key  9 :fn (b render-fw-rules)  :title "Firewall"}
@@ -829,11 +938,11 @@
 
 (defn tick [uuid local-timer]
   (let [app @app-state]
-    (if (and
-         (not= (get-in app [root :elements uuid :metrics]) :no-metrics)
-         (= (get-in app [root :selected]) uuid)
-         (= (:section app) :vms))
-      (vms/metrics uuid)
+    (if (or
+         (= (get-in app [root :elements uuid :metrics]) :no-metrics)
+         (not= (get-in app [root :selected]) uuid)
+         (not= (:section app) :vms)
+         (= (type (vms/metrics uuid)) cljs.core.async.impl.channels/ManyToManyChannel))
       (do
         (js/clearInterval @local-timer)
         (stop-timer!)))))
@@ -849,7 +958,7 @@
   (view/make
    root sections
    vms/get
-   :mount-fn (fn [uuid data]
+   :mount-fn (fn [uuid {:type type :as  data}]
                (start-timer! uuid)
                (orgs/list data)
                (hypervisors/list data)
@@ -863,15 +972,21 @@
                  (b/button
                   {:bs-size "small"
                    :bs-style "primary"
-                   :on-click #(vms/stop uuid)
-                   :disabled? (= state "stopped")}
-                  (r/glyphicon {:glyph "stop"}))
+                   :on-click #(open-with-ott (str "./" (if (= type "kvm") "vnc" "console")  ".html?uuid=" uuid))
+                   :disabled? (not= state "running")}
+                  (r/glyphicon {:glyph "modal-window"}))
                  (b/button
                   {:bs-size "small"
                    :bs-style "primary"
                    :on-click #(vms/start uuid)
                    :disabled? (= state "running")}
                   (r/glyphicon {:glyph "play"}))
+                 (b/button
+                  {:bs-size "small"
+                   :bs-style "primary"
+                   :on-click #(vms/stop uuid)
+                   :disabled? (= state "stopped")}
+                  (r/glyphicon {:glyph "stop"}))
                  (b/button
                   {:bs-size "small"
                    :bs-style "primary"
@@ -882,5 +997,8 @@
                   {:bs-size "small"
                    :bs-style "danger"
                    :on-click #(vms/delete uuid)
-                   :disabled? (and (not= state "stopped") (not (empty? hypervisor)))}
+                   :disabled? (= state "running")}
                   (r/glyphicon {:glyph "trash"})))))))
+
+
+

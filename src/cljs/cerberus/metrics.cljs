@@ -86,7 +86,7 @@
          (row
           (g/col
            {:xs 12}
-           (d/p "No metric storage seems to be configured please install DalmateirnDB and Tachyon to use this feature")))
+           (d/p "No metric storage seems to be configured please install DalmatinerDB and Tachyon to use this feature")))
          (row
           (let [metrics (map normalize-metrics (reduce build-metric {} (map process-metric data)))]
             (om/build-all point-view metrics))))))))

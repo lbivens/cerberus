@@ -58,7 +58,13 @@
             "Quota"       (:quota data)
             "Compression" (:compression data)
             "IO Priority" (or-auto (:io_priority data))
-            "Block  Size" (or-auto (:block_size data)))})))))))
+            "Block  Size" (or-auto (:block_size data)))}))
+        (g/col
+         {:sm 4}
+         (p/panel
+          {:header (d/h3 "Org Resources")
+           :list-group
+           (apply lg (flatten (map (fn [[r v]] [(name r) v]) (:org_resources data))))})))))))
 
 (defn render-requirement [{:keys [attribute condition value
                                   weight low high]}]

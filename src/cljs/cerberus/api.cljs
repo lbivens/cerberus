@@ -3,6 +3,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
    [om.core :as om :include-macros true]
+   [clojure.set :refer [difference]]
    [cerberus.http :as http]
    [cerberus.howl :as howl]
    [clojure.string :refer [join]]
@@ -25,37 +26,33 @@
 
 (defn full-list
   ([path]
-   (http/get path {"x-full-list" "true"}))
+   (http/get (str path "?full-list=true")))
   ([path fields]
-   (http/get path {"x-full-list" "true" "x-full-list-fields" fields})))
+   (http/get (str path "?full-list=true&full-list-fields=" fields))))
 
 (defn list
   ([data root]
-   (go
-     (let [resp (<! (full-list (name root)))
-           elements (js->clj (:body resp))]
-       (if (= 401 (:status resp))
-         (check-login)
-         (do
-           (doall (map #(howl/join %) (map :uuid elements)))
-           (om/transact! data [root :elements]
-                         #(reduce
-                           (fn [acc e]
-                             (update acc (:uuid e) merge e))
-                           % elements)))))))
+   (list data root nil))
   ([data root list-fields]
    (go
-     (let [resp (<! (full-list (name root) list-fields))
+     (let [resp (if list-fields
+                  (<! (full-list (name root) list-fields))
+                  (<! (full-list (name root))))
            elements (map-indexed #(assoc %2 :react-key (* 100 %2)) (js->clj (:body resp)))]
        (if (= 401 (:status resp))
          (check-login)
          (do
            (doall (map howl/join (map :uuid elements)))
            (om/transact! data [root :elements]
-                         #(reduce
-                           (fn [acc e]
-                             (update acc (:uuid e) merge e))
-                           % elements))))))))
+                         (fn [old]
+                           (let [old-keys (set (keys old))
+                                 new-keys (set (map :uuid elements))
+                                 deleted (difference old-keys new-keys)
+                                 old (reduce dissoc old deleted)]
+                             (reduce
+                              (fn [acc {uuid :uuid :as e}]
+                                (update acc uuid merge e))
+                              old elements))))))))))
 
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get [root uuid])))

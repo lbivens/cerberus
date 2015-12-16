@@ -20,7 +20,7 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [org.clojure/core.match "0.2.2"]
                  ;; ClojureScript related dependencies
-                 [org.clojure/clojurescript "1.7.122"]
+                 [org.clojure/clojurescript "1.7.145"]
                  [org.omcljs/om "0.9.0"]
                  [com.lucasbradstreet/instaparse-cljs "1.4.1.0"]
                  [prismatic/om-tools "0.4.0"]
@@ -52,8 +52,8 @@
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
 
-                   :dependencies [[figwheel "0.4.0"]
-                                  [figwheel-sidecar "0.4.0"]
+                   :dependencies [[figwheel "0.4.1"]
+                                  [figwheel-sidecar "0.4.1"]
                                   [leiningen "2.5.3"]]
 
                    :repl-options {:init-ns cerberus.server}

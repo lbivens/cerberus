@@ -32,3 +32,18 @@
   (api/post
    root [uuid :triggers trigger] payload
    (a-get uuid "Trigger added." "Failed to add trigger.")))
+
+(defn dec-resource [uuid res val]
+  (api/put
+   root [uuid :resources res] {:dec val}
+   (a-get uuid "Decreased resource." "Failed to decreased resource.")))
+
+(defn inc-resource [uuid res val]
+  (api/put
+   root [uuid :resources res] {:inc val}
+   (a-get uuid "Increase resource." "Failed to increase resource.")))
+
+(defn delete-resource [uuid res]
+  (api/delete
+   root [uuid :resources res]
+   (a-get uuid "Resource deleted." "Failed to delete resource.")))

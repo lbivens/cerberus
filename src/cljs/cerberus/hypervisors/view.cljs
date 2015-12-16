@@ -199,7 +199,8 @@
              :on-click #(hypervisors/set-characteristic uuid (:char state) (:val state))
              :disabled? invalid?}
             "Add Characteristics")))
-         (row
+         (g/row
+          {}
           (g/col
            {}
            (table

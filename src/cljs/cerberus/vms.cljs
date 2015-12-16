@@ -12,26 +12,17 @@
    [cerberus.datasets.api :as datasets]
    [cerberus.packages.api :as packages]
    [cerberus.hypervisors.api :as hypervisors]
-   
+
    [om-bootstrap.modal :as md]
    [om-tools.dom :as d :include-macros true]
 
    [cerberus.api :as api]
    [cerberus.http :as http]
    [cerberus.list :as jlist]
-   [cerberus.vms.view :as view]
+   [cerberus.vms.view :as view :refer [open-with-ott]]
    [cerberus.utils :refer [initial-state make-event]]
    [cerberus.fields :refer [mk-config]]
    [cerberus.state :refer [set-state!]]))
-
-(def token-path "sessions/one_time_token")
-
-(defn open-with-ott [path]
-  (go
-    (let [response (<! (http/get token-path))]
-      (if (= 200 (:status response))
-        (let [ott (get-in response [:body :token])]
-          (.open js/window (str path "&ott=" ott)))))))
 
 (defn actions [e]
   (let [uuid (:uuid e)
@@ -41,7 +32,6 @@
         hypervisor (get-in e [:raw :hypervisor])
         type (get-in e [:raw :config :type])
         state (get-in e [:raw :state])]
-    (pr type)
     (if (or (not hypervisor) (empty? hypervisor))
       [["Delete" {:class (if locked "disabled")} #(set-state! [:delete] uuid)]]
       [["Console" #(open-with-ott (str "./" (if (= type "kvm") "vnc" "console")  ".html?uuid=" uuid))]
@@ -63,7 +53,7 @@
 (def state-map
   {"running" "success"
    "stopped" "default"
-   "faiiled" "danger"})
+   "failed" "danger"})
 
 (defn map-state [state]
   (let [style (or (state-map state) "default")]
@@ -78,15 +68,22 @@
    :package    {:title "Package" :type :string :order -14
                 :key (partial api/get-sub-element :packages :package :name)}
    :dataset    {:title "Dataset" :type :string :order -12
-                :key (partial api/get-sub-element :datasets :dataset
-                              #(str (:name %) "-" (:version %)))}
+                :key (fn [vm]
+                       (if (= (:vm_type vm) "docker")
+                         (:dataset vm)
+                         (api/get-sub-element :datasets :dataset
+                                              #(str (:name %) " " (:version %))
+                                              vm)))}
    :owner      {:title "Owner" :type :string :order -10
                 :key (partial api/get-sub-element :orgs :owner :name)}
    :cpu        {:title "CPU" :key [:config :cpu_cap] :type :percent :show false}
    :ram        {:title "Memory" :key [:config :ram] :type [:bytes :mb] :show false}
    :state      {:title "State" :key :state :type :string  :render-fn map-state}
    :hypervisor {:title "Hypervisor" :type :string :show false
-                :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}))
+                :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}
+   :cluster    {:title "Cluster" :type :string :show false
+                :key (partial api/get-sub-element :groupings #(first (:groupings %)) :name)}
+))
 
 (set-state! [root :fields] (initial-state config))
 

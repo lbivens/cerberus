@@ -10,7 +10,7 @@
 (def root :hypervisors)
 
 (def list-fields
-  "uuid,alias")
+  "uuid,version,alias,resources,sysinfo")
 
 (defn list [data]
   (api/list data root list-fields))

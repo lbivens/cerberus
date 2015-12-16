@@ -3,6 +3,7 @@
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.grid :as g]
+   [om-bootstrap.table :refer [table]]
    [om-bootstrap.button :as b]
    [om-bootstrap.input :as i]
    [cerberus.utils :refer [->state str->int]]
@@ -73,7 +74,9 @@
     (init-state [_]
       {:weight "must"
        :condition "=:="
-       :attribute ""})
+       :attribute ""
+       :res ""
+       :res-val ""})
     om/IRenderState
     (render-state [_ state]
       (d/div
@@ -146,4 +149,42 @@
         {}
         (g/col
          {:sm 12}
-         (build-reqs (get-in data [:data :requirements]))))))))
+         (build-reqs (get-in data [:data :requirements]))))
+       (g/row
+        {}
+        (g/col
+         {:xs 12}
+         (d/h4 "Rules")))
+       (g/row
+        {}
+        (g/col
+         {:sm 6}
+         (i/input {:type "text" :value (:res state) :placeholder "Resource"
+                   :on-change (->state owner :res)}))
+        (g/col
+         {:sm 4}
+         (i/input {:type "text" :value (:res-val state) :placeholder "Required"
+                   :on-change (->state owner :res-val)}))
+        (g/col
+         {:sm 2}
+         (b/button
+          {:bs-style "primary"
+           :on-click #(om/update! data [:data :org (:res state)] (str->int (:res-val state)))
+           :disabled? (or (empty? (:res state)) (empty? (:res-val state)))}
+          "Add")))
+       (g/row
+        {}
+        (g/col
+         {:sm 12}
+         (table
+          {:condensed? true}
+          (d/thead
+           (d/tr
+            (d/th "Resource")
+            (d/th "Value")))
+          (d/tbody
+           (map (fn [[r v]]
+                  (d/tr
+                   (d/td r)
+                   (d/td v)))
+                (get-in data [:data :org]))))))))))

@@ -10,29 +10,41 @@
    [cerberus.state :refer [set-state!]]
    [cerberus.fields :refer [mk-config]]))
 
-(defn actions [{uuid :uuid}]
-  [["Delete" #(packages/delete uuid)]])
+(defn clone-pkg [{raw :raw}]
+  (let [package (-> raw
+                    (assoc :org (into {}  (map (fn [[k v]] [(name k) v]) (:org_resources raw))))
+                    (dissoc :org_resources))]
+    (set-state!
+     [:add] {:view-section :packages,
+             :content {:data package
+                       :view package},
+             :section :packages,
+             :maximized true})))
 
-(def config (mk-config root "Packages" actions
-                       :cpu_cap {:title "CPU" :key :cpu_cap :type :percent}
-                       :quota {:title "Quota" :key :quota :type [:bytes :gb]}
-                       :ram {:title "RAM" :key :ram :type [:bytes :mb]}))
+  (defn actions [{uuid :uuid :as pkg}]
+    [["Delete" #(packages/delete uuid)]
+     ["Clone" #(clone-pkg pkg)]])
 
-(set-state! [root :fields] (initial-state config))
+  (def config (mk-config root "Packages" actions
+                         :cpu_cap {:title "CPU" :key :cpu_cap :type :percent}
+                         :quota {:title "Quota" :key :quota :type [:bytes :gb]}
+                         :ram {:title "RAM" :key :ram :type [:bytes :mb]}))
 
-(defn render [data owner opts]
-  (reify
-    om/IDisplayName
-    (display-name [_]
-      "datasetviewc")
-    om/IWillMount
-    (will-mount [_]
-      (om/update! data [root :filter] "")
-      (om/update! data [root :filted] [])
-      (om/update! data [root :sort] {})
-      (packages/list data))
-    om/IRenderState
-    (render-state [_ _]
-      (condp = (:view data)
-        :list (om/build jlist/view data {:opts {:config config}})
-        :show (om/build view/render data {})))))
+  (set-state! [root :fields] (initial-state config))
+
+  (defn render [data owner opts]
+    (reify
+      om/IDisplayName
+      (display-name [_]
+        "datasetviewc")
+      om/IWillMount
+      (will-mount [_]
+        (om/update! data [root :filter] "")
+        (om/update! data [root :filted] [])
+        (om/update! data [root :sort] {})
+        (packages/list data))
+      om/IRenderState
+      (render-state [_ _]
+        (condp = (:view data)
+          :list (om/build jlist/view data {:opts {:config config}})
+          :show (om/build view/render data {})))))

@@ -10,6 +10,7 @@
    [cerberus.networks.api :as networks]
    [cerberus.datasets.api :as datasets]
    [cerberus.packages.api :as packages]
+   [cerberus.groupings.api :as groupings]
    [cerberus.create :as create]
    [clojure.string :refer [split]]
    [cerberus.state :refer [app-state]]
@@ -57,9 +58,12 @@
     (render-state [_ state]
       (let [tab (get-in data [:key] 1)
             mkopts (partial mkopts data)
+            groupings (get-in  data [:groupings :elements])
             validate-data! #(create/validate-data! % spec)]
         (if (not (:networks data))
           (networks/list data))
+        (if (not groupings)
+          (groupings/list data))
         (if (not (:datasets data))
           (datasets/list data))
         (if (not (:packages data))
@@ -158,6 +162,20 @@
                      "Set Resolvers")))))
              5 (g/grid
                 {:md 10}
+                (g/row
+                 {}
+                 (g/col
+                  {:xs 12}
+                  (i/input {:type "select" :value (get-in data [:data :config :grouping])
+                            :id "vm-create-cluster"
+                            :on-change
+                            (make-event (fn [e]
+                                          (let [v (val-by-id "vm-create-cluster")]
+                                            (if (empty? v)
+                                              (om/update! data [:data :config] #(dissoc % :grouping))
+                                              (om/update! data [:data :config :grouping] v)))))}
+                           (d/option "")
+                           (map #(d/option {:value (:uuid %)}  (:name %)) (filter #(= (:type %) "cluster") (map second groupings))))))
                 (g/row
                  {}
                  (g/col

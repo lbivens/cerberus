@@ -28,6 +28,16 @@
   (api/post root [] {:url (str server "/" uuid)}
             (alerts "Dataset import started." "Dataset import failed.")))
 
+(defn from-vm [vm snapshot name version os desc]
+  (let [payload {:vm vm
+                 :snapshot snapshot
+                 :config {:name name
+                          :version version
+                          :os os
+                          :description desc}}]
+    (api/post root [] payload
+              (alerts "Dataset import started." "Dataset import failed."))))
+
 (defn add-nic [uuid nic desc]
   (api/put root [uuid :networks nic] {:description desc}
            (a-get uuid "Dataset network added." "Failed to add dataset network.")))

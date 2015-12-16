@@ -11,9 +11,8 @@
 
 (def root :vms)
 
-
 (def list-fields
-  "alias,uuid,config,state,dataset,package,metadata,dataset,hypervisor,owner")
+  "alias,uuid,config,state,dataset,package,metadata,dataset,hypervisor,owner,vm_type")
 
 (defn list [data]
   (api/list data root list-fields))
@@ -30,10 +29,8 @@
     (let [resp (<! (http/get [root uuid :metrics]))]
       (condp = (:status resp)
         401 (api/check-login)
-        503 (set-state! [root :elements uuid :metrics] :no-metrics)
-        500 (set-state! [root :elements uuid :metrics] :no-metrics)
         200 (set-state! [root :elements uuid :metrics] (js->clj (:body resp)))
-        nil))))
+        (set-state! [root :elements uuid :metrics] :no-metrics)))))
 
 (defn delete [uuid]
   (api/delete
@@ -128,6 +125,13 @@
   (api/put root [uuid :package] {:package package}
            (a-get uuid "Changing VM package." "Failed to change VM package.")))
 
+(defn change-config [uuid config]
+  (api/put root [uuid :config] config
+           (a-get uuid "Changing VM configuration." "Failed to change the VM configuration.")))
+
+(defn change-alias [uuid alias]
+  (change-config uuid {:alias alias}))
+
 (defn add-network [uuid network]
   (api/post root [uuid :nics] {:network network}
             (a-get uuid "Adding network." "Failed to add network.")))
@@ -141,7 +145,6 @@
            (a-get uuid "Marking network as primary." "Failed to mark network as primary.")))
 
 (def update-metadata (partial api/update-metadata root))
-
 
 (defn set-owner [uuid org]
   (api/put root [uuid :owner] {:org org}

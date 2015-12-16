@@ -1,31 +1,25 @@
-(ns cerberus.hypervisors
+(ns cerberus.groupings
   (:refer-clojure :exclude [get list])
   (:require
    [om.core :as om :include-macros true]
    [cerberus.list :as jlist]
-   [cerberus.hypervisors.api :refer [root] :as hypervisors]
+   [cerberus.groupings.api :refer [root] :as groupings]
    [om-bootstrap.random :as r]
-   [cerberus.hypervisors.view :as view]
+   [cerberus.groupings.view :as view]
    [cerberus.fields :refer [mk-config]]
    [cerberus.utils :refer [initial-state make-event]]
    [cerberus.state :refer [set-state!]]))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(hypervisors/delete uuid)]])
+  [["Delete" #(groupings/delete uuid)]])
 
 (def config
   (mk-config
-   root "Hypervisors" actions
-   :name {:title "Name" :key :alias :order -20}
-   :version {:title "Version" :key :version :order 1}
-   :os-version {:title "OS Version" :key [:sysinfo (keyword "Live Image")] :order 2}
-   :used-men {:title "Used Memory" :key [:resources :provisioned-memory]
-              :type [:bytes :mb] :order 3}
-   :reserved-men {:title "Reserved Memory" :key [:resources :reserved-memory]
-                  :type [:bytes :mb] :order 4}
-   :free-men {:title "Free Memory" :key [:resources :free-memory]
-              :type [:bytes :mb]  :order 5}
-   ))
+   root "Groupings" actions
+   :name {:title "Name" :key :name :order -20}
+   :type {:title "Type" :key :type :order 0}
+   :elements {:title "Elements" :key #(+ (count (:elements %))
+                                         (count (:groupings %))) :order 10}))
 
 (set-state! [root :fields] (initial-state config))
 
@@ -33,13 +27,13 @@
   (reify
     om/IDisplayName
     (display-name [_]
-      "hypervisorlistc")
+      "groupinglistc")
     om/IWillMount
     (will-mount [this]
       (om/update! data [root :filter] "")
       (om/update! data [root :filted] [])
       (om/update! data [root :sort] {})
-      (hypervisors/list data))
+      (groupings/list data))
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)

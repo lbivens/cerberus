@@ -36,6 +36,13 @@
    :tb :gb
    :pb :bt})
 
+(defn fmt-time [res timestamp]
+  (if (= 0 timestamp)
+    "-"
+    (condp = res
+      :ms (str (js/Date. (/ timestamp 1000)))
+      (str (js/Date. timestamp)))))
+
 (defn fmt-bytes [type size]
   (if (not size)
     "0"
@@ -51,12 +58,14 @@
 (defn type-defaults [type field]
   (match
    type
-   :uuid         {:no-quick-filter true :class "uuid" :show false}
-   :percent      {:formater fmt-percent}
-   :percent-flt  {:formater fmt-percent-float}
-   [:bytes size] {:formater (partial fmt-bytes size)}
-   :ip           {:sort-key #(int-ip ((:key field) %))}
-   :else         {}))
+   :uuid           {:no-quick-filter true :class "uuid" :show false}
+   :percent        {:formater fmt-percent}
+   :percent-flt    {:formater fmt-percent-float}
+   [:bytes size]   {:formater (partial fmt-bytes size)}
+   :ip             {:sort-key #(int-ip ((:key field) %))}
+   [:timstamp res] {:formater (partial fmt-time res)
+                    :sort-key identity}
+   :else           {}))
 
 (def default-fields
   {:uuid {:title "UUID" :key :uuid :order -12  :type :uuid :show false}

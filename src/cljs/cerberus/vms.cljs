@@ -71,6 +71,8 @@
    :name       {:title "Name" :key [:config :alias] :order -20}
    :hostname   {:title "Hostname" :key [:config :hostname] :order -18 :show false}
    :ip         {:title "IP" :key get-ip :type :ip :order -16}
+   :created_at {:title "Created" :type [:timstamp :s] :order -15
+                :key :created_at :show false}
    :package    {:title "Package" :type :string :order -14
                 :key (partial api/get-sub-element :packages :package :name)}
    :dataset    {:title "Dataset" :type :string :order -12

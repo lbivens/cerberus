@@ -78,7 +78,7 @@
                        (if (= (:vm_type vm) "docker")
                          (:dataset vm)
                          (api/get-sub-element :datasets :dataset
-                                              #(str (:name %) " " (:version %))
+                                              #(str (:name %) " (" (:version %) ")")
                                               vm)))}
    :owner      {:title "Owner" :type :string :order -10
                 :key (partial api/get-sub-element :orgs :owner :name)}

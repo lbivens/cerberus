@@ -59,6 +59,12 @@
   (let [style (or (state-map state) "default")]
     (r/label {:bs-style style} state)))
 
+(defn brand [config]
+  (let [brand (get-in config [:config :type])
+        type  (get-in config [:config :zone_type])]
+    (if (empty? type)
+      brand
+      type)))
 (def config
   (mk-config
    root "Machines" actions
@@ -78,6 +84,7 @@
                 :key (partial api/get-sub-element :orgs :owner :name)}
    :cpu        {:title "CPU" :key [:config :cpu_cap] :type :percent :show false}
    :ram        {:title "Memory" :key [:config :ram] :type [:bytes :mb] :show false}
+   :brand      {:title "Brand" :key brand :type :string :show false}
    :state      {:title "State" :key :state :type :string  :render-fn map-state}
    :hypervisor {:title "Hypervisor" :type :string :show false
                 :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}

@@ -298,7 +298,7 @@
     om/IRenderState
     (render-state [_ _]
       (let [data (get-in app [root :elements uuid])
-            nets (vals (get-in app [:networks :elements]))
+            nets (sort-by :name (vals (get-in app [:networks :elements])))
             disabled (not  (#{"stopped" "installed"} (:state data)))
             networks (get-in data [:config :networks])
             rows (partition 4 4 nil networks)

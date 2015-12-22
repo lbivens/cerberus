@@ -33,6 +33,14 @@
     "zvol" "kvm"
     type))
 
+
+(defn dataset-type [{type :type}]
+  (condp = type
+    "zone-dataset" "Zone"
+    "lx-dataset"   "LX"
+    "zvol"         "KVM"
+    type))
+
 (defn render [data]
   (reify
     om/IDisplayName
@@ -58,6 +66,7 @@
          (d/thead
           (d/td "Name")
           (d/td "Version")
+          (d/td "Type")
           (d/td "Published")
           (d/td "Size"))
          (d/tbody
@@ -69,6 +78,7 @@
                            (if (picked? uuid) "selected" "not-selected"))}
               (d/td (:name e) " (" (type-name (:type e)) ")")
               (d/td (:version e))
+              (d/td (dataset-type e))
               (d/td (:published_at e))
               (d/td (fields/fmt-bytes :b (get-in e [:files 0 :size])))))
            datasets)))))))

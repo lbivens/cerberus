@@ -10,6 +10,7 @@
    [cerberus.vms.api :as vms]
    [cerberus.orgs.api :as orgs]
    [cerberus.datasets.api :as datasets]
+   [cerberus.users.api :as users]
    [cerberus.packages.api :as packages]
    [cerberus.hypervisors.api :as hypervisors]
 
@@ -84,6 +85,8 @@
                                               vm)))}
    :owner      {:title "Owner" :type :string :order -10
                 :key (partial api/get-sub-element :orgs :owner :name)}
+   :created_by {:title "Creator" :order -5
+                :key (partial api/get-sub-element :users :created_by :name) :show false}
    :cpu        {:title "CPU" :key [:config :cpu_cap] :type :percent :show false}
    :ram        {:title "Memory" :key [:config :ram] :type [:bytes :mb] :show false}
    :brand      {:title "Brand" :key brand :type :string :show false}
@@ -136,6 +139,7 @@
       (orgs/list data)
       (packages/list data)
       (datasets/list data)
+      (users/list data)
       (hypervisors/list data))
     om/IRenderState
     (render-state [_ state]

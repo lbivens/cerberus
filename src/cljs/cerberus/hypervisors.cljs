@@ -20,7 +20,7 @@
    :version {:title "Version" :key :version :order 1}
    :os-version {:title "OS Version" :key [:sysinfo (keyword "Live Image")] :order 2}
    :last-seen {:title "LatSeen" :key :last_seen
-               :type [:timstamp :s] :order 3}
+               :type [:ago :s] :order 3}
 
    :used-men {:title "Used Memory" :key [:resources :provisioned-memory]
               :type [:bytes :mb] :order 3}

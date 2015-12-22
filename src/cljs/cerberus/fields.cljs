@@ -44,6 +44,41 @@
       :s (str (js/Date. (* timestamp 1000)))
       (str (js/Date. timestamp)))))
 
+(defn format-delta-w [w]
+  (str (Math/round w) "w"))
+
+(defn format-delta-d [d]
+  (if (< d 7)
+    (str (Math/round d) "d")
+    (format-delta-w (/ d 7))))
+
+(defn format-delta-h [h]
+  (if (< h 24)
+    (str (Math/round h) "h")
+    (format-delta-d (/ h 24))))
+
+(defn format-delta-m [m]
+  (if (< m 60)
+    (str (Math/round m) "m")
+    (format-delta-h (/ m 60))))
+
+(defn format-delta-s [s]
+  (if (< s 60)
+    (str (Math/round s) "s")
+    (format-delta-m (/ s 60))))
+
+(defn fmt-ago [res timestamp]
+  (if (= 0 timestamp)
+    "-"
+    (let [ts0 (condp = res
+                :us  (/ timestamp 1000)
+                :s   (* timestamp 1000)
+                timestamp)
+          now (.getTime (js/Date.))
+          ts ts0
+          delta (- now ts)]
+      (format-delta-s (/ delta 1000)))))
+
 (defn fmt-bytes [type size]
   (if (not size)
     "0"
@@ -65,6 +100,8 @@
    [:bytes size]   {:formater (partial fmt-bytes size)}
    :ip             {:sort-key #(int-ip ((:key field) %))}
    [:timstamp res] {:formater (partial fmt-time res)
+                    :sort-key identity}
+   [:ago res]      {:formater (partial fmt-ago res)
                     :sort-key identity}
    :else           {}))
 

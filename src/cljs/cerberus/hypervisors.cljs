@@ -19,7 +19,7 @@
    :name {:title "Name" :key :alias :order -20}
    :version {:title "Version" :key :version :order 1}
    :os-version {:title "OS Version" :key [:sysinfo (keyword "Live Image")] :order 2}
-   :last-seen {:title "LatSeen" :key :last_seen
+   :last-seen {:title "Last seen" :key :last_seen
                :type [:ago :s] :order 3}
 
    :used-men {:title "Used Memory" :key [:resources :provisioned-memory]

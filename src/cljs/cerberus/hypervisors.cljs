@@ -7,7 +7,7 @@
    [om-bootstrap.random :as r]
    [cerberus.hypervisors.view :as view]
    [cerberus.fields :refer [mk-config]]
-   [cerberus.utils :refer [initial-state make-event]]
+   [cerberus.utils :refer [initial-state make-event str->int]]
    [cerberus.state :refer [set-state!]]))
 
 (defn actions [{uuid :uuid}]
@@ -21,12 +21,14 @@
    :os-version {:title "OS Version" :key [:sysinfo (keyword "Live Image")] :order 2}
    :last-seen {:title "Last seen" :key :last_seen
                :type [:ago :s] :order 3}
+   :uptime {:title "Uptime" :key (fn [h] (str->int (get-in h [:sysinfo (keyword "Boot Time")])))
+            :type [:ago :s] :order 4}
    :used-men {:title "Used Memory" :key [:resources :provisioned-memory]
-              :type [:bytes :mb] :order 3}
+              :type [:bytes :mb] :order 5}
    :reserved-men {:title "Reserved Memory" :key [:resources :reserved-memory]
-                  :type [:bytes :mb] :order 4}
+                  :type [:bytes :mb] :order 6}
    :free-men {:title "Free Memory" :key [:resources :free-memory]
-              :type [:bytes :mb]  :order 5}))
+              :type [:bytes :mb]  :order 7}))
 
 (set-state! [root :fields] (initial-state config))
 

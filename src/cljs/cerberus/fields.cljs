@@ -40,7 +40,8 @@
   (if (= 0 timestamp)
     "-"
     (condp = res
-      :ms (str (js/Date. (/ timestamp 1000)))
+      :us (str (js/Date. (/ timestamp 1000)))
+      :s (str (js/Date. (* timestamp 1000)))
       (str (js/Date. timestamp)))))
 
 (defn fmt-bytes [type size]

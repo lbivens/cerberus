@@ -150,7 +150,8 @@
               "Hostname"       (:hostname conf)
               "DNS Domain"     (:dns_domain conf)
               "Resolvers"      (cstr/join ", " (:resolvers conf))
-              "Firewall Rules" (count (:fw_rules conf)))}))))))))
+              "Firewall Rules" (count (:fw_rules conf))
+              "IPs" (cstr/join ", " (map :ip (:networks conf))))}))))))))
 
 (defn render-imaging [data owner opts]
   (reify

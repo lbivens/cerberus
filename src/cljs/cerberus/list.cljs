@@ -20,11 +20,13 @@
     (disj aset field)
     (conj aset field)))
 
+(def search-help-link "https://docs.project-fifo.net/docs/cerberus-search-syntax")
 (defn search-field [suffix data]
   (let [field-id (str "filter-" suffix)]
     (i/input
      {:type "text" :id field-id :value (:filter data)
-      :on-change (fn [] (om/update! data :filter (val-by-id field-id)))})))
+      :on-change (fn [] (om/update! data :filter (val-by-id field-id)))})
+    ))
 
 (defn col-selector [data fields root]
   (b/dropdown
@@ -128,6 +130,9 @@
           title
           (d/div
            {:class (str  "filterbar pull-right " large)}
+           (d/a {:href search-help-link :target "_blank" :class "pull-right"
+                 :style {:font-size 24}}
+                (r/glyphicon {:glyph "question-sign"}))
            (search-field "list" section)
            (col-selector section expanded-fields root)))
          (d/div

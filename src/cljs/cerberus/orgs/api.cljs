@@ -38,6 +38,11 @@
    root [uuid :resources res] {:dec val}
    (a-get uuid "Decreased resource." "Failed to decreased resource.")))
 
+(defn set-net [uuid scope net]
+  (api/put
+   root [uuid :docker :networks scope] {:network net}
+   (a-get uuid "Network set." "Failed to set resource.")))
+
 (defn inc-resource [uuid res val]
   (api/put
    root [uuid :resources res] {:inc val}

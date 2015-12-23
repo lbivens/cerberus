@@ -16,6 +16,7 @@
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.users.api :as users]
+   [cerberus.networks.api :as networks]
    [cerberus.roles.api :as roles]
    [cerberus.orgs.api :refer [root] :as orgs]
    [cerberus.view :as view]
@@ -24,6 +25,8 @@
    [cerberus.state :refer [set-state! app-state]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
+(defn get-org [data uuid]
+  (get-in data [root :elements uuid :name]))
 
 (defn start-of-month []
   (let [date (js/Date.)]
@@ -142,6 +145,52 @@
                             (r/glyphicon {:glyph "remove"})))))
               chars))))))))))
 
+(defn render-docker [app owner {uuid :id}]
+  (reify
+    om/IDisplayName
+    (display-name [_]
+      "hypervisor-resources")
+    om/IInitState
+    (init-state [_]
+      (get-in app [root :elements uuid :docker :networks]))
+    om/IRenderState
+    (render-state [_ state]
+      (let [element (get-in app [root :elements uuid])
+            networks (vals (get-in app [:networks :elements]))]
+        (pr networks)
+        (r/well
+         {}
+         (row
+          (g/col
+           {:md 10}
+           (i/input
+            {:type "select"
+             :value (:public state)
+             :on-change (->state owner :public)}
+            (map #(d/option {:value (:uuid %)} (:name %)) networks)))
+          (g/col
+           {:md 2}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :on-click #(orgs/set-net uuid :public (:public state))}
+            "Set Public Network")))
+         (row
+          (g/col
+           {:md 10}
+           (i/input
+            {:type "select"
+             :value (:private state)
+             :on-change (->state owner :private)}
+            (map #(d/option {:value (:uuid %)} (:name %)) networks)))
+          (g/col
+           {:md 2}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :on-click #(orgs/set-net uuid :private (:private state))}
+            "Set Private Network"))))))))
+
 (defn mk-trigger [{actor      :actor
                    action     :action
                    target     :target
@@ -180,8 +229,6 @@
 (defn get-role [data uuid]
   (get-in data [roles/root :elements uuid :name]))
 
-(defn get-org [data uuid]
-  (get-in data [roles/root :elements uuid :name]))
 
 (defn role-to-text [data trigger]
   (match
@@ -354,6 +401,7 @@
    "resources"  {:key 2 :title "Resources"  :fn #(om/build render-resources  %2)}
    "accounting" {:key 3 :title "Accounting" :fn #(om/build render-accounting %2)}
    "triggers"   {:key 4 :title "Triggers"   :fn #(om/build render-triggers   %1 {:opts {:id (:uuid %2)}})}
+   "docker"     {:key 5 :title "Docker"     :fn #(om/build render-docker   %1 {:opts {:id (:uuid %2)}})}
    "metadata"   {:key 5 :title "Metadata"   :fn #(om/build metadata/render   %2)}})
 
 (def render
@@ -361,6 +409,7 @@
    root sections orgs/get
    :mount-fn (fn [uuid data]
                (orgs/list data)
+               (networks/list data)
                (users/list data)
                (roles/list data))
    :name-fn :name))

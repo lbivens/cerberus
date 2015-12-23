@@ -321,7 +321,6 @@
   (reify
     om/IRenderState
     (render-state [_ _]
-      (pr data)
       (r/well
        {}
        (g/row

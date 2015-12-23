@@ -126,6 +126,3 @@
     (if actions
       (assoc conf :actions actions)
       conf)))
-
-;:actions
-;{:style {:width "20px"}}

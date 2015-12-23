@@ -19,16 +19,17 @@
    :name {:title "Name" :key :alias :order -20}
    :version {:title "Version" :key :version :order 1}
    :os-version {:title "OS Version" :key [:sysinfo (keyword "Live Image")] :order 2}
+   :host {:title "Host" :key :host :order 3 :show false}
    :last-seen {:title "Last seen" :key :last_seen
-               :type [:ago :s] :order 3}
+               :type [:ago :s] :order 4}
    :uptime {:title "Uptime" :key (fn [h] (str->int (get-in h [:sysinfo (keyword "Boot Time")])))
-            :type [:ago :s] :order 4}
+            :type [:ago :s] :order 5}
    :used-men {:title "Used Memory" :key [:resources :provisioned-memory]
-              :type [:bytes :mb] :order 5}
+              :type [:bytes :mb] :order 6}
    :reserved-men {:title "Reserved Memory" :key [:resources :reserved-memory]
-                  :type [:bytes :mb] :order 6}
+                  :type [:bytes :mb] :order 7}
    :free-men {:title "Free Memory" :key [:resources :free-memory]
-              :type [:bytes :mb]  :order 7}))
+              :type [:bytes :mb]  :order 8}))
 
 (set-state! [root :fields] (initial-state config))
 

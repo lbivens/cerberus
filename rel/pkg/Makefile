@@ -1,4 +1,4 @@
-VERSION=0.7.1p1
+VERSION=0.7.1p2
 COMPONENT=fifo-cerberus
 
 include pkg.mk

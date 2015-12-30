@@ -14,15 +14,21 @@
     :string #(not (empty? %2))
     :integer #(integer? %2)))
 
+(defn not-set? [v]
+  (or
+   (nil? v)
+   (and (string? v) (empty? v))))
+
 (defn mk-validator [{validator :validator data-type :data-type
                      optional :optional
                      :or {data-type :string}}]
+
   (let [validator (or validator (default-validator data-type))]
-    #(or (and optional (empty? %3)) (validator %1 %2 %3))))
+    #(or (and optional (not-set? %3)) (validator %1 %2 %3))))
 
 (defn to-dt [data-type val]
   (condp = data-type
-    :integer (if (empty? val)
+    :integer (if (not-set? val)
                nil
                (str->int val))
     val))

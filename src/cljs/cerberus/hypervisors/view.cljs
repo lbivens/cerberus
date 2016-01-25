@@ -223,7 +223,7 @@
                   (b/button {:bs-size "xsmall"
                              :className "pull-right"
                              :on-click #(hypervisors/delete-characteristic uuid (name c))}
-                            (r/glyphicon {:glyph "remove"})))))
+                            (r/glyphicon {:glyph "trash"})))))
               chars))))))))))
 
 (defn build-metric [acc {name :name points :points}]

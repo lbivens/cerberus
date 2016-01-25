@@ -17,18 +17,18 @@
                  [tailrecursion/ring-proxy "2.0.0-SNAPSHOT"]
                  [environ "1.0.1"]
                  [cconf "1.1.0"]
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
+                 [org.clojure/core.async "0.2.374"]
                  [org.clojure/core.match "0.2.2"]
                  ;; ClojureScript related dependencies
-                 [org.clojure/clojurescript "1.7.145"]
+                 [org.clojure/clojurescript "1.7.228"]
                  [org.omcljs/om "0.9.0"]
                  [com.lucasbradstreet/instaparse-cljs "1.4.1.0"]
                  [prismatic/om-tools "0.4.0"]
                  [racehub/om-bootstrap "0.5.3"]
                  [secretary "1.2.3"]
-                 [clj-http "2.0.0"]
-                 [jarohen/chord "0.6.0"]
-                 [cljs-http "0.1.37"]]
+                 [clj-http "2.0.1"]
+                 [jarohen/chord "0.7.0"]
+                 [cljs-http "0.1.39"]]
 
   :plugins [[lein-cljsbuild "1.0.6"]
             [lein-environ "1.0.0"]
@@ -52,8 +52,8 @@
   :profiles {:dev {:source-paths ["env/dev/clj"]
                    :test-paths ["test/clj"]
 
-                   :dependencies [[figwheel "0.4.1"]
-                                  [figwheel-sidecar "0.4.1"]
+                   :dependencies [[figwheel "0.5.0-4"]
+                                  [figwheel-sidecar "0.5.0-4"]
                                   [leiningen "2.5.3"]]
 
                    :repl-options {:init-ns cerberus.server}

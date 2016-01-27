@@ -13,7 +13,13 @@
 (defn actions [{uuid :uuid}]
   [["Delete" #(networks/delete uuid)]])
 
-(def config (mk-config root "Networks" actions))
+(def config
+  (mk-config
+   root "Networks" actions
+   :ipranges {:name "IP Ranges" :key #(count (:ipranges %))
+              :formater #(if (= 0 %)
+                           (r/label {:bs-style "danger"} %)
+                           %)}))
 
 (set-state! [root :fields] (initial-state config))
 

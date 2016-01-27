@@ -113,10 +113,11 @@
               "Alias"      (:alias conf)
               "State"      (:state conf)
               "Created"    (:created_at conf)
-              "Hypervisor" (:alias hypervisor)
-              "Owner"      (:name org)
+              "Hypervisor" (d/a {:href (str "#/hypervisors/" (:uuid hypervisor))} (:alias hypervisor))
+              "Owner"      (d/a {:href (str "#/orgs/" (:uuid org))} (:name org))
               "Autoboot"   (:autoboot conf)
-              "Dataset"    (:name dataset)
+              "Dataset"    (d/a {:href (str "#/datasets/" (:uuid dataset))} (:name dataset))
+              "Package"    (d/a {:href (str "#/packages/" (:uuid package))} (:name package))
               "Services" (d/span (count (filter (fn [[_ state]] (= state "maintenance")) services)) "/"
                                  (count (filter (fn [[_ state]] (= state "online")) services)) "/"
                                  (count (filter (fn [[_ state]] (= state "disabled")) services))))}))
@@ -149,7 +150,8 @@
               "Hostname"       (:hostname conf)
               "DNS Domain"     (:dns_domain conf)
               "Resolvers"      (cstr/join ", " (:resolvers conf))
-              "Firewall Rules" (count (:fw_rules conf)))}))))))))
+              "Firewall Rules" (count (:fw_rules conf))
+              "IPs" (cstr/join ", " (map :ip (:networks conf))))}))))))))
 
 (defn render-imaging [data owner opts]
   (reify

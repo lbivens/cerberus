@@ -10,6 +10,7 @@
    [cerberus.vms.api :as vms]
    [cerberus.orgs.api :as orgs]
    [cerberus.datasets.api :as datasets]
+   [cerberus.users.api :as users]
    [cerberus.packages.api :as packages]
    [cerberus.hypervisors.api :as hypervisors]
 
@@ -59,12 +60,20 @@
   (let [style (or (state-map state) "default")]
     (r/label {:bs-style style} state)))
 
+(defn brand [config]
+  (let [brand (get-in config [:config :type])
+        type  (get-in config [:config :zone_type])]
+    (if (empty? type)
+      brand
+      type)))
 (def config
   (mk-config
    root "Machines" actions
    :name       {:title "Name" :key [:config :alias] :order -20}
    :hostname   {:title "Hostname" :key [:config :hostname] :order -18 :show false}
    :ip         {:title "IP" :key get-ip :type :ip :order -16}
+   :created_at {:title "Created" :type [:timstamp :s] :order -15
+                :key :created_at :show false}
    :package    {:title "Package" :type :string :order -14
                 :key (partial api/get-sub-element :packages :package :name)}
    :dataset    {:title "Dataset" :type :string :order -12
@@ -72,12 +81,15 @@
                        (if (= (:vm_type vm) "docker")
                          (:dataset vm)
                          (api/get-sub-element :datasets :dataset
-                                              #(str (:name %) " " (:version %))
+                                              #(str (:name %) " (" (:version %) ")")
                                               vm)))}
    :owner      {:title "Owner" :type :string :order -10
                 :key (partial api/get-sub-element :orgs :owner :name)}
+   :created_by {:title "Creator" :order -5
+                :key (partial api/get-sub-element :users :created_by :name) :show false}
    :cpu        {:title "CPU" :key [:config :cpu_cap] :type :percent :show false}
    :ram        {:title "Memory" :key [:config :ram] :type [:bytes :mb] :show false}
+   :brand      {:title "Brand" :key brand :type :string :show false}
    :state      {:title "State" :key :state :type :string  :render-fn map-state}
    :hypervisor {:title "Hypervisor" :type :string :show false
                 :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}
@@ -127,6 +139,7 @@
       (orgs/list data)
       (packages/list data)
       (datasets/list data)
+      (users/list data)
       (hypervisors/list data))
     om/IRenderState
     (render-state [_ state]

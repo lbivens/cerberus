@@ -24,15 +24,17 @@
 (defn apply-fmt [fmt v & rest]
   (concat [(fmt v)] rest))
 
-(defn info [osname osver chunterversion boottime]
+(defn info [osname osver chunterversion boottime host]
   (p/panel
    {:header (d/h3 "Info")
     :list-group
     (lg
+     "Host"             host
      "Operating System" osname
      "OS Version"       osver
      "Chunter Version"  chunterversion
-     "Last Boot"        (.toISOString (js/Date. (* boottime 1000))))}))
+     "Last Boot"        (.toISOString (js/Date. (* boottime 1000)))
+     "Host"             host)}))
 
 (defn hardware [cpu cores virt_support mainboard manufacturer serial_number]
   (p/panel
@@ -133,7 +135,8 @@
            (info osname
                  ((keyword "Live Image") sysinfo)
                  (:version element)
-                 (int ((keyword "Boot Time") sysinfo))))
+                 (int ((keyword "Boot Time") sysinfo))
+                 (:host element)))
           (g/col
            {:md 6}
            (hardware ((keyword "CPU Type") sysinfo)
@@ -220,7 +223,7 @@
                   (b/button {:bs-size "xsmall"
                              :className "pull-right"
                              :on-click #(hypervisors/delete-characteristic uuid (name c))}
-                            (r/glyphicon {:glyph "remove"})))))
+                            (r/glyphicon {:glyph "trash"})))))
               chars))))))))))
 
 (defn build-metric [acc {name :name points :points}]

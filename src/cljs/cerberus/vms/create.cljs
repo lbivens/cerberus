@@ -142,7 +142,7 @@
                                                           (om/transact! data [:data :config :networks] #(assoc % nic uuid))
                                                           (validate-data! (assoc-in data [:data :config :networks nic] uuid))))}
                                  (d/td name)))
-                              (sort-by :name (vals (get-in data [:networks :elements]))))))))
+                              (sort-by :name (filter #(not= 0 (count (:ipranges %))) (vals (get-in data [:networks :elements])))))))))
                     networks)))
                 (g/row
                  {}

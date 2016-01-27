@@ -9,7 +9,7 @@
 (def root :networks)
 
 (def list-fields
-  "uuid,name")
+  "uuid,name,ipranges")
 
 (defn list [data]
   (api/list data root list-fields))

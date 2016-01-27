@@ -78,8 +78,7 @@
     (if (and default (nil? val))
       (do
         (om/update! data data-path default)
-        (om/update! data view-path (to-dt data-type default)))
-      (pr data-path val))
+        (om/update! data view-path (to-dt data-type default))))
     (i/input {:type type :label label
               :label-classname "col-xs-1"
               :wrapper-classname "col-xs-11"

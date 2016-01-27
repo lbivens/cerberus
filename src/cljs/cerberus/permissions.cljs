@@ -137,7 +137,7 @@
 (defn perm [revoke p]
   (d/tr
    (d/td (butlast (interleave (map highlight p) (repeat "->"))))
-   (d/td {:on-click #(revoke p)} "revoke")))
+   (d/td {:on-click #(revoke p)} (r/glyphicon {:glyph "trash"}))))
 
 (defn render [data owner {grant :grant revoke :revoke :or {grant pr revoke pr}}]
   (reify

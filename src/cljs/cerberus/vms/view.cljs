@@ -160,12 +160,11 @@
       {})
     om/IRenderState
     (render-state [_ state]
-      (let [valid (not
-                   (or
-                    (empty? (:name state))
-                    (empty? (:version state))
-                    (empty? (:os state))
-                    (empty? (:desc state))))]
+      (let [invalid (or
+                     (empty? (:name state))
+                     (empty? (:version state))
+                     (empty? (:os state))
+                     (empty? (:desc state)))]
         (r/well
          {}
          (g/row
@@ -213,8 +212,7 @@
               (d/th "Size")
               (d/th "")))
             (d/tbody
-             (map (fn [[uuid {comment :comment timestamp :timestamp
-                              state :state size :size}]]
+             (map (fn [[uuid {comment :comment timestamp :timestamp size :size}]]
                     (d/tr
                      (d/td comment)
                      (d/td (str (js/Date. (/ timestamp 1000))))
@@ -224,7 +222,7 @@
                              :bs-size "small"
                              :className "pull-right fbutown"
                              :on-click #(datasets/from-vm (:uuid data) uuid (:name state) (:version state) (:os state) (:descs state))
-                             :disabled? (not valid)}
+                             :disabled? invalid}
                             "Create Image"))))
                   (filter
                    #(= "completed" (:state (second %)))

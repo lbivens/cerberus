@@ -23,6 +23,7 @@
    [cerberus.metadata :as metadata]
    [cerberus.vms.api :refer [root] :as vms]
    [cerberus.networks.api :as networks]
+   [cerberus.ipranges.api :as ipranges]
    [cerberus.view :as view]
    [cerberus.packages.api :as packages]
    [cerberus.state :refer [app-state set-state!]]
@@ -256,14 +257,15 @@
   (d/li {:class "list-group-item"} args))
 
 (defn render-network
-  [uuid disabled
+  [uuid disabled iprs iprange-map nets network-map
    {interface :interface
     tag       :nic_tag
     ip        :ip
     netmask   :netmask
     gateway   :gateway
     mac       :mac
-    primary   :primary}]
+    primary   :primary}
+   ]
   (g/col
    {:md 4}
    (p/panel
@@ -286,11 +288,18 @@
         #(vms/delete-network uuid mac)} (r/glyphicon {:glyph "trash"}))]
      :list-group
      (d/ul {:class "list-group"}
+           (group-li "Network: " (if-let [net (network-map ip)]
+                                   (d/a {:href (str  "#/networks/" net)} (get-in nets [net :name]))))
+           (group-li "IP Range: "
+                     (if-let [ipr (iprange-map ip)]
+                       (d/a {:href (str  "#/ipranges/" ipr)} (get-in iprs [ipr :name])) ""))
            (group-li "Tag: "     tag)
            (group-li "IP: "      ip)
            (group-li "Netmask: " netmask)
            (group-li "Gateway: " gateway)
-           (group-li "MAC: "     mac))})))
+           (group-li "MAC: "     mac)
+           ;(group-li "IPRange: " )
+)})))
 
 
 (defn render-networks [app owner {uuid :uuid}]
@@ -298,11 +307,20 @@
     om/IRenderState
     (render-state [_ _]
       (let [data (get-in app [root :elements uuid])
-            nets (sort-by :name (vals (get-in app [:networks :elements])))
+            iprange-map (:iprange_mappings data)
+            iprange-map (map (fn [[k v]] [(name k) v]) iprange-map)
+            iprange-map (into {} iprange-map)
+            network-map (:network_mappings data)
+            network-map (map (fn [[k v]] [(name k) v]) network-map)
+            network-map (into {} network-map)
+            full-nets (get-in app [:networks :elements])
+            nets (sort-by :name (vals full-nets))
+            iprs (get-in app [:ipranges :elements])
             disabled (not  (#{"stopped" "installed"} (:state data)))
             networks (get-in data [:config :networks])
             rows (partition 4 4 nil networks)
-            render-network (partial render-network uuid disabled)]
+            render-network (partial render-network uuid disabled
+                                    iprs iprange-map full-nets network-map)]
         (r/well
          {}
          (row
@@ -962,7 +980,8 @@
                (start-timer! uuid)
                (orgs/list data)
                (hypervisors/list data)
-               (networks/list data))
+               (networks/list data)
+               (ipranges/list data))
    :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config}]
                (d/div
                 {}

@@ -74,9 +74,9 @@
    :ip         {:title "IP" :key get-ip :type :ip :order -16}
    :created_at  {:title "Created" :type [:timstamp :s] :order -15
                  :key :created_at :show false}
-   :created_ago  {:title "Created ago" :type [:ago :s] :order -15
-                  :key :created_at :show false}
-   :package    {:title "Package" :type :string :order -14
+   :created_ago  {:title "Created ago" :type [:ago :s] :order -14
+                  :key :created_at :show true}
+   :package    {:title "Package" :type :string :order -13
                 :key (partial api/get-sub-element :packages :package :name)}
    :dataset    {:title "Dataset" :type :string :order -12
                 :key (fn [vm]

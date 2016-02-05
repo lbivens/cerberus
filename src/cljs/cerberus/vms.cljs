@@ -75,7 +75,8 @@
    :created_at  {:title "Created" :type [:timstamp :s] :order -15
                  :key :created_at :show false}
    :created_ago  {:title "Created ago" :type [:ago :s] :order -14
-                  :key :created_at :show true}
+                  :key :created_at :show true
+                  :sort-key #(or (:created_at %) 0)}
    :package    {:title "Package" :type :string :order -13
                 :key (partial api/get-sub-element :packages :package :name)}
    :dataset    {:title "Dataset" :type :string :order -12

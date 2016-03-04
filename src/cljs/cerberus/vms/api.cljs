@@ -123,7 +123,7 @@
 
 (defn change-package [uuid package]
   (api/put root [uuid :package] {:package package}
-           (a-get uuid "Changing VM package." "Failed to change VM package.")))
+           (a-get uuid "Changing VM package." "Failed to change VM package, you are probably out of space.")))
 
 (defn change-config [uuid config]
   (api/put root [uuid :config] config
@@ -135,6 +135,10 @@
 (defn add-network [uuid network]
   (api/post root [uuid :nics] {:network network}
             (a-get uuid "Adding network." "Failed to add network.")))
+
+(defn set-hostname [uuid nic hostname]
+  (api/put root [uuid :hostname nic] {:hostname hostname}
+           (a-get uuid "Hostname set." "Failed to set hostname.")))
 
 (defn delete-network [uuid mac]
   (api/delete root [uuid :nics mac]

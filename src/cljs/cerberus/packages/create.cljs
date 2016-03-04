@@ -154,7 +154,7 @@
         {}
         (g/col
          {:xs 12}
-         (d/h4 "Rules")))
+         (d/h4 "Org Resources")))
        (g/row
         {}
         (g/col

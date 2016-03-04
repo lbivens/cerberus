@@ -23,6 +23,7 @@
    [cerberus.metadata :as metadata]
    [cerberus.vms.api :refer [root] :as vms]
    [cerberus.networks.api :as networks]
+   [cerberus.ipranges.api :as ipranges]
    [cerberus.view :as view]
    [cerberus.packages.api :as packages]
    [cerberus.state :refer [app-state set-state!]]
@@ -179,8 +180,7 @@
              (d/li "Create a snapshot of the vm")
              (d/li "Set the data of the image, filling the form")
              (d/li "Choose the snapshot you want to base the image on"))
-            "Then, wait until the image is ready, the datasets page will reflect that state. After that, a new vm could be created with the new image. More info " (d/a {:href "#"} "here") "."
-            (pr-str ))))
+            "Then, wait until the image is ready, the datasets page will reflect that state. After that, a new vm could be created with the new image. More info " (d/a {:href "#"} "here") ".")))
          (g/row
           {}
           (g/col
@@ -256,53 +256,90 @@
   (d/li {:class "list-group-item"} args))
 
 (defn render-network
-  [uuid disabled
-   {interface :interface
+  [{interface :interface
     tag       :nic_tag
     ip        :ip
     netmask   :netmask
     gateway   :gateway
     mac       :mac
-    primary   :primary}]
-  (g/col
-   {:md 4}
-   (p/panel
-    {:header
-     [interface
-      (if (not primary)
-        (b/button
-         {:bs-style "warning"
-          :class "pull-right"
-          :bs-size "small"
-          :disabled? disabled
-          :on-click
-          #(vms/make-network-primary uuid mac)} (r/glyphicon {:glyph "check"})))
-      (b/button
-       {:bs-style "primary"
-        :class "pull-right"
-        :bs-size "small"
-        :disabled? disabled
-        :on-click
-        #(vms/delete-network uuid mac)} (r/glyphicon {:glyph "trash"}))]
-     :list-group
-     (d/ul {:class "list-group"}
-           (group-li "Tag: "     tag)
-           (group-li "IP: "      ip)
-           (group-li "Netmask: " netmask)
-           (group-li "Gateway: " gateway)
-           (group-li "MAC: "     mac))})))
+    primary   :primary}
+   owner {:keys [uuid disabled iprs iprange-map nets network-map hostname-map]}]
+  (reify
+    om/IInitState
+    (init-state [_]
+      (pr "hostname-map" hostname-map ip)
+      {:hostname (hostname-map ip)})
+    om/IRenderState
+    (render-state [_ state]
+      (g/col
+       {:md 4}
+       (p/panel
+        {:header
+         [interface
+          (if (not primary)
+            (b/button
+             {:bs-style "warning"
+              :class "pull-right"
+              :bs-size "small"
+              :disabled? disabled
+              :on-click
+              #(vms/make-network-primary uuid mac)} (r/glyphicon {:glyph "check"})))
+          (b/button
+           {:bs-style "primary"
+            :class "pull-right"
+            :bs-size "small"
+            :disabled? disabled
+            :on-click
+            #(vms/delete-network uuid mac)} (r/glyphicon {:glyph "trash"}))]
+         :list-group
+         (d/ul {:class "list-group"}
+               (group-li "Hostname: " (g/row
+                                       {}
+                                       (g/col {:md 10}
+                                              (i/input {:type "text"
+                                                        :on-change (->state owner :hostname)
+                                                        :value (:hostname state)}))
+                                       (g/col {:md 2}
+                                              (b/button
+                                               {:bs-style "primary"
+                                                :class "pull-right"
+                                                :bs-size "small"
+                                                :on-click
+                                                #(vms/set-hostname uuid interface (:hostname state))} (r/glyphicon {:glyph "pencil"})))))
+               (group-li "Network: " (if-let [net (network-map ip)]
+                                       (d/a {:href (str  "#/networks/" net)} (get-in nets [net :name]))))
+               (group-li "IP Range: "
+                         (if-let [ipr (iprange-map ip)]
+                           (d/a {:href (str  "#/ipranges/" ipr)} (get-in iprs [ipr :name])) ""))
+               (group-li "Tag: "      tag)
+               (group-li "IP: "       ip)
+               (group-li "Netmask: "  netmask)
+               (group-li "Gateway: "  gateway)
+               (group-li "MAC: "      mac)
+               )})))))
 
 
 (defn render-networks [app owner {uuid :uuid}]
   (reify
     om/IRenderState
-    (render-state [_ _]
+    (render-state [state _]
       (let [data (get-in app [root :elements uuid])
-            nets (sort-by :name (vals (get-in app [:networks :elements])))
+            hostname-map (:hostname_mappings data)
+            hostname-map (map (fn [[k v]] [(name k) v]) hostname-map)
+            hostname-map (into {} hostname-map)
+            iprange-map  (:iprange_mappings data)
+            iprange-map  (map (fn [[k v]] [(name k) v]) iprange-map)
+            iprange-map  (into {} iprange-map)
+            network-map  (:network_mappings data)
+            network-map  (map (fn [[k v]] [(name k) v]) network-map)
+            network-map  (into {} network-map)
+            full-nets (get-in app [:networks :elements])
+            nets (sort-by :name (vals full-nets))
+            iprs (get-in app [:ipranges :elements])
             disabled (not  (#{"stopped" "installed"} (:state data)))
             networks (get-in data [:config :networks])
-            rows (partition 4 4 nil networks)
-            render-network (partial render-network uuid disabled)]
+            rows (partition 4 4 nil networks)]
+        (pr hostname-map)
         (r/well
          {}
          (row
@@ -317,7 +354,20 @@
            (b/button {:bs-style "primary"
                       :disabled? disabled
                       :on-click #(vms/add-network uuid (val-by-id "net-add"))} "Add")))
-         (map #(g/row nil (map render-network %)) rows))))))
+         (map (fn [row]
+                (g/row nil
+                       (om/build-all
+                        render-network
+                        row
+                        {:opts
+                         {:uuid  uuid
+                          :render-network render-network
+                          :disabled disabled
+                          :iprs iprs
+                          :iprange-map iprange-map
+                          :full-nets full-nets
+                          :network-map network-map
+                          :hostname-map hostname-map}}))) rows))))))
 
 (defn cmp-vals [package cmp-package val fmt]
   (if-let [cmp-vap (cmp-package val)]
@@ -828,14 +878,14 @@
                    {:opts {:parent owner}
                     :react-key "icmp-code"})
          (action-select owner state)))
-        (row
+       (row
         (g/col
          {:xs 12}
          (b/button
-             {:bs-style "primary"
-              :class "fwaddbtn"
-              :on-click #(add-rule state)}
-             "add rule")))
+          {:bs-style "primary"
+           :class "fwaddbtn"
+           :on-click #(add-rule state)}
+          "add rule")))
        (row
         (g/col
          {:xs 10
@@ -861,7 +911,7 @@
              (d/th)))
            (d/tbody
             (let [rules (filter #(= (:direction %) "inbound") (:fw_rules data))]
-            (map (partial render-rule (:uuid data)) rules))))))
+              (map (partial render-rule (:uuid data)) rules))))))
         (g/col
          {:xs 12 :md 6}
          (p/panel
@@ -962,7 +1012,8 @@
                (start-timer! uuid)
                (orgs/list data)
                (hypervisors/list data)
-               (networks/list data))
+               (networks/list data)
+               (ipranges/list data))
    :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config}]
                (d/div
                 {}
@@ -999,6 +1050,3 @@
                    :on-click #(vms/delete uuid)
                    :disabled? (= state "running")}
                   (r/glyphicon {:glyph "trash"})))))))
-
-
-

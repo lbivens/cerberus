@@ -80,7 +80,7 @@
   (reify
     om/IDisplayName
     (display-name [_]
-      "hypervisor-resources")
+      "org-resources")
     om/IInitState
     (init-state [_]
       {})
@@ -131,18 +131,19 @@
              (d/tr
               (d/th "Resource")
               (d/th "Value")
-              (d/th "")))
+              #_(d/th "")
+              ))
             (d/tbody
              (map
               (fn [[c v]]
                 (d/tr
                  (d/td (name c))
                  (d/td v)
-                 (d/td
-                  (b/button {:bs-size "xsmall"
-                             :className "pull-right"
-                             :on-click #(orgs/delete-resource uuid (name c))}
-                            (r/glyphicon {:glyph "remove"})))))
+                 #_(d/td
+                    (b/button {:bs-size "xsmall"
+                               :className "pull-right"
+                               :on-click #(orgs/delete-resource uuid (name c))}
+                              (r/glyphicon {:glyph "remove"})))))
               chars))))))))))
 
 (defn render-docker [app owner {uuid :id}]

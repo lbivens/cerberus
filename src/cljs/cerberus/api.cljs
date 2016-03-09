@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+   [cljsjs.oboe :as oboe]
    [om.core :as om :include-macros true]
    [clojure.set :refer [difference]]
    [cerberus.http :as http]
@@ -30,7 +31,60 @@
   ([path fields]
    (http/get (str path "?full-list=true&full-list-fields=" fields))))
 
+(defn list-path
+  [path fields] (if fields
+    (str path "?full-list=true&full-list-fields=" fields)
+    (str path "?full-list=true")))
+
+
 (defn list
+  ([data root]
+   (list data root nil))
+  ([data root list-fields]
+   (->
+    (.oboe js/window
+           #js{"url" (http/api (list-path (name root) list-fields))
+               "headers" #js{"Accept" "application/json"
+                             "Authorization" (str "Bearer " (:token @app-state))}})
+    (.node
+     "!.*",
+     (fn [x]
+       (let [e (js->clj x :keywordize-keys true)
+             uuid (:uuid e)]
+         (om/transact! data [root :elements uuid]
+                       (fn [old]
+                         (merge old e)))
+         uuid)))
+    (.done
+     (fn [all]
+       (let [new-keys (set (js->clj all))]
+         (om/transact! data [root :elements]
+                         (fn [old]
+                           (let [old-keys (set (keys old))
+                                 deleted (difference old-keys new-keys)]
+                             (reduce dissoc old deleted))))))))
+   #_(go
+     (let [resp (if list-fields
+                  (<! (full-list (name root) list-fields))
+                  (<! (full-list (name root))))
+           elements (map-indexed #(assoc %2 :react-key (* 100 %2)) (js->clj (:body resp)))]
+       (if (= 401 (:status resp))
+         (check-login)
+         (do
+           (doall (map howl/join (map :uuid elements)))
+           (om/transact! data [root :elements]
+                         (fn [old]
+                           (let [old-keys (set (keys old))
+                                 new-keys (set (map :uuid elements))
+                                 deleted (difference old-keys new-keys)
+                                 old (reduce dissoc old deleted)]
+                             (reduce
+                              (fn [acc {uuid :uuid :as e}]
+                                (update acc uuid merge e))
+                              old elements))))))))))
+
+
+#_(defn list
   ([data root]
    (list data root nil))
   ([data root list-fields]

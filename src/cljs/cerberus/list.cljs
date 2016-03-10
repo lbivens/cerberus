@@ -178,4 +178,5 @@
                                    (om/set-state! owner :page new-page)
                                    (goto (str "/vms?page=" new-page)))} ">")))
          (table/render section all-rows {:root root :actions actions :fields display-fields :set-filter set-filter :show fields})
-         (well/well section all-rows {:root root :actions actions :set-filter set-filter :show fields}))))))
+         ;(well/well section all-rows {:root root :actions actions :set-filter set-filter :show fields})
+         )))))

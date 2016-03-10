@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
+
    [cerberus.api :as api]
    [cerberus.http :as http]
    [cerberus.howl :as howl]
@@ -23,6 +24,7 @@
 
 (defn a-get [uuid success error]
   (assoc (alerts success error) :always #(api/get root uuid)))
+
 
 (defn metrics [uuid]
   (go

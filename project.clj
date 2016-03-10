@@ -11,6 +11,7 @@
 
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [ring "1.4.0"]
+                 [cljsjs/oboe "2.1.2-1"]
                  [ring/ring-defaults "0.1.5"]
                  [compojure "1.4.0"]
                  [enlive "1.1.6"]

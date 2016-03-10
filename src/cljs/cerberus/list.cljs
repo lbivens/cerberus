@@ -2,6 +2,8 @@
   (:require
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
+   [cemerick.url :as url]
+
    [om-bootstrap.grid :as g]
    [om-bootstrap.random :as r]
    [om-bootstrap.button :as b]
@@ -13,7 +15,7 @@
    [cerberus.list.table :as table]
    [cerberus.list.well :as well]
    [cerberus.list.utils :refer [show-field get-filter-field expand-fields large small]]
-   [cerberus.utils :refer [val-by-id make-event value-by-key]]))
+   [cerberus.utils :refer [goto, val-by-id make-event value-by-key str->int]]))
 
 (defn toggle-field [field aset]
   (if (contains? aset field)
@@ -108,7 +110,8 @@
     (init-state [_]
       {:filter ""
        :fields (cerberus.utils/initial-state config)
-       :order :asc})
+       :order :asc
+       :page 0})
     om/IRenderState
     (render-state [_ state]
       (let [root (:root config)
@@ -122,7 +125,17 @@
             all-rows (pre-render
                       (vals (:elements section))
                       display-fields filter config (:sort section))
+            href (-> js/window .-location .-href)
+            match (re-matches #".*[?]page=([0-9]+)$" href)
+            entries (count all-rows)
+            page (if match (str->int (second match)) 0)
+            page-size 20
+            max-page (Math/ceil  (/ entries page-size))
+            all-rows (drop (* page page-size) all-rows)
+            all-rows (take page-size all-rows)
             set-filter (mk-filter-field section)]
+        (if (not= page (:page state))
+          (om/set-state! owner :page page))
         (d/div
          {:class "listview"}
          (d/h1
@@ -139,5 +152,30 @@
           {:class (str  "filterbar " small)}
           (search-field "well" section)
           (col-selector section expanded-fields root))
+         (d/div
+          {}
+          (b/button-group
+           {:class "fctabuttons"}
+           (b/button {
+                      :bs-size "small"
+                      :disabled? (= page 0)
+                      :on-click #(let [new-page (max 0 (dec (:page state)))]
+                                   (om/set-state! owner :page new-page)
+                                   (goto (str "/vms?page=" new-page)))} "<")
+           (let [pagination-buttons 20
+                 p-start (max 0 (- page (/ pagination-buttons 2)))
+                 pages (min pagination-buttons (- max-page p-start))]
+             (map (fn [p]
+                    (b/button {:bs-size "small"
+                               ;;:bs-style (if (= page p) "primary" "danger")
+                               :style {:color (if (= page p) "blue" "black")}
+                               :on-click #(do (om/set-state! owner :page p)
+                                              (goto (str "/vms?page=" p)))} p))
+                  (take pages (iterate inc p-start))))
+           (b/button {:bs-size "small"
+                      :disabled? (= page (dec max-page))
+                      :on-click #(let [new-page (min max-page (inc (:page state)))]
+                                   (om/set-state! owner :page new-page)
+                                   (goto (str "/vms?page=" new-page)))} ">")))
          (table/render section all-rows {:root root :actions actions :fields display-fields :set-filter set-filter :show fields})
          (well/well section all-rows {:root root :actions actions :set-filter set-filter :show fields}))))))

@@ -58,7 +58,7 @@
     om/IRender
     (render [_]
       (let [id (:id field)
-            style (if (get-in data [:fields id :show]) {} {:display :none})
+            style {}
             order (get-in data [:sort :order] :asc)]
 
         (if (= id (get-in data [:sort :field]))
@@ -105,7 +105,7 @@
       "tblrowc")
     om/IRenderState
     (render-state [_ _]
-      (let [style (if (:show data) {} {:display :none})
+      (let [style {}
             cells (:row data)]
         (d/tr
          {:on-click #(goto (str "/" (name root) "/" (:uuid data)))  :style style}

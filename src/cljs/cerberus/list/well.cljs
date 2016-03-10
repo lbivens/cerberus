@@ -22,7 +22,7 @@
     om/IRender
     (render [_]
       (p/panel {:class "list-panel"
-                :style (if (:show data) {} {:display :none})
+                :style {}
                 :header [(:name data)
                          (if actions
                            (d/div {:class "pull-right"}

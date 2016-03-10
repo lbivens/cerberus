@@ -76,8 +76,8 @@
 (defn make-filter [filter-str]
   (if (and filter-str (not (empty? filter-str)))
     (let [f (jmatch/parse filter-str)]
-      (map #(assoc % :show (jmatch/run f (:row %)))))
-    (map #(assoc % :show true))))
+      (filter #(jmatch/run f (:row %))))
+    identity))
 
 (defn do-sort [list fields sort]
   (let [field (:field sort)]
@@ -128,14 +128,17 @@
             href (-> js/window .-location .-href)
             match (re-matches #".*[?]page=([0-9]+)$" href)
             entries (count all-rows)
-            page (if match (str->int (second match)) 0)
+            sel-page (if match (str->int (second match)) 0)
             page-size 20
-            max-page (Math/ceil  (/ entries page-size))
+            max-page (Math/floor (/ entries page-size))
+            page (min max-page sel-page)
             all-rows (drop (* page page-size) all-rows)
             all-rows (take page-size all-rows)
             set-filter (mk-filter-field section)]
         (if (not= page (:page state))
           (om/set-state! owner :page page))
+        (if (not= sel-page page)
+          (goto (str "/vms?page=" page)))
         (d/div
          {:class "listview"}
          (d/h1
@@ -164,7 +167,7 @@
                                    (goto (str "/vms?page=" new-page)))} "<")
            (let [pagination-buttons 20
                  p-start (max 0 (- page (/ pagination-buttons 2)))
-                 pages (min pagination-buttons (- max-page p-start))]
+                 pages (min pagination-buttons (inc (- max-page p-start)))]
              (map (fn [p]
                     (b/button {:bs-size "small"
                                ;;:bs-style (if (= page p) "primary" "danger")

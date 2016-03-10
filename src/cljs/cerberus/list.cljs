@@ -134,11 +134,12 @@
             page (min max-page sel-page)
             all-rows (drop (* page page-size) all-rows)
             all-rows (take page-size all-rows)
-            set-filter (mk-filter-field section)]
+            set-filter (mk-filter-field section)
+            ppath #(str "/" (name root) "?page=" %)]
         (if (not= page (:page state))
           (om/set-state! owner :page page))
         (if (not= sel-page page)
-          (goto (str "/vms?page=" page)))
+          (goto (ppath page)))
         (d/div
          {:class "listview"}
          (d/h1
@@ -164,22 +165,22 @@
                       :disabled? (= page 0)
                       :on-click #(let [new-page (max 0 (dec (:page state)))]
                                    (om/set-state! owner :page new-page)
-                                   (goto (str "/vms?page=" new-page)))} "<")
+                                   (goto (ppath new-page)))} "<")
            (let [pagination-buttons 20
                  p-start (max 0 (- page (/ pagination-buttons 2)))
-                 pages (min pagination-buttons (inc (- max-page p-start)))]
+                 pages (min pagination-buttons (max 1  (- max-page p-start)))]
              (map (fn [p]
                     (b/button {:bs-size "small"
                                ;;:bs-style (if (= page p) "primary" "danger")
                                :style {:color (if (= page p) "blue" "black")}
                                :on-click #(do (om/set-state! owner :page p)
-                                              (goto (str "/vms?page=" p)))} p))
+                                              (goto (ppath p)))} p))
                   (take pages (iterate inc p-start))))
            (b/button {:bs-size "small"
                       :disabled? (= page (dec max-page))
                       :on-click #(let [new-page (min max-page (inc (:page state)))]
                                    (om/set-state! owner :page new-page)
-                                   (goto (str "/vms?page=" new-page)))} ">")))
+                                   (goto (ppath new-page)))} ">")))
          (table/render section all-rows {:root root :actions actions :fields display-fields :set-filter set-filter :show fields})
-         ;(well/well section all-rows {:root root :actions actions :set-filter set-filter :show fields})
+         (well/well section all-rows {:root root :actions actions :set-filter set-filter :show fields})
          )))))

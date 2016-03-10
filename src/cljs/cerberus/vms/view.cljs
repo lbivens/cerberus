@@ -263,11 +263,10 @@
     gateway   :gateway
     mac       :mac
     primary   :primary}
-   owner {:keys [uuid disabled iprs iprange-map nets network-map hostname-map]}]
+   owner {:keys [uuid disabled iprs iprange-map full-nets network-map hostname-map]}]
   (reify
     om/IInitState
     (init-state [_]
-      (pr "hostname-map" hostname-map ip)
       {:hostname (hostname-map ip)})
     om/IRenderState
     (render-state [_ state]
@@ -307,7 +306,7 @@
                                                 :on-click
                                                 #(vms/set-hostname uuid interface (:hostname state))} (r/glyphicon {:glyph "pencil"})))))
                (group-li "Network: " (if-let [net (network-map ip)]
-                                       (d/a {:href (str  "#/networks/" net)} (get-in nets [net :name]))))
+                                       (d/a {:href (str  "#/networks/" net)} (get-in full-nets [net :name]))))
                (group-li "IP Range: "
                          (if-let [ipr (iprange-map ip)]
                            (d/a {:href (str  "#/ipranges/" ipr)} (get-in iprs [ipr :name])) ""))

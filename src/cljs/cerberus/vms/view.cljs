@@ -54,7 +54,8 @@
     om/IInitState
     (init-state [_]
       (let [uuid (get-in app [root :selected])]
-        {:org (or (first (first (get-in app [:orgs :elements]))) "")
+        {:org (or (get-in app [root :elements uuid :owner])
+                  "")
          :alias (get-in app [root :elements uuid :config :alias])}))
     om/IRenderState
     (render-state [_ state]
@@ -93,7 +94,11 @@
             {:type "select"
              :value (:org state)
              :on-change (->state owner :org)}
-            (map (fn [[uuid e]] (d/option {:value uuid} (:name e))) orgs)))
+            (map (fn [[uuid e]]
+                   (let [opts {:value uuid}
+                         opts (if (= (:org state) uuid) (assoc opts :selected true) opts)]
+                     (d/option opts (:name e))))
+                 (sort-by #(cstr/lower-case (:name (second %))) orgs))))
           (g/col
            {:md :4}
            (b/button

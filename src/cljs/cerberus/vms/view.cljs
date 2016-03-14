@@ -1011,7 +1011,7 @@
                (orgs/list data)
                (hypervisors/list data)
                (networks/list data)
-               (packages/list app)
+               (packages/list data)
                (ipranges/list data))
    :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config}]
                (d/div

@@ -388,7 +388,6 @@
         package (get-in packages [current-package])
         cmp-pkg (get-in app [:tmp :pkg] {})
         cmp-vals (partial cmp-vals package cmp-pkg)]
-    (packages/list app)
     (r/well
      {}
      (row
@@ -1012,6 +1011,7 @@
                (orgs/list data)
                (hypervisors/list data)
                (networks/list data)
+               (packages/list app)
                (ipranges/list data))
    :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config}]
                (d/div

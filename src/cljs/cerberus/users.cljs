@@ -1,20 +1,22 @@
 (ns cerberus.users
   (:refer-clojure :exclude [get list])
   (:require
-   [om.core :as om :include-macros true]
-   [cerberus.list :as jlist]
-   [cerberus.users.api :refer [root] :as users]
-   [cerberus.orgs.api :as orgs]
-   [om-bootstrap.random :as r]
-   [cerberus.users.view :as view]
    [cerberus.api :as api]
+   [cerberus.del :as del]
    [cerberus.fields :refer [mk-config]]
+   [cerberus.list :as jlist]
+   [cerberus.orgs.api :as orgs]
+   [cerberus.state :refer [set-state!]]
+   [cerberus.users.api :refer [root] :as users]
+   [cerberus.users.view :as view]
    [cerberus.utils :refer [initial-state]]
-   [cerberus.state :refer [set-state!]]))
+   [om-bootstrap.random :as r]
+   [om-tools.dom :as d :include-macros true]
+   [om.core :as om :include-macros true]))
 
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(users/delete uuid)]])
+  [(del/menue-item uuid)])
 
 (def config (mk-config
              root "Users" actions
@@ -39,5 +41,7 @@
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        :list (om/build jlist/view data {:opts {:config config}})
-        :show (om/build view/render data {}))))) 
+        :list (del/with-delete
+                data root :name users/delete
+                (om/build jlist/view data {:opts {:config config}}))
+        :show (om/build view/render data {})))))

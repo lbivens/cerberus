@@ -3,6 +3,8 @@
   (:require
    [om.core :as om :include-macros true]
    [om-bootstrap.random :as r]
+   [om-tools.dom :as d :include-macros true]
+   [cerberus.del :as del]
    [cerberus.roles.api :refer [root] :as roles]
    [cerberus.utils :refer [initial-state]]
    [cerberus.list :as jlist]
@@ -12,7 +14,7 @@
    [cerberus.fields :refer [mk-config]]))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(roles/delete uuid)]])
+  [(del/menue-item uuid)])
 
 (def config (mk-config root "Roles" actions))
 
@@ -32,5 +34,7 @@
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        :list (om/build jlist/view data {:opts {:config config}})
+        :list (del/with-delete
+                data root :name (partial roles/delete data)
+                (om/build jlist/view data {:opts {:config config}}))
         :show (om/build view/render data {})))))

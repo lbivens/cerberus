@@ -15,5 +15,5 @@
 
 (def get (partial api/get root))
 
-(defn delete [uuid]
-  (api/delete root [uuid] (alerts "IPRange deleted." "Failed to delete IPRange.")))
+(defn delete [data uuid]
+  (api/delete data root [uuid] (alerts "IPRange deleted." "Failed to delete IPRange.")))

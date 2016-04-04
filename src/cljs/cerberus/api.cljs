@@ -33,8 +33,8 @@
 
 (defn list-path
   [path fields] (if fields
-    (str path "?full-list=true&full-list-fields=" fields)
-    (str path "?full-list=true")))
+                  (str path "?full-list=true&full-list-fields=" fields)
+                  (str path "?full-list=true")))
 
 
 (defn list
@@ -59,54 +59,12 @@
      (fn [all]
        (let [new-keys (set (js->clj all))]
          (om/transact! data [root :elements]
-                         (fn [old]
-                           (let [old-keys (set (keys old))
-                                 deleted (difference old-keys new-keys)]
-                             (reduce dissoc old deleted))))))))
-   #_(go
-     (let [resp (if list-fields
-                  (<! (full-list (name root) list-fields))
-                  (<! (full-list (name root))))
-           elements (map-indexed #(assoc %2 :react-key (* 100 %2)) (js->clj (:body resp)))]
-       (if (= 401 (:status resp))
-         (check-login)
-         (do
-           (doall (map howl/join (map :uuid elements)))
-           (om/transact! data [root :elements]
-                         (fn [old]
-                           (let [old-keys (set (keys old))
-                                 new-keys (set (map :uuid elements))
-                                 deleted (difference old-keys new-keys)
-                                 old (reduce dissoc old deleted)]
-                             (reduce
-                              (fn [acc {uuid :uuid :as e}]
-                                (update acc uuid merge e))
-                              old elements))))))))))
+                       (fn [old]
+                         (let [old-keys (set (keys old))
+                               deleted (difference old-keys new-keys)]
+                           (reduce dissoc old deleted))))))))))
 
 
-#_(defn list
-  ([data root]
-   (list data root nil))
-  ([data root list-fields]
-   (go
-     (let [resp (if list-fields
-                  (<! (full-list (name root) list-fields))
-                  (<! (full-list (name root))))
-           elements (map-indexed #(assoc %2 :react-key (* 100 %2)) (js->clj (:body resp)))]
-       (if (= 401 (:status resp))
-         (check-login)
-         (do
-           (doall (map howl/join (map :uuid elements)))
-           (om/transact! data [root :elements]
-                         (fn [old]
-                           (let [old-keys (set (keys old))
-                                 new-keys (set (map :uuid elements))
-                                 deleted (difference old-keys new-keys)
-                                 old (reduce dissoc old deleted)]
-                             (reduce
-                              (fn [acc {uuid :uuid :as e}]
-                                (update acc uuid merge e))
-                              old elements))))))))))
 
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get [root uuid])))
@@ -154,19 +112,35 @@
           (success resp)
           (error resp))))))
 
-(defn delete [root path {:as callbacks}]
-  (go
-    (let [resp (<! (http/delete (concat [root] path) {}))
-          success (or (:success callbacks) identity)
-          error (or (:error callbacks) identity)
-          status (:status resp)]
-      (if-let [always (:always callbacks)]
-        (always resp))
-      (if-let [callback (callbacks status)]
-        (callback resp)
-        (if (:success resp)
-          (success resp)
-          (error resp))))))
+(defn delete-path [data root path]
+  (pr "delete-path" root path)
+  (if (= 1 (count path))
+    (let [uuid (first path)]
+      (pr "deleting" uuid)
+      (om/transact! data [root :elements]
+                    #(dissoc % uuid)))))
+
+(defn delete
+  ([data root path opts]
+   (let [success (or (:success opts) identity)]
+     (delete root path
+             (assoc opts
+                    :success #(do
+                                (delete-path data root path)
+                                success)))))
+  ([root path {:as callbacks}]
+   (go
+     (let [resp (<! (http/delete (concat [root] path) {}))
+           success (or (:success callbacks) identity)
+           error (or (:error callbacks) identity)
+           status (:status resp)]
+       (if-let [always (:always callbacks)]
+         (always resp))
+       (if-let [callback (callbacks status)]
+         (callback resp)
+         (if (:success resp)
+           (success resp)
+           (error resp)))))))
 
 (defn get-sub-element [root key path element]
   (let [uuid (key element)]
@@ -175,7 +149,7 @@
       (if-let [sub (get-in @app-state [root :elements uuid])]
         (value-by-key path sub)
         (do
-          ;(to-state [root :elements uuid] (http/get [root uuid]))
+          ;;(to-state [root :elements uuid] (http/get [root uuid]))
           uuid)))))
 
 (defn request-and-get

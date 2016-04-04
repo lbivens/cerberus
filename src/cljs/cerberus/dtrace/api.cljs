@@ -16,5 +16,5 @@
 
 (def get (partial api/get root))
 
-(defn delete [uuid]
-  (api/delete root [uuid] (alerts "DTrace script deleted." "Failed to delete DTrace SCript")))
+(defn delete [data uuid]
+  (api/delete data root [uuid] (alerts "DTrace script deleted." "Failed to delete DTrace SCript")))

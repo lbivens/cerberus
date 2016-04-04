@@ -6,7 +6,7 @@
    [cerberus.list :as jlist]
    [cerberus.hypervisors.api :refer [root] :as hypervisors]
    [om-bootstrap.random :as r]
-   [om-bootstrap.modal :as md]
+   [cerberus.del :as del]
    [om-bootstrap.button :as b]
    [cerberus.hypervisors.view :as view]
    [cerberus.fields :refer [mk-config]]
@@ -14,7 +14,7 @@
    [cerberus.state :refer [set-state!]]))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(set-state! [:delete] uuid)]])
+  [(del/menue-item uuid)])
 
 
 #(hypervisors/delete uuid)
@@ -39,33 +39,6 @@
 
 (set-state! [root :fields] (initial-state config))
 
-(defn delete-modal [data]
-  (let [id (:delete data)
-        hv (get-in data [root :elements id])]
-    (d/div
-     {:style {:display (if id "block" "none")} }
-     (md/modal
-      {:header (d/h4
-                "Delete Hypervisor"
-                (d/button {:type         "button"
-                           :class        "close"
-                           :aria-hidden  true
-                           :on-click #(set-state! [:delete] nil)}
-                          "×"))
-       :close-button? false
-       :visible? true
-       :animate? false
-       :style {:display "block"}
-       :footer (d/div
-                (b/button {:bs-style "danger"
-                           :disabled? false
-                           :on-click #(do
-                                        (hypervisors/delete id)
-                                        (set-state! [:delete] nil))}
-                          "delete"))}
-      "Are you sure that you want to delete the Hypervisor " (d/strong (get-in hv [:alias])) " (" id ")?"))))
-
-
 (defn render [data owner opts]
   (reify
     om/IDisplayName
@@ -80,8 +53,7 @@
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        :list (d/div
-               {}
-               (delete-modal data)
-               (om/build jlist/view data {:opts {:config config}}))
+        :list (del/with-delete
+                data root :alias hypervisors/delete
+                (om/build jlist/view data {:opts {:config config}}))
         :show (om/build view/render data {})))))

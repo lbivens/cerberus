@@ -11,10 +11,10 @@
    [cerberus.orgs.api :as orgs]
    [cerberus.datasets.api :as datasets]
    [cerberus.users.api :as users]
+   [cerberus.del :as del]
    [cerberus.packages.api :as packages]
    [cerberus.hypervisors.api :as hypervisors]
 
-   [om-bootstrap.modal :as md]
    [om-tools.dom :as d :include-macros true]
 
    [cerberus.api :as api]
@@ -29,12 +29,11 @@
   (let [uuid (:uuid e)
         locked (get-in e [:raw :metadata :cerberus :locked] false)
         set-lock (partial vms/update-metadata uuid [:cerberus :locked])
-        delete #(vms/delete uuid)
         hypervisor (get-in e [:raw :hypervisor])
         type (get-in e [:raw :config :type])
         state (get-in e [:raw :state])]
     (if (or (not hypervisor) (empty? hypervisor))
-      [["Delete" {:class (if locked "disabled")} #(set-state! [:delete] uuid)]]
+      [["Delete" {:class (if locked "disabled")} #(del/show uuid)]]
       [["Console" #(open-with-ott (str "./" (if (= type "kvm") "vnc" "console")  ".html?uuid=" uuid))]
        (if locked
          ["Unlock" #(set-lock false)]
@@ -46,7 +45,7 @@
        (if (= state "running")
          ["Reboot" {:class (if locked "disabled")} #(vms/reboot uuid)])
        :divider
-       ["Delete" {:class (if locked "disabled")} #(set-state! [:delete] uuid)]])))
+       ["Delete" {:class (if locked "disabled")} #(del/show uuid)]])))
 
 (defn get-ip [vm]
   (:ip (first (filter (fn [{p :primary}] p) (get-in vm [:config :networks])))))
@@ -66,6 +65,7 @@
     (if (empty? type)
       brand
       type)))
+
 (def config
   (mk-config
    root "Machines" actions
@@ -97,36 +97,9 @@
    :hypervisor {:title "Hypervisor" :type :string :show false
                 :key (partial api/get-sub-element :hypervisors :hypervisor :alias)}
    :cluster    {:title "Cluster" :type :string :show false
-                :key (partial api/get-sub-element :groupings #(first (:groupings %)) :name)}
-))
+                :key (partial api/get-sub-element :groupings #(first (:groupings %)) :name)}))
 
 (set-state! [root :fields] (initial-state config))
-
-(defn delete-modal [data]
-  (let [id (:delete data)
-        vm (get-in data [root :elements id])]
-    (d/div
-     {:style {:display (if id "block" "none")} }
-     (md/modal
-      {:header (d/h4
-                "Delete VM"
-                (d/button {:type         "button"
-                           :class        "close"
-                           :aria-hidden  true
-                           :on-click #(set-state! [:delete] nil)}
-                          "×"))
-       :close-button? false
-       :visible? true
-       :animate? false
-       :style {:display "block"}
-       :footer (d/div
-                (b/button {:bs-style "danger"
-                           :disabled? false
-                           :on-click #(do
-                                        (vms/delete id)
-                                        (set-state! [:delete] nil))}
-                          "delete"))}
-      "Are you sure that you want to delete the VM " (d/strong (get-in vm [:config :alias])) " (" id ")?" ))))
 
 (defn render [data owner opts]
   (reify
@@ -147,8 +120,7 @@
     om/IRenderState
     (render-state [_ state]
       (condp = (:view data)
-        :list (d/div
-               {}
-               (delete-modal data)
-               (om/build jlist/view data {:opts {:config config}}))
+        :list (del/with-delete
+                data root #(get-in % [:config :alias]) vms/delete
+                (om/build jlist/view data {:opts {:config config}}))
         :show (om/build view/render data {})))))

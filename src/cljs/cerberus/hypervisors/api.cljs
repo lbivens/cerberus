@@ -20,8 +20,8 @@
 (defn a-get [uuid success error]
   (assoc (alerts success error) :always #(get uuid)))
 
-(defn delete [uuid]
-  (api/delete root [uuid] (alerts "Hypervisor removed." "Failed to remove hypervisor.")))
+(defn delete [data uuid]
+  (api/delete data root [uuid] (alerts "Hypervisor removed." "Failed to remove hypervisor.")))
 
 (defn rename [uuid name]
   (api/put root [uuid :config] {:alias name} (a-get uuid "Hypervisor renamed." "Failed to rename hypervisor.")))

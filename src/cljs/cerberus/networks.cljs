@@ -3,6 +3,8 @@
   (:require
    [om.core :as om :include-macros true]
    [om-bootstrap.random :as r]
+   [cerberus.del :as del]
+   [om-tools.dom :as d :include-macros true]
    [cerberus.list :as jlist]
    [cerberus.networks.view :as view]
    [cerberus.networks.api :refer [root] :as networks]
@@ -11,7 +13,7 @@
    [cerberus.fields :refer [mk-config]]))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(networks/delete uuid)]])
+  [(del/menue-item uuid)])
 
 (def config
   (mk-config
@@ -37,5 +39,7 @@
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        :list (om/build jlist/view data {:opts {:config config}})
+        :list (del/with-delete
+                data root :name networks/delete
+                (om/build jlist/view data {:opts {:config config}}))
         :show (om/build view/render data {})))))

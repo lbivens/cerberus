@@ -1,3 +1,4 @@
+
 (ns cerberus.vms.api
   (:refer-clojure :exclude [get list])
   (:require-macros [cljs.core.async.macros :refer [go]])
@@ -34,9 +35,9 @@
         200 (set-state! [root :elements uuid :metrics] (js->clj (:body resp)))
         (set-state! [root :elements uuid :metrics] :no-metrics)))))
 
-(defn delete [uuid]
+(defn delete [data uuid]
   (api/delete
-   root [uuid]
+   data root [uuid]
    (alerts "VM Deletion successful." "Failed to delete VM.")))
 
 (defn delete-hypervisor [uuid]

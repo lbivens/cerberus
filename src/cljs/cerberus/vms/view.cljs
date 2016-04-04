@@ -6,6 +6,7 @@
    [clojure.string :as cstr]
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
+   [cerberus.del :as del]
    [om-bootstrap.table :refer [table]]
    [om-bootstrap.panel :as p]
    [om-bootstrap.grid :as g]
@@ -277,6 +278,7 @@
     (render-state [_ state]
       (g/col
        {:md 4}
+       (del/state-modal state owner #(get-in % [:delete :name]) #(vms/delete-network uuid %))
        (p/panel
         {:header
          [interface
@@ -294,7 +296,9 @@
             :bs-size "small"
             :disabled? disabled
             :on-click
-            #(vms/delete-network uuid mac)} (r/glyphicon {:glyph "trash"}))]
+            #(do
+               (om/set-state! owner [:delete :name] interface)
+               (del/state-show owner mac))} (r/glyphicon {:glyph "trash"}))]
          :list-group
          (d/ul {:class "list-group"}
                (group-li "Hostname: " (g/row
@@ -343,7 +347,6 @@
             disabled (not  (#{"stopped" "installed"} (:state data)))
             networks (get-in data [:config :networks])
             rows (partition 4 4 nil networks)]
-        (pr hostname-map)
         (r/well
          {}
          (row
@@ -365,6 +368,7 @@
                         row
                         {:opts
                          {:uuid  uuid
+                          :parent owner
                           :render-network render-network
                           :disabled disabled
                           :iprs iprs
@@ -440,8 +444,8 @@
                                            :on-click #(vms/change-package vm uuid)}))))))
                 packages))))))))
 
-(defn snapshot-row  [vm [uuid {comment :comment timestamp :timestamp
-                               state :state size :size}]]
+(defn snapshot-row  [owner vm [uuid {comment :comment timestamp :timestamp
+                                     state :state size :size}]]
   (d/tr
    (d/td (name uuid))
    (d/td comment)
@@ -453,11 +457,14 @@
                       :on-click (make-event identity)}
                      (menu-items
                       ["Roll Back" #(vms/restore-snapshot vm uuid)]
-                      ["Delete"    #(vms/delete-snapshot vm uuid)])))))
+                      ["Delete"    #(do
+                                      (om/set-state! owner [:delete :name] comment)
+                                      (del/state-show owner (name uuid)))])))))
 
-(defn snapshot-table [vm snapshots]
+(defn snapshot-table [state owner vm snapshots]
   (g/col
    {:md 11}
+   (del/state-modal state owner #(get-in % [:delete :name]) #(vms/delete-snapshot vm %))
    (table
     {:id "snapshot-table"}
     (d/thead
@@ -471,7 +478,7 @@
     (apply d/tbody
            {}
            (map
-            (partial snapshot-row vm)
+            (partial snapshot-row owner vm)
             (sort-by (fn [[_ {t :timestamp}]] t) snapshots))))))
 
 (defn render-snapshots [data owner opts]
@@ -501,7 +508,7 @@
                        :wrapper-classname "col-xs-2"
                        :disabled? (empty? (:name state))
                        :on-click #(vms/snapshot (:uuid data) (:name state))} "Create")))))
-        (snapshot-table (:uuid data) (:snapshots data)))))))
+        (snapshot-table state owner (:uuid data) (:snapshots data)))))))
 
 
 (defn show-state [state]
@@ -511,7 +518,7 @@
     "failed" (r/label {:bs-style "danger"} state)
     (r/label {:bs-style "default"} state)))
 
-(defn backup-row  [vm hypervisor
+(defn backup-row  [owner vm hypervisor
                    [uuid {comment :comment timestamp :timestamp
                           state :state old-size :size files :files}]]
   (let [size (reduce + (map #(:size (second %)) files))
@@ -531,11 +538,14 @@
                           ["Restore" #(vms/restore-backup vm hypervisor uuid)]
                           ["Roll Back" #(vms/restore-backup vm uuid)])
 
-                        ["Delete"    #(vms/delete-backup vm uuid)]))))))
+                        ["Delete"    #(do
+                                        (om/set-state! owner [:delete :name] comment)
+                                        (del/state-show owner (name uuid)))]))))))
 
-(defn backup-table [vm hypervisor backups]
+(defn backup-table [state owner vm hypervisor backups]
   (g/col
    {:md 11}
+   (del/state-modal state owner #(get-in % [:delete :name]) #(vms/delete-backup vm %))
    (table
     {:id "backup-table"}
     (d/thead
@@ -549,7 +559,7 @@
     (apply d/tbody
            {}
            (map
-            (partial backup-row vm hypervisor)
+            (partial backup-row owner vm hypervisor)
             (sort-by (fn [[_ {t :timestamp}]] t) backups))))))
 
 (defn render-backups [app owner {:keys [uuid]}]
@@ -608,7 +618,7 @@
                                :wrapper-classname "col-xs-2"
                                :disabled? (empty? (:name state))
                                :on-click #(vms/backup (:uuid data) (:name state))} "Create")))))
-          (backup-table uuid (:target state) (:backups data))))))))
+          (backup-table state owner uuid (:target state) (:backups data))))))))
 
 
 (defn o-state! [owner id]
@@ -1018,7 +1028,7 @@
                (networks/list data)
                (packages/list data)
                (ipranges/list data))
-   :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config}]
+   :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config} data]
                (d/div
                 {}
                 alias " "
@@ -1051,6 +1061,6 @@
                  (b/button
                   {:bs-size "small"
                    :bs-style "danger"
-                   :on-click #(vms/delete uuid)
+                   :on-click #(vms/delete state uuid)
                    :disabled? (= state "running")}
                   (r/glyphicon {:glyph "trash"})))))))

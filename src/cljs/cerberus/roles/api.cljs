@@ -20,8 +20,8 @@
 (defn a-get [uuid success error]
   (assoc (alerts success error) :always #(get uuid)))
 
-(defn delete [uuid]
-  (api/delete root [uuid] (alerts "Role deleted." "Failed to delete role.")))
+(defn delete [data uuid]
+  (api/delete data root [uuid] (alerts "Role deleted." "Failed to delete role.")))
 
 
 (defn grant [uuid perm]

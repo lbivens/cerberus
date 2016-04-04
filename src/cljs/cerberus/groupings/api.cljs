@@ -20,8 +20,8 @@
 (defn a-get [uuid success error]
   (assoc (alerts success error) :always #(get uuid)))
 
-(defn delete [uuid]
-  (api/delete root [uuid] (alerts "Grouping removed." "Failed to remove grouping.")))
+(defn delete [data uuid]
+  (api/delete data root [uuid] (alerts "Grouping removed." "Failed to remove grouping.")))
 
 (defn set-config [uuid conf val]
   (api/put root [uuid :config] {conf val}

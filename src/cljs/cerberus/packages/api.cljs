@@ -18,5 +18,5 @@
   (assoc (alerts success error) :success #(swap! app-state update-in [root :elements]
                                                  (fn [es] (dissoc es uuid)))))
 
-(defn delete [uuid]
-  (api/delete root [uuid] (a-delete uuid "Package deleted." "Failed to delete package.")))
+(defn delete [data uuid]
+  (api/delete data root [uuid] (a-delete uuid "Package deleted." "Failed to delete package.")))

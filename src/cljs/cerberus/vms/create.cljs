@@ -1,4 +1,4 @@
-(ns cerberus.vms.create
+inv(ns cerberus.vms.create
   (:require
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
@@ -48,6 +48,8 @@
   {:key tab :on-click (make-event #(om/transact! data :key (constantly tab)))
    :class (if (create/validate-data data spec) "success" "danger")})
 
+(defn invalid-resolvers? [resolvers]
+  (re-matches #"(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:,(?:[0-9]{1,3}\.){3}[0-9]{1,3})+" resolvers))
 
 (defn render [data owner opts]
   (reify
@@ -158,7 +160,9 @@
                     (b/button
                      {:bs-style (if unchanged?  "success"  "primary")
                       :on-click #(om/update! data [:data :config :resolvers] rs)
-                      :disabled? (or unchanged? (empty? (:resolvers state)))}
+                      :disabled? (or unchanged?
+                                     (empty? (:resolvers state))
+                                     (invlaid-resolvers? (:resolvers state)))}
                      "Set Resolvers")))))
              5 (g/grid
                 {:md 10}

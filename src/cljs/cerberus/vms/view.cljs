@@ -64,7 +64,7 @@
             element (get-in app [root :elements uuid])
             conf (:config element)
             current-owner (:owner element)
-            invalid-owner #{"" current-owner}
+            invalid-owner #{"" nil current-owner}
             orgs (get-in app [:orgs :elements])
             org (api/get-sub-element :orgs :owner identity element)
             package (api/get-sub-element :packages :package identity element)
@@ -99,14 +99,14 @@
                    (let [opts {:value uuid}
                          opts (if (= (:org state) uuid) (assoc opts :selected true) opts)]
                      (d/option opts (:name e))))
-                 (sort-by #(cstr/lower-case (:name (second %))) orgs))))
+                 (sort-by #(cstr/lower-case (:name (second %))) (cons ["" {:name ""}] orgs)))))
           (g/col
            {:md :4}
            (b/button
             {:bs-style "primary"
              :className "pull-right fbutown"
              :on-click #(vms/set-owner uuid (:org state))
-             :disabled? (invalid-owner (:org state))}
+             :disabled? (boolean  (invalid-owner (:org state)))}
             "Set owner")))
          (row
           (g/col

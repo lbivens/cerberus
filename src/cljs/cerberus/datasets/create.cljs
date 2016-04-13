@@ -76,7 +76,7 @@
               {:on-click #(om/transact! data (partial toggle-dataset uuid))
                :class  (if (installed? uuid) "installed"
                            (if (picked? uuid) "selected" "not-selected"))}
-              (d/td (:name e) " (" (type-name (:type e)) ")")
+              (d/td (:name e))
               (d/td (:version e))
               (d/td (dataset-type e))
               (d/td (:published_at e))

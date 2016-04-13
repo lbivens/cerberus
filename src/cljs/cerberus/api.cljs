@@ -51,6 +51,7 @@
      (fn [x]
        (let [e (js->clj x :keywordize-keys true)
              uuid (:uuid e)]
+         (howl/join uuid)
          (om/transact! data [root :elements uuid]
                        (fn [old]
                          (merge old e)))
@@ -69,11 +70,16 @@
 (defn get [root uuid]
   (to-state [root :elements uuid] (http/get [root uuid])))
 
+(defn join-and [other-fn]
+  (fn join-and* [resp]
+    (if-let [uuid (:uuid (:body resp))]
+      (howl/join uuid))
+    (other-fn resp)))
+
 (defn post-success-fn [root]
   (fn post-success-fn* [resp]
     (let [body (:body resp)
           uuid (:uuid body)]
-      (howl/join uuid)
       (set-state! [root :elements uuid] body))))
 
 (defn post
@@ -82,7 +88,7 @@
   ([root path data {:as callbacks :or {:success (post-success-fn root)}}]
    (go
      (let [resp (<! (http/post (concat [root] path) {} {:json-params data}))
-           success (or (:success callbacks) identity)
+           success (join-and (or (:success callbacks) identity))
            error (or (:error callbacks) identity)
            status (:status resp)]
        (if-let [always (:always callbacks)]
@@ -101,7 +107,7 @@
                                          (set-state! [root :elements uuid] body)))}}]
   (go
     (let [resp (<! (http/put (concat [root] path) {} {:json-params data}))
-          success (or (:success callbacks) identity)
+          success (join-and  (or (:success callbacks) identity))
           error (or (:error callbacks) identity)
           status (:status resp)]
       (if-let [always (:always callbacks)]

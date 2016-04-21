@@ -130,7 +130,7 @@
             entries (count all-rows)
             sel-page (if match (str->int (second match)) 0)
             page-size 20
-            max-page (Math/floor (/ entries page-size))
+            max-page (Math/ceil (/ entries page-size))
             page (min max-page sel-page)
             all-rows (drop (* page page-size) all-rows)
             all-rows (take page-size all-rows)

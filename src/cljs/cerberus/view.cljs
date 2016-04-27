@@ -42,7 +42,7 @@
               {:class "ctarow fmainheading"}
               (d/h1
                {:class "cta"}
-               (name-fn element))))
+               (name-fn element data))))
            (g/row
             {:class "ctarow"}
             (apply n/nav {:bs-style "tabs" :active-key key}

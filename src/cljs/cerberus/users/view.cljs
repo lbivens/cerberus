@@ -463,9 +463,9 @@
   {""         {:key  1 :fn #(om/build render-auth %2)  :title "Authentication"}
    "perms"    {:key  2
                :fn #(om/build permissions/render
-                              %2
-                                        ;(get-in %1 [root :elements (get-in %1 [root :selected])])
-                              {:opts {:grant users/grant :revoke users/revoke}})
+                              %1
+                              {:key  (str  (:uuid %2) "-permissions")
+                               :opts {:element %2 :grant users/grant :revoke users/revoke}})
                :title "Permissions"}
    "roles"    {:key  3 :fn #(om/build render-roles %1
                                       {:opts {:id (get-in %1 [root :selected])

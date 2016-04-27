@@ -2,9 +2,11 @@
   (:refer-clojure :exclude [get list])
   (:require
    [om.core :as om :include-macros true]
+   [om-bootstrap.random :as r]
+   [om-tools.dom :as d :include-macros true]
+   [cerberus.del :as del]
    [cerberus.list :as jlist]
    [cerberus.orgs.api :refer [root] :as orgs]
-   [om-bootstrap.random :as r]
    [cerberus.orgs.view :as view]
 
    [cerberus.utils :refer [initial-state]]
@@ -12,7 +14,7 @@
    [cerberus.fields :refer [mk-config]]))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(orgs/delete uuid)]])
+  [(del/menue-item uuid)])
 
 (def config (mk-config root "Organisations" actions))
 
@@ -32,5 +34,7 @@
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        :list (om/build jlist/view data {:opts {:config config}})
+        :list (del/with-delete
+                data root :name orgs/delete
+                (om/build jlist/view data {:opts {:config config}}))
         :show (om/build view/render data {})))))

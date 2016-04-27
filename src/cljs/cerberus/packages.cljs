@@ -3,6 +3,8 @@
   (:require
    [om.core :as om :include-macros true]
    [om-bootstrap.random :as r]
+   [cerberus.del :as del]
+   [om-tools.dom :as d :include-macros true]
    [cerberus.list :as jlist]
    [cerberus.packages.view :as view]
    [cerberus.packages.api :refer [root] :as packages]
@@ -22,7 +24,7 @@
              :maximized true})))
 
   (defn actions [{uuid :uuid :as pkg}]
-    [["Delete" #(packages/delete uuid)]
+    [(del/menue-item uuid)
      ["Clone" #(clone-pkg pkg)]])
 
   (def config (mk-config root "Packages" actions
@@ -46,5 +48,7 @@
       om/IRenderState
       (render-state [_ _]
         (condp = (:view data)
-          :list (om/build jlist/view data {:opts {:config config}})
+          :list (del/with-delete
+                  data root :name packages/delete
+                  (om/build jlist/view data {:opts {:config config}}))
           :show (om/build view/render data {})))))

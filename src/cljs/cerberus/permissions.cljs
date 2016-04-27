@@ -81,23 +81,23 @@
          "snapshot_delete" {:title "Delete a Snapshot"}))
 
 (defn perms [data]
-  {"..." {:title  "Everything" :pos 0}
+  {"..."      {:title  "Everything" :pos 0}
    "channels" {:title "Channels"}
-   "cloud" {:title "Cloud" :pos 1
-            :children {"..." {:title  "Everything"}
-                       "cloud" {:title "Cloud" :children {"..." {:title  "Everything"} "status" {:title  "Status"}}}
-                       "datasets" (assoc-in (cloud_perms "Datasets") [:children "import" :title] "Import")
-                       "dtraces" (cloud_perms_c "DTrace")
-                       "roles" (cloud_perms_c "Roles")
-                       "groupings" (cloud_perms_c "Groupings")
-                       "hypervisors" (cloud_perms "Hyervisors")
-                       "ipranges" (cloud_perms_c "IP Ranges")
-                       "networks" (cloud_perms_c "Networks")
-                       "orgs" (cloud_perms_c "Organizations")
-                       "packages" (cloud_perms_c "Packages")
-                       "users" (cloud_perms_c "Users")
-                       "clients" (cloud_perms_c "Clients")
-                       "vms" (cloud_perms_c "Virtual Machines")}}
+   "cloud"    {:title "Cloud" :pos 1
+               :children {"..." {:title  "Everything"}
+                          "cloud" {:title "Cloud" :children {"..." {:title  "Everything"} "status" {:title  "Status"}}}
+                          "datasets" (assoc-in (cloud_perms "Datasets") [:children "import" :title] "Import")
+                          "dtraces" (cloud_perms_c "DTrace")
+                          "roles" (cloud_perms_c "Roles")
+                          "groupings" (cloud_perms_c "Groupings")
+                          "hypervisors" (cloud_perms "Hyervisors")
+                          "ipranges" (cloud_perms_c "IP Ranges")
+                          "networks" (cloud_perms_c "Networks")
+                          "orgs" (cloud_perms_c "Organizations")
+                          "packages" (cloud_perms_c "Packages")
+                          "users" (cloud_perms_c "Users")
+                          "clients" (cloud_perms_c "Clients")
+                          "vms" (cloud_perms_c "Virtual Machines")}}
    "datasets"    {:title "Datasets"         :children (elements data :datasets    :name  dataset-perms)}
    "dtraces"     {:title "DTrace"           :children (elements data :dtrace      :name  dtrace-perms)}
    "groupings"   {:title "Groupings"        :children (elements data :groupings   :name  base-perms)}
@@ -108,7 +108,7 @@
    "packages"    {:title "Packages"         :children (elements data :packages    :name  base-perms)}
    "roles"       {:title "Roles"            :children (elements data :roles       :name  role-perms)}
    "users"       {:title "Users"            :children (elements data :users       :name  user-perms)}
-   "vms"         {:title "Virtual Machines" :children (elements data :vms         #(get-in % [:config :alias])  vm-perms)}})
+   "vms"         {:title "Virtual Machines" :children (elements data :vms         #(get-in % [:config :alias]) vm-perms)}})
 
 (defn highlight [part]
   (condp = part
@@ -139,7 +139,7 @@
    (d/td (butlast (interleave (map highlight p) (repeat "->"))))
    (d/td {:on-click #(revoke p)} (r/glyphicon {:glyph "trash"}))))
 
-(defn render [data owner {grant :grant revoke :revoke :or {grant pr revoke pr}}]
+(defn render [data owner {element :element grant :grant revoke :revoke :or {grant pr revoke pr}}]
   (reify
     om/IDisplayName
     (display-name [_]
@@ -161,7 +161,7 @@
     om/IRenderState
     (render-state [_ {l1v :l1 l2v :l2 l3v :l3 :as state}]
       (let [perms (perms data)
-            uuid (:uuid data)
+            uuid (:uuid element)
             grant (partial grant uuid)
             revoke (partial revoke uuid)]
         (r/well
@@ -211,4 +211,4 @@
               (d/td)))
             (d/tbody
              {}
-             (map (partial perm  revoke) (:permissions data)))))))))))
+             (map (partial perm  revoke) (:permissions element)))))))))))

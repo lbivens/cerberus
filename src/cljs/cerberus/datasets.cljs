@@ -6,12 +6,16 @@
    [cerberus.datasets.api :refer [root] :as datasets]
    [cerberus.fields :refer [mk-config]]
    [om-bootstrap.random :as r]
+   [om-tools.dom :as d :include-macros true]
+   [cerberus.del :as del]
+
    [cerberus.datasets.view :as view]
    [cerberus.utils :refer [initial-state]]
-   [cerberus.state :refer [set-state!]]))
+   [cerberus.state :refer [set-state!]]
+   ))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(datasets/delete uuid)]])
+  [(del/menue-item uuid)])
 
 (def config (mk-config root "Datasets" actions
                        :version {:title "Version" :key :version :type :string}
@@ -33,5 +37,7 @@
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        :list (om/build jlist/view data {:opts {:config config}})
+        :list (del/with-delete
+                data root :name datasets/delete
+                (om/build jlist/view data {:opts {:config config}}))
         :show (om/build view/render data {})))))

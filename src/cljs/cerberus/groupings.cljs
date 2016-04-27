@@ -2,16 +2,19 @@
   (:refer-clojure :exclude [get list])
   (:require
    [om.core :as om :include-macros true]
+   [om-bootstrap.random :as r]
+   [om-tools.dom :as d :include-macros true]
+   [cerberus.del :as del]
+
    [cerberus.list :as jlist]
    [cerberus.groupings.api :refer [root] :as groupings]
-   [om-bootstrap.random :as r]
    [cerberus.groupings.view :as view]
    [cerberus.fields :refer [mk-config]]
    [cerberus.utils :refer [initial-state make-event]]
    [cerberus.state :refer [set-state!]]))
 
 (defn actions [{uuid :uuid}]
-  [["Delete" #(groupings/delete uuid)]])
+  [(del/menue-item uuid)])
 
 (def config
   (mk-config
@@ -37,5 +40,7 @@
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        :list (om/build jlist/view data {:opts {:config config}})
+        :list (del/with-delete
+                data root :name groupings/delete
+                (om/build jlist/view data {:opts {:config config}}))
         :show (om/build view/render data {})))))

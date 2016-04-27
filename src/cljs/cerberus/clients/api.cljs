@@ -19,8 +19,8 @@
 (defn a-get [uuid success error]
   (assoc (alerts success error) :always #(get uuid)))
 
-(defn delete [uuid]
-  (api/delete root [uuid] (alerts "Client deleted." "Failed to delete client.")))
+(defn delete [data uuid]
+  (api/delete data root [uuid] (alerts "Client deleted." "Failed to delete client.")))
 
 (defn grant [uuid perm]
   (api/put root (concat [uuid :permissions] perm) {}

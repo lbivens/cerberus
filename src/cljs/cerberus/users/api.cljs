@@ -23,8 +23,8 @@
 (defn a-get [uuid success error]
   (assoc (alerts success error) :always #(get uuid)))
 
-(defn delete [uuid]
-  (api/delete root [uuid]
+(defn delete [data uuid]
+  (api/delete data root [uuid]
               (alerts "User deletion successful." "Failed to delete User.")))
 
 (defn changepass [uuid newpass]

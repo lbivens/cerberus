@@ -19,8 +19,8 @@
 (defn a-get [uuid success error]
   (assoc (alerts success error) :always #(get uuid)))
 
-(defn delete [uuid]
-  (api/delete root [uuid] (alerts "Network deleted." "Failed to delete network.")))
+(defn delete [data uuid]
+  (api/delete data root [uuid] (alerts "Network deleted." "Failed to delete network.")))
 
 (defn add-iprange [uuid iprange]
   (api/put root [uuid :ipranges iprange] {}

@@ -239,8 +239,8 @@
   {""          {:key  1 :fn  #(om/build render-home %2)     :title "General"}
    "services"  {:key  3 :fn #(om/build services/render %2   {:opts {:action hypervisors/service-action}})  :title "Services"}
    "chars"     {:key  4 :fn #(om/build render-chars %2)     :title "Characteristics"}
-   ;;"notes"     {:key  5 :fn render-notes     :title "Notes"}
-   "metrics"   {:key  5 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
+   ;; "notes"     {:key  5 :fn render-notes     :title "Notes"}
+   ;; "metrics"   {:key  5 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "metadata"  {:key  6 :fn #(om/build metadata/render %2)  :title "Metadata"}})
 
 
@@ -263,7 +263,8 @@
    hypervisors/get
    :init-state {:edit-alias false}
    :mount-fn (fn [uuid data]
-               (metrics/start-timer! (partial tick uuid)))
+               ;;(metrics/start-timer! (partial tick uuid))
+               )
    :name-fn (fn [element]
               (let [sysinfo (:sysinfo element)
                     bootparams ((keyword "Boot Parameters") sysinfo)

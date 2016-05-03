@@ -114,17 +114,17 @@
       (>! c msg))))
 
 
-(defn join-all [channels]
+(defn join-all [channels-in]
   (go
-    (loop [uuid (first channels)
-           channels (rest channels)]
+    (loop [uuid (first channels-in)
+           channels (rest channels-in)]
       (if uuid
         (do
           (if (not (@joined uuid))
             (do
               (swap! joined conj uuid)
               (if-let [c @channel]
-                (>! c {:join channel}))))
+                (>! c {:join uuid}))))
           (recur (first channels) (rest channels)))))))
 
 (defn join [channel]

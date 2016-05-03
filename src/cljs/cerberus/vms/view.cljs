@@ -988,41 +988,23 @@
    "metrics"   {:key 10 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "metadata"  {:key 11 :fn (b metadata/render)  :title "Metadata"}})
 
-;; This is really ugly but something is crazy about the reify for OM here
-;; this for will moutnt and will unmoutn are not the same and having timer in
-;; let does not work either so lets "MAKE ALL THE THINGS GLOBAL!"
 
-(def timer (atom))
-
-(defn stop-timer! []
-  (if @timer
-    (js/clearInterval @timer))
-  (reset! timer nil))
 
 (defn tick [uuid local-timer]
   (let [app @app-state]
-    (if (or
-         (= (get-in app [root :elements uuid :metrics]) :no-metrics)
-         (not= (get-in app [root :selected]) uuid)
-         (not= (:section app) :vms)
-         (= (type (vms/metrics uuid)) cljs.core.async.impl.channels/ManyToManyChannel))
-      (do
-        (js/clearInterval @local-timer)
-        (stop-timer!)))))
-
-(defn start-timer! [uuid]
-  (stop-timer!)
-  (let [local-timer (atom)
-        t (js/setInterval #(tick uuid local-timer) 1000)]
-    (reset! local-timer t)
-    (reset! timer t)))
+    (if (and
+         (not= (get-in app [root :elements uuid :metrics]) :no-metrics)
+         (= (get-in app [root :selected]) uuid)
+         (= (:section app) :vms))
+      (vms/metrics uuid)
+      (metrics/stop-timer! local-timer))))
 
 (def render
   (view/make
    root sections
    vms/get
    :mount-fn (fn [uuid {:type type :as  data}]
-               (start-timer! uuid)
+               (metrics/start-timer! (partial tick uuid))
                (orgs/list data)
                (hypervisors/list data)
                (networks/list data)

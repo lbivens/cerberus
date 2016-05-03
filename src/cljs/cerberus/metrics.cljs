@@ -7,6 +7,30 @@
    [om-bootstrap.random :as r]
    [cerberus.utils :refer [row]]))
 
+;; This is really ugly but something is crazy about the reify for OM here
+;; this for will moutnt and will unmoutn are not the same and having timer in
+;; let does not work either so lets "MAKE ALL THE THINGS GLOBAL!"
+
+(def timer (atom))
+
+(defn stop-timer!
+  ([]
+   (if @timer
+     (js/clearInterval @timer))
+   (reset! timer nil))
+  ([local-timer]
+
+   (if @local-timer
+     (js/clearInterval @local-timer))
+   (stop-timer!)))
+
+(defn start-timer! [tick]
+  (stop-timer!)
+  (let [local-timer (atom)
+        t (js/setInterval #(tick local-timer) 1000)]
+    (reset! local-timer t)
+    (reset! timer t)))
+
 (defn max-metric [[_ points]]
   (apply max points))
 
@@ -82,7 +106,8 @@
     (render-state [_ _]
       (r/well
        {}
-       (if (or (not data) (= data :no-metrics))
+       (if (or (not data) (= data :no-metrics)
+               (= data :pending))
          (row
           (g/col
            {:xs 12}

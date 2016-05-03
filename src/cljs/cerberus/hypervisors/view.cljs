@@ -248,16 +248,6 @@
   {:smartos "/imgs/smartos-stacked-logo.png"
    :other "/imgs/unknown-logo.png"})
 
-;; This is really ugly but something is crazy about the reify for OM here
-;; this for will moutnt and will unmoutn are not the same and having timer in
-;; let does not work either so lets "MAKE ALL THE THINGS GLOBAL!"
-(def timer (atom))
-
-(defn stop-timer! []
-  (if @timer
-    (js/clearInterval @timer))
-  (reset! timer nil))
-
 (defn tick [uuid local-timer]
   (let [app @app-state]
     (if (and
@@ -265,16 +255,7 @@
          (= (get-in app [root :selected]) uuid)
          (= (:section app) root))
       (hypervisors/metrics uuid)
-      (do
-        (js/clearInterval @local-timer)
-        (stop-timer!)))))
-
-(defn start-timer! [uuid]
-  (stop-timer!)
-  (let [local-timer (atom)
-        t (js/setInterval #(tick uuid local-timer) 1000)]
-    (reset! local-timer t)
-    (reset! timer t)))
+      (metrics/stop-timer! local-timer))))
 
 (def render
   (view/make
@@ -282,7 +263,7 @@
    hypervisors/get
    :init-state {:edit-alias false}
    :mount-fn (fn [uuid data]
-               (start-timer! uuid))
+               (metrics/start-timer! (partial tick uuid)))
    :name-fn (fn [element]
               (let [sysinfo (:sysinfo element)
                     bootparams ((keyword "Boot Parameters") sysinfo)

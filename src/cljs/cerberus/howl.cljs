@@ -116,12 +116,16 @@
 
 (defn join-all [channels]
   (go
-    (loop [channels channels]
-      (swap! joined conj channel)
-      (if-let [c @channel]
-        (>! c {:join (first channels)}))
-      (if (not (empty? (rest channels)))
-        (recur (rest channels))))))
+    (loop [uuid (first channels)
+           channels (rest channels)]
+      (if uuid
+        (do
+          (if (not (@joined uuid))
+            (do
+              (swap! joined conj uuid)
+              (if-let [c @channel]
+                (>! c {:join channel}))))
+          (recur (first channels) (rest channels)))))))
 
 (defn join [channel]
   (if (not (@joined channel))

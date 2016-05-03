@@ -75,7 +75,12 @@
   (swap! channel (constantly ws-channel))
   (js/clearInterval (.-howl js/window))
   (set! (.-howl js/window) (js/setInterval #(ping init) 10000))
-  (doall (map #(go (>! @channel {:join %})) @joined))
+  (let [c @channel]
+    (go
+      (loop [channels @joined]
+        (>! c {:join (first channels)})
+        (if (not (empty? (rest channels)))
+          (recur (rest channels))))))
   (go
     (loop []
       (if-let [m (<! @channel)]
@@ -97,15 +102,26 @@
           (let [{:keys [ws-channel error]} (<! (ws-ch (str (host) "/howl?fifo_ott=" token) {:format :json-kw}))]
             (if-not error
               (ws-loop init ws-channel)
-                                        ;(ws-authenticate ws-channel)
+              ;;(ws-authenticate ws-channel)
               (dbg/error "[howl] ws error:" error)))
           (do))
         (dbg/error "[ott] error: " response)))))
+
 
 (defn send [msg]
   (if-let [c @channel]
     (go
       (>! c msg))))
+
+
+(defn join-all [channels]
+  (go
+    (loop [channels channels]
+      (swap! joined conj channel)
+      (if-let [c @channel]
+        (>! c {:join (first channels)}))
+      (if (not (empty? (rest channels)))
+        (recur (rest channels))))))
 
 (defn join [channel]
   (if (not (@joined channel))

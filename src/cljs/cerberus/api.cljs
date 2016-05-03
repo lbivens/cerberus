@@ -51,7 +51,6 @@
      (fn [x]
        (let [e (js->clj x :keywordize-keys true)
              uuid (:uuid e)]
-         (howl/join uuid)
          (om/transact! data [root :elements uuid]
                        (fn [old]
                          (merge old e)))
@@ -59,6 +58,7 @@
     (.done
      (fn [all]
        (let [new-keys (set (js->clj all))]
+         (howl/join-all new-keys)
          (om/transact! data [root :elements]
                        (fn [old]
                          (let [old-keys (set (keys old))
@@ -103,7 +103,6 @@
                            {:success (fn [resp]
                                        (let [body (:body resp)
                                              uuid (:uuid body)]
-                                         (howl/join uuid)
                                          (set-state! [root :elements uuid] body)))}}]
   (go
     (let [resp (<! (http/put (concat [root] path) {} {:json-params data}))

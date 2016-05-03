@@ -985,7 +985,7 @@
    "services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
    "logs"      {:key  8 :fn (b render-logs)      :title "Logs"}
    "fw-rules"  {:key  9 :fn (b render-fw-rules)  :title "Firewall"}
-   ;;"metrics"   {:key 10 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
+   "metrics"   {:key 10 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "metadata"  {:key 11 :fn (b metadata/render)  :title "Metadata"}})
 
 
@@ -1004,7 +1004,7 @@
    root sections
    vms/get
    :mount-fn (fn [uuid {:type type :as  data}]
-               ;;(metrics/start-timer! (partial tick uuid))
+               (metrics/start-timer! (partial tick uuid))
                (orgs/list data)
                (hypervisors/list data)
                (networks/list data)

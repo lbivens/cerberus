@@ -45,7 +45,6 @@
           (let [conf (get-in (:body resp) metadata-root)
                 uuid (:uuid (:body resp))]
             (swap! app-state #(deep-merge % (or conf {})))
-            (pr "config: " conf)
             (set-state! :config conf)
             (set-state! :user uuid)
             conf)))))

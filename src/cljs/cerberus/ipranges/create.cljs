@@ -27,12 +27,10 @@
   (let [network (ip->int (network data))
         netmask (ip->int (netmask data))
         net-last (+ network (bit-not netmask))
-        gateway (ip->int (gateway data))
         first (ip->int (first-ip data))
         last (ip->int (last-ip data))]
     (and
      (<= network first last net-last)
-     (< network gateway net-last)
      (= network (bit-and network netmask)))))
 
 (defn valid-ip [data ip]

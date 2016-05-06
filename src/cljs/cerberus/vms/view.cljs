@@ -118,7 +118,7 @@
               "UUID"       uuid
               "Type"       (:type conf)
               "Alias"      (:alias conf)
-              "State"      (:state conf)
+              "State"      (:state element)
               "Created"    (:created_at conf)
               "Hypervisor" (d/a {:href (str "#/hypervisors/" (:uuid hypervisor))} (:alias hypervisor))
               "Owner"      (d/a {:href (str "#/orgs/" (:uuid org))} (:name org))

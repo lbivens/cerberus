@@ -62,6 +62,10 @@
          "join"   {:title "Join a role"},
          "leave"  {:title "Leave a role"}))
 
+(def org-perms
+  (assoc perm-perms
+         "join"   {:title "Join a role"}))
+
 (def user-perms
   (assoc perm-perms
          "join"   {:title "Join a role"},
@@ -104,7 +108,7 @@
    "hypervisors" {:title "Hypervisors"      :children (elements data :hypervisors :alias hv-perms)}
    "ipranges"    {:title "IP Ranges"        :children (elements data :ipranges    :name  base-perms)}
    "networks"    {:title "Networks"         :children (elements data :networks    :name  base-perms)}
-   "orgs"        {:title "Organizations"    :children (elements data :orgs        :name  base-perms)}
+   "orgs"        {:title "Organizations"    :children (elements data :orgs        :name  org-perms)}
    "packages"    {:title "Packages"         :children (elements data :packages    :name  base-perms)}
    "roles"       {:title "Roles"            :children (elements data :roles       :name  role-perms)}
    "users"       {:title "Users"            :children (elements data :users       :name  user-perms)}

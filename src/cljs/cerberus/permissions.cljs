@@ -64,7 +64,7 @@
 
 (def org-perms
   (assoc perm-perms
-         "join"   {:title "Join a role"}))
+         "join"   {:title "Join a org"}))
 
 (def user-perms
   (assoc perm-perms

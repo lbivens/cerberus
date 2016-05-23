@@ -61,7 +61,7 @@
     :random (if (valid attribute low high)
               {:weight "random" :low (str->int low) :high (str->int high)})
     :normal (if (valid attribute condition value)
-              {:weight weight :attribute attribute :condition condition
+              {:weight (convert-value "" weight) :attribute attribute :condition condition
                :value (convert-value condition value)})
     nil))
 

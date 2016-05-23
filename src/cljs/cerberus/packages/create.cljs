@@ -40,7 +40,7 @@
 
 (defn rule-type [weight]
   (cond
-    (or (#{"must" "cant"} weight) (number? weight)) :normal
+    (or (#{"must" "cant"} weight) (re-matches #"^\d+$" weight)) :normal
     (= weight "scale") :scale
     (= weight "random") :random
     :else false)

@@ -35,6 +35,6 @@
     (render-state [_ _]
       (condp = (:view data)
         :list (del/with-delete
-                data root :name (partial roles/delete data)
+                data root :name roles/delete
                 (om/build jlist/view data {:opts {:config config}}))
         :show (om/build view/render data {})))))

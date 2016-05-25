@@ -54,6 +54,10 @@
      :data  {:action "deleted" :uuid snap-id}}]
    (delete-state! [:vms :elements channel :snapshots (keyword snap-id)])
 
+   ;; currently only update "alias"
+   [{:event "update", :data {:config {:alias alias}}}]
+   (set-state! [:vms :elements channel :alias] alias)
+
    [_]
    (dbg/warning "[howl] unknown message:" channel message)))
 

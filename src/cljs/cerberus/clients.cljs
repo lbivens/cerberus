@@ -5,13 +5,17 @@
    [cerberus.list :as jlist]
    [cerberus.clients.api :refer [root] :as clients]
    [om-bootstrap.random :as r]
+   [cerberus.del :as del]
    [cerberus.clients.view :as view]
    [cerberus.utils :refer [initial-state]]
    [cerberus.state :refer [set-state!]]
    [cerberus.fields :refer [mk-config]]))
 
+; (defn actions [{uuid :uuid}]
+;   [["Delete" #(clients/delete uuid)]])
+
 (defn actions [{uuid :uuid}]
-  [["Delete" #(clients/delete uuid)]])
+  [(del/menue-item uuid)])
 
 (def config (mk-config root "Clients" actions))
 
@@ -31,5 +35,8 @@
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        :list (om/build jlist/view data {:opts {:config config}})
+        ; :list (om/build jlist/view data {:opts {:config config}})
+        :list (del/with-delete
+                data root :name clients/delete
+                (om/build jlist/view data {:opts {:config config}}))
         :show (om/build view/render data {})))))

@@ -11,9 +11,6 @@
    [cerberus.state :refer [set-state!]]
    [cerberus.fields :refer [mk-config]]))
 
-; (defn actions [{uuid :uuid}]
-;   [["Delete" #(clients/delete uuid)]])
-
 (defn actions [{uuid :uuid}]
   [(del/menue-item uuid)])
 
@@ -35,7 +32,6 @@
     om/IRenderState
     (render-state [_ _]
       (condp = (:view data)
-        ; :list (om/build jlist/view data {:opts {:config config}})
         :list (del/with-delete
                 data root :name clients/delete
                 (om/build jlist/view data {:opts {:config config}}))

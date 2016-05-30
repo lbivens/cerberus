@@ -1,4 +1,4 @@
-inv(ns cerberus.vms.create
+(ns cerberus.vms.create
   (:require
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
@@ -162,7 +162,7 @@ inv(ns cerberus.vms.create
                       :on-click #(om/update! data [:data :config :resolvers] rs)
                       :disabled? (or unchanged?
                                      (empty? (:resolvers state))
-                                     (invlaid-resolvers? (:resolvers state)))}
+                                     (invalid-resolvers? (:resolvers state)))}
                      "Set Resolvers")))))
              5 (g/grid
                 {:md 10}

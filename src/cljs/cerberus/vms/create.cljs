@@ -1,20 +1,21 @@
 (ns cerberus.vms.create
-     (:require
-      [om.core :as om :include-macros true]
-      [om-tools.dom :as d :include-macros true]
-      [om-bootstrap.grid :as g]
-      [om-bootstrap.nav :as n]
-      [om-bootstrap.table :refer [table]]
-      [om-bootstrap.input :as i]
-      [om-bootstrap.button :as b]
-      [cerberus.networks.api :as networks]
-      [cerberus.datasets.api :as datasets]
-      [cerberus.packages.api :as packages]
-      [cerberus.groupings.api :as groupings]
-      [cerberus.create :as create]
-      [clojure.string :refer [split]]
-      [cerberus.state :refer [app-state]]
-      [cerberus.utils :refer [make-event val-by-id ->state]]))
+  (:require
+   [om.core :as om :include-macros true]
+   [om-tools.dom :as d :include-macros true]
+   [om-bootstrap.grid :as g]
+   [om-bootstrap.nav :as n]
+   [om-bootstrap.table :refer [table]]
+   [om-bootstrap.input :as i]
+   [om-bootstrap.button :as b]
+   [cerberus.networks.api :as networks]
+   [cerberus.ipranges.api :as ipranges]
+   [cerberus.datasets.api :as datasets]
+   [cerberus.packages.api :as packages]
+   [cerberus.groupings.api :as groupings]
+   [cerberus.create :as create]
+   [clojure.string :refer [split]]
+   [cerberus.state :refer [app-state]]
+   [cerberus.utils :refer [make-event val-by-id ->state]]))
 
 
 (def spec-alias {:label "Alias" :id "vm-alias" :key [:config :alias]})
@@ -93,6 +94,7 @@
             (d/td name) (d/td cpu_cap) (d/td ram) (d/td quota)))
          (sort-by :name (vals (get-in data [:packages :elements])))))))
 
+;; This kind of sucks, it tries to get a full row ...
 (defn networking-tab [data owner state]
   (g/grid
    {:md 10}
@@ -137,27 +139,88 @@
          :on-click #(om/update! data [:data :config :resolvers] rs)
          :disabled? (or unchanged?
                         (empty? (:resolvers state))
-                        (invlaid-resolvers? (:resolvers state)))}
+                        (invalid-resolvers? (:resolvers state)))}
         "Set Resolvers"))))))
+
+(defn advanced-tab [data owner state]
+  (let [groupings (get-in  data [:groupings :elements])]
+    (g/grid
+     {:md 10}
+     (g/row
+      {}
+      (g/col
+       {:xs 12}
+       (i/input {:type "select" :value (get-in data [:data :config :grouping])
+                 :id "vm-create-cluster"
+                 :on-change
+                 (make-event (fn [e]
+                               (let [v (val-by-id "vm-create-cluster")]
+                                 (if (empty? v)
+                                   (om/update! data [:data :config] #(dissoc % :grouping))
+                                   (om/update! data [:data :config :grouping] v)))))}
+                (d/option "")
+                (map #(d/option {:value (:uuid %)}  (:name %)) (filter #(= (:type %) "cluster") (map second groupings))))))
+     (g/row
+      {}
+      (g/col
+       {:xs 12}
+       (d/h4 "Metadata")))
+     (g/row
+      {}
+      (g/col
+       {:sm 4}
+       (i/input {:type "text" :value (:meta-name state) :placeholder "Name"
+                 :on-change (->state owner :meta-name)}))
+      (g/col
+       {:sm 4}
+       (i/input {:type "text" :value (:meta-val state) :placeholder "Value"
+                 :on-change (->state owner :meta-val)}))
+      (g/col
+       {:sm 2}
+       (b/button
+        {:bs-style "primary"
+         :on-click #(om/update! data [:data :config :metadata (:meta-name state)] (:meta-val state))
+         :disabled? (or (empty? (:meta-name state)) (empty? (:meta-val state)))}
+        "Add")))
+     (g/row
+      {}
+      (g/col
+       {:sm 10}
+       (table
+        {:condensed? true}
+        (d/thead
+         (d/tr
+          (d/th "Key")
+          (d/th "Value")))
+        (d/tbody
+         (map (fn [[r v]]
+                (d/tr
+                 (d/td r)
+                 (d/td v)))
+              (get-in data [:data :config :metadata])))))))))
 
 (defn render [data owner opts]
   (reify
     om/IDisplayName
     (display-name [_]
       "createvmc")
+    om/IWillMount
+    (will-mount [_]
+      (if (not (:networks data))
+        (networks/list data))
+      (if (not (:ipranges data))
+              (ipranges/list data))
+      (if (not (:groupings data))
+        (groupings/list data))
+      (if (not (:datasets data))
+        (datasets/list data))
+      (if (not (:packages data))
+        (packages/list data)))
     om/IRenderState
     (render-state [_ state]
       (let [tab (get-in data [:key] 1)
             mkopts (partial mkopts data)
-            groupings (get-in  data [:groupings :elements])]
-        (if (not (:networks data))
-          (networks/list data))
-        (if (not groupings)
-          (groupings/list data))
-        (if (not (:datasets data))
-          (datasets/list data))
-        (if (not (:packages data))
-          (packages/list data))
+            ]
         (g/grid
          {:id "vm-create-grid" :class "vms-create"}
          (g/row
@@ -176,59 +239,5 @@
              1 (main-tab data)
              2 (dataset-tab data)
              3 (package-tab data)
-             ;; This kind of sucks, it tries to get a full row ...
              4 (networking-tab data owner state)
-             5 (g/grid
-                {:md 10}
-                (g/row
-                 {}
-                 (g/col
-                  {:xs 12}
-                  (i/input {:type "select" :value (get-in data [:data :config :grouping])
-                            :id "vm-create-cluster"
-                            :on-change
-                            (make-event (fn [e]
-                                          (let [v (val-by-id "vm-create-cluster")]
-                                            (if (empty? v)
-                                              (om/update! data [:data :config] #(dissoc % :grouping))
-                                              (om/update! data [:data :config :grouping] v)))))}
-                           (d/option "")
-                           (map #(d/option {:value (:uuid %)}  (:name %)) (filter #(= (:type %) "cluster") (map second groupings))))))
-                (g/row
-                 {}
-                 (g/col
-                  {:xs 12}
-                  (d/h4 "Metadata")))
-                (g/row
-                 {}
-                 (g/col
-                  {:sm 4}
-                  (i/input {:type "text" :value (:meta-name state) :placeholder "Name"
-                            :on-change (->state owner :meta-name)}))
-                 (g/col
-                  {:sm 4}
-                  (i/input {:type "text" :value (:meta-val state) :placeholder "Value"
-                            :on-change (->state owner :meta-val)}))
-                 (g/col
-                  {:sm 2}
-                  (b/button
-                   {:bs-style "primary"
-                    :on-click #(om/update! data [:data :config :metadata (:meta-name state)] (:meta-val state))
-                    :disabled? (or (empty? (:meta-name state)) (empty? (:meta-val state)))}
-                   "Add")))
-                (g/row
-                 {}
-                 (g/col
-                  {:sm 10}
-                  (table
-                   {:condensed? true}
-                   (d/thead
-                    (d/tr
-                     (d/th "Key")
-                     (d/th "Value")))
-                   (d/tbody
-                    (map (fn [[r v]]
-                           (d/tr
-                            (d/td r)
-                            (d/td v)))
-                         (get-in data [:data :config :metadata])))))))))))))))
+             5 (advanced-tab data owner state)))))))))

@@ -7,6 +7,7 @@
    [om-bootstrap.table :refer [table]]
    [om-bootstrap.input :as i]
    [om-bootstrap.button :as b]
+   [om-bootstrap.random :as r]
    [cerberus.networks.api :as networks]
    [cerberus.ipranges.api :as ipranges]
    [cerberus.datasets.api :as datasets]
@@ -114,14 +115,16 @@
             (d/tr
              (d/td (str nic ": " (name description)))))
            (d/tbody
-            (map (fn [{:keys [uuid name]}]
-                   (d/tr
-                    {:class (if (= (get-in data [:data :config :networks nic]) uuid) "active" "")
-                     :on-click (make-event (fn []
-                                             (om/transact! data [:data :config :networks] #(assoc % nic uuid))
-                                             (validate-data! (assoc-in data [:data :config :networks nic] uuid))))}
-                    (d/td name)))
-                 (sort-by :name (filter #(not= 0 (count (:ipranges %))) (vals (get-in data [:networks :elements])))))))))
+            (map (fn [{:keys [uuid name ipranges]}]
+                   (let [free (reduce + (map #(count (:free (get-in data [:ipranges :elements %]))) ipranges))]
+                     (d/tr
+                      {:class (if (= (get-in data [:data :config :networks nic]) uuid) "active" "")
+                       :on-click (if (> free 0)
+                                   (make-event (fn []
+                                                 (om/transact! data [:data :config :networks] #(assoc % nic uuid))
+                                                 (validate-data! (assoc-in data [:data :config :networks nic] uuid)))))}
+                      (d/td name (if (= free 0) [" " (r/label {:bs-style "danger"} "No free IPs")])))))
+                 (sort-by :name (vals (get-in data [:networks :elements]))))))))
        networks)))
    (g/row
     {}
@@ -209,7 +212,7 @@
       (if (not (:networks data))
         (networks/list data))
       (if (not (:ipranges data))
-              (ipranges/list data))
+        (ipranges/list data))
       (if (not (:groupings data))
         (groupings/list data))
       (if (not (:datasets data))

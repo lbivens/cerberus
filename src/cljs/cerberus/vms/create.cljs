@@ -1,20 +1,20 @@
-inv(ns cerberus.vms.create
-  (:require
-   [om.core :as om :include-macros true]
-   [om-tools.dom :as d :include-macros true]
-   [om-bootstrap.grid :as g]
-   [om-bootstrap.nav :as n]
-   [om-bootstrap.table :refer [table]]
-   [om-bootstrap.input :as i]
-   [om-bootstrap.button :as b]
-   [cerberus.networks.api :as networks]
-   [cerberus.datasets.api :as datasets]
-   [cerberus.packages.api :as packages]
-   [cerberus.groupings.api :as groupings]
-   [cerberus.create :as create]
-   [clojure.string :refer [split]]
-   [cerberus.state :refer [app-state]]
-   [cerberus.utils :refer [make-event val-by-id ->state]]))
+(ns cerberus.vms.create
+     (:require
+      [om.core :as om :include-macros true]
+      [om-tools.dom :as d :include-macros true]
+      [om-bootstrap.grid :as g]
+      [om-bootstrap.nav :as n]
+      [om-bootstrap.table :refer [table]]
+      [om-bootstrap.input :as i]
+      [om-bootstrap.button :as b]
+      [cerberus.networks.api :as networks]
+      [cerberus.datasets.api :as datasets]
+      [cerberus.packages.api :as packages]
+      [cerberus.groupings.api :as groupings]
+      [cerberus.create :as create]
+      [clojure.string :refer [split]]
+      [cerberus.state :refer [app-state]]
+      [cerberus.utils :refer [make-event val-by-id ->state]]))
 
 
 (def spec-alias {:label "Alias" :id "vm-alias" :key [:config :alias]})
@@ -51,6 +51,95 @@ inv(ns cerberus.vms.create
 (defn invalid-resolvers? [resolvers]
   (re-matches #"(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:,(?:[0-9]{1,3}\.){3}[0-9]{1,3})+" resolvers))
 
+(defn main-tab [data]
+  (d/form
+   {:class "form-horizontal"}
+   (create/input data spec spec-alias)
+   (create/input data spec spec-hostname)))
+
+(defn validate-data! [data]
+  (create/validate-data! data spec))
+
+(defn dataset-tab [data]
+  (table
+   {}
+   (d/thead
+    (d/tr
+     (d/td "Name") (d/td "Version")))
+   (d/tbody
+    (map (fn [{:keys [uuid name version]}]
+           (d/tr
+            {:class (if (= (get-in data [:data :dataset]) uuid) "active" "inactive")
+             :on-click (make-event (fn []
+                                     (om/transact! data [:data] #(assoc % :dataset uuid))
+                                     (validate-data! (assoc-in data [:data :dataset] uuid))))}
+            (d/td name) (d/td version)))
+         (sort-by #(str (:name %) "-" (:version %))
+                  (vals (get-in data [:datasets :elements])))))))
+
+(defn package-tab [data]
+  (table
+   {}
+   (d/thead
+    (d/tr
+     (d/td "Name") (d/td "CPU") (d/td "RAM") (d/td "Quota")))
+   (d/tbody
+    (map (fn [{:keys [uuid name cpu_cap ram quota]}]
+           (d/tr
+            {:class (if (= (get-in data [:data :package]) uuid) "active" "")
+             :on-click (make-event (fn []
+                                     (om/transact! data [:data] #(assoc % :package uuid))
+                                     (validate-data! (assoc-in data [:data :package] uuid))))}
+            (d/td name) (d/td cpu_cap) (d/td ram) (d/td quota)))
+         (sort-by :name (vals (get-in data [:packages :elements])))))))
+
+(defn networking-tab [data owner state]
+  (g/grid
+   {:md 10}
+   (g/row
+    {}
+    (let [dataset-uuid (get-in data [:data :dataset])
+          dataset (get-in data [:datasets :elements dataset-uuid])
+          networks (get-in data [:datasets :elements dataset-uuid :networks])
+          cnt (count networks)]
+      (map
+       (fn [{nic :name :keys [description]}]
+         (g/col
+          {:md (Math/floor (/ 10 cnt))}
+          (table
+           {}
+           (d/thead
+            (d/tr
+             (d/td (str nic ": " (name description)))))
+           (d/tbody
+            (map (fn [{:keys [uuid name]}]
+                   (d/tr
+                    {:class (if (= (get-in data [:data :config :networks nic]) uuid) "active" "")
+                     :on-click (make-event (fn []
+                                             (om/transact! data [:data :config :networks] #(assoc % nic uuid))
+                                             (validate-data! (assoc-in data [:data :config :networks nic] uuid))))}
+                    (d/td name)))
+                 (sort-by :name (filter #(not= 0 (count (:ipranges %))) (vals (get-in data [:networks :elements])))))))))
+       networks)))
+   (g/row
+    {}
+    (g/col
+     {:sm 8}
+     (i/input {:type "text" :value (:resolvers state) :placeholder "8.8.8.8,8.8.4.4"
+               :on-change (->state owner :resolvers)}))
+    (g/col
+     {:sm 2}
+     (let [rs (split (:resolvers state) #",")
+           current (get-in data [:data :config :resolvers])
+           unchanged? (= current rs)]
+       (b/button
+        {:bs-style (if unchanged?  "success"  "primary")
+         :on-click #(om/update! data [:data :config :resolvers] rs)
+         :disabled? (or unchanged?
+                        (empty? (:resolvers state))
+                        (invlaid-resolvers? (:resolvers state)))}
+        "Set Resolvers"))))))
+
 (defn render [data owner opts]
   (reify
     om/IDisplayName
@@ -60,8 +149,7 @@ inv(ns cerberus.vms.create
     (render-state [_ state]
       (let [tab (get-in data [:key] 1)
             mkopts (partial mkopts data)
-            groupings (get-in  data [:groupings :elements])
-            validate-data! #(create/validate-data! % spec)]
+            groupings (get-in  data [:groupings :elements])]
         (if (not (:networks data))
           (networks/list data))
         (if (not groupings)
@@ -85,85 +173,11 @@ inv(ns cerberus.vms.create
           (g/col
            {:md 10}
            (condp = tab
-             1 (d/form
-                {:class "form-horizontal"}
-                (create/input data spec spec-alias)
-                (create/input data spec spec-hostname))
-             2 (table
-                {}
-                (d/thead
-                 (d/tr
-                  (d/td "Name") (d/td "Version")))
-                (d/tbody
-                 (map (fn [{:keys [uuid name version]}]
-                        (d/tr
-                         {:class (if (= (get-in data [:data :dataset]) uuid) "active" "inactive")
-                          :on-click (make-event (fn []
-                                                  (om/transact! data [:data] #(assoc % :dataset uuid))
-                                                  (validate-data! (assoc-in data [:data :dataset] uuid))))}
-                         (d/td name) (d/td version)))
-                      (sort-by #(str (:name %) "-" (:version %))
-                               (vals (get-in data [:datasets :elements]))))))
-             3 (table
-                {}
-                (d/thead
-                 (d/tr
-                  (d/td "Name") (d/td "CPU") (d/td "RAM") (d/td "Quota")))
-                (d/tbody
-                 (map (fn [{:keys [uuid name cpu_cap ram quota]}]
-                        (d/tr
-                         {:class (if (= (get-in data [:data :package]) uuid) "active" "")
-                          :on-click (make-event (fn []
-                                                  (om/transact! data [:data] #(assoc % :package uuid))
-                                                  (validate-data! (assoc-in data [:data :package] uuid))))}
-                         (d/td name) (d/td cpu_cap) (d/td ram) (d/td quota)))
-                      (sort-by :name (vals (get-in data [:packages :elements]))))))
+             1 (main-tab data)
+             2 (dataset-tab data)
+             3 (package-tab data)
              ;; This kind of sucks, it tries to get a full row ...
-             4 (g/grid
-                {:md 10}
-                (g/row
-                 {}
-                 (let [dataset-uuid (get-in data [:data :dataset])
-                       dataset (get-in data [:datasets :elements dataset-uuid])
-                       networks (get-in data [:datasets :elements dataset-uuid :networks])
-                       cnt (count networks)]
-                   (map
-                    (fn [{nic :name :keys [description]}]
-                      (g/col
-                       {:md (Math/floor (/ 10 cnt))}
-                       (table
-                        {}
-                        (d/thead
-                         (d/tr
-                          (d/td (str nic ": " (name description)))))
-                        (d/tbody
-                         (map (fn [{:keys [uuid name]}]
-                                (d/tr
-                                 {:class (if (= (get-in data [:data :config :networks nic]) uuid) "active" "")
-                                  :on-click (make-event (fn []
-                                                          (om/transact! data [:data :config :networks] #(assoc % nic uuid))
-                                                          (validate-data! (assoc-in data [:data :config :networks nic] uuid))))}
-                                 (d/td name)))
-                              (sort-by :name (filter #(not= 0 (count (:ipranges %))) (vals (get-in data [:networks :elements])))))))))
-                    networks)))
-                (g/row
-                 {}
-                 (g/col
-                  {:sm 8}
-                  (i/input {:type "text" :value (:resolvers state) :placeholder "8.8.8.8,8.8.4.4"
-                            :on-change (->state owner :resolvers)}))
-                 (g/col
-                  {:sm 2}
-                  (let [rs (split (:resolvers state) #",")
-                        current (get-in data [:data :config :resolvers])
-                        unchanged? (= current rs)]
-                    (b/button
-                     {:bs-style (if unchanged?  "success"  "primary")
-                      :on-click #(om/update! data [:data :config :resolvers] rs)
-                      :disabled? (or unchanged?
-                                     (empty? (:resolvers state))
-                                     (invlaid-resolvers? (:resolvers state)))}
-                     "Set Resolvers")))))
+             4 (networking-tab data owner state)
              5 (g/grid
                 {:md 10}
                 (g/row

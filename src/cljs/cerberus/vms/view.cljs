@@ -862,6 +862,24 @@
          (d/td target-str ":" filters-str)
          (d/td btn))))))
 
+
+(defn rule-table [render-rule title rules]
+  (g/col
+   {:xs 12 :md 6}
+   (p/panel
+    {:header title
+     :class "fwrule"}
+    (table
+     {}
+     (d/thead
+      (d/tr
+       (d/th "src")
+       (d/th "action")
+       (d/th "dst")
+       (d/th)))
+     (d/tbody
+      (map render-rule rules))))))
+
 (defn render-fw-rules [app owner opts]
   (reify
     om/IInitState
@@ -908,40 +926,12 @@
           (r/glyphicon {:glyph "fire"}) " block"
           (r/glyphicon {:glyph "ok"}) " allow"
           (r/glyphicon {:glyph "hdd"}) " this zone")))
-       (row
-        (let [fw-rules (get-in app [root :elements (get-in app [root :selected])])]
-          (g/col
-           {:xs 12 :md 6}
-           (p/panel
-            {:header "Inbound rules"
-             :class "fwrule"}
-            (table
-             {}
-             (d/thead
-              (d/tr
-               (d/th "src")
-               (d/th "action")
-               (d/th "dst")
-               (d/th)))
-             (d/tbody
-              (let [rules (filter #(= (:direction %) "inbound") (:fw_rules fw-rules))]
-                (map (partial render-rule (get-in app [root :selected])) rules))))))
-          (g/col
-           {:xs 12 :md 6}
-           (p/panel
-            {:header "Outbound rules"
-             :class "fwrule"}
-            (table
-             {}
-             (d/thead
-              (d/tr
-               (d/th "src")
-               (d/th "action")
-               (d/th "dst")
-               (d/th )))
-             (d/tbody
-              (let [rules (filter #(= (:direction %) "outbound") (:fw_rules fw-rules))]
-                (map (partial render-rule (get-in app [root :selected])) rules))))))))))))
+       (let [uuid (get-in app [root :selected])
+             fw-rules (get-in app [root :elements uuid :fw_rules])
+             rule-table (partial rule-table (partial render-rule uuid))]
+         (row
+          (rule-table "Inbound rules" (filter #(= (:direction %) "inbound") fw-rules))
+          (rule-table "Outbound rules" (filter #(= (:direction %) "outbound") fw-rules))))))))
 
 (defn build-metric [acc {name :name points :points}]
   (match

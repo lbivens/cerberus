@@ -47,8 +47,9 @@
    (delete-state! [:vms :elements channel :backups (keyword backup-id)])
 
    [{:event "snapshot"
-     :data {:action "completed", :uuid snap-id}}]
-   (set-state! [:vms :elements channel :snapshots (keyword snap-id) :state] "completed")
+     :data {:action "completed", :data data :uuid snap-id}}]
+   (set-state! [:vms :elements channel :snapshots (keyword snap-id)] data)
+
 
    [{:event "snapshot"
      :data  {:action "deleted" :uuid snap-id}}]

@@ -862,11 +862,11 @@
          (d/td target-str ":" filters-str)
          (d/td btn))))))
 
-(defn render-fw-rules [data owner opts]
+(defn render-fw-rules [app owner opts]
   (reify
     om/IInitState
     (init-state [_]
-      {:uuid (:uuid data)
+      {:uuid (get-in app [root :selected])
        :action "block"
        :direction "inbound"
        :protocol "tcp"
@@ -909,38 +909,39 @@
           (r/glyphicon {:glyph "ok"}) " allow"
           (r/glyphicon {:glyph "hdd"}) " this zone")))
        (row
-        (g/col
-         {:xs 12 :md 6}
-         (p/panel
-          {:header "Inbound rules"
-           :class "fwrule"}
-          (table
-           {}
-           (d/thead
-            (d/tr
-             (d/th "src")
-             (d/th "action")
-             (d/th "dst")
-             (d/th)))
-           (d/tbody
-            (let [rules (filter #(= (:direction %) "inbound") (:fw_rules data))]
-              (map (partial render-rule (:uuid data)) rules))))))
-        (g/col
-         {:xs 12 :md 6}
-         (p/panel
-          {:header "Outbound rules"
-           :class "fwrule"}
-          (table
-           {}
-           (d/thead
-            (d/tr
-             (d/th "src")
-             (d/th "action")
-             (d/th "dst")
-             (d/th )))
-           (d/tbody
-            (let [rules (filter #(= (:direction %) "outbound") (:fw_rules data))]
-              (map (partial render-rule (:uuid data)) rules)))))))))))
+        (let [fw-rules (get-in app [root :elements (get-in app [root :selected])])]
+          (g/col
+           {:xs 12 :md 6}
+           (p/panel
+            {:header "Inbound rules"
+             :class "fwrule"}
+            (table
+             {}
+             (d/thead
+              (d/tr
+               (d/th "src")
+               (d/th "action")
+               (d/th "dst")
+               (d/th)))
+             (d/tbody
+              (let [rules (filter #(= (:direction %) "inbound") (:fw_rules fw-rules))]
+                (map (partial render-rule (get-in app [root :selected])) rules))))))
+          (g/col
+           {:xs 12 :md 6}
+           (p/panel
+            {:header "Outbound rules"
+             :class "fwrule"}
+            (table
+             {}
+             (d/thead
+              (d/tr
+               (d/th "src")
+               (d/th "action")
+               (d/th "dst")
+               (d/th )))
+             (d/tbody
+              (let [rules (filter #(= (:direction %) "outbound") (:fw_rules fw-rules))]
+                (map (partial render-rule (get-in app [root :selected])) rules))))))))))))
 
 (defn build-metric [acc {name :name points :points}]
   (match
@@ -984,7 +985,7 @@
    "backups"   {:key  6 :fn #(om/build render-backups %1 {:opts {:uuid (:uuid %2)}})   :title "Backups"}
    "services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
    "logs"      {:key  8 :fn (b render-logs)      :title "Logs"}
-   "fw-rules"  {:key  9 :fn (b render-fw-rules)  :title "Firewall"}
+   "fw-rules" {:key 9 :fn #(om/build render-fw-rules %1) :title "Firewall"}
    "metrics"   {:key 10 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "metadata"  {:key 11 :fn (b metadata/render)  :title "Metadata"}})
 

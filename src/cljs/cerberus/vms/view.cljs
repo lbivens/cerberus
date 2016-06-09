@@ -909,38 +909,39 @@
           (r/glyphicon {:glyph "ok"}) " allow"
           (r/glyphicon {:glyph "hdd"}) " this zone")))
        (row
-        (g/col
-         {:xs 12 :md 6}
-         (p/panel
-          {:header "Inbound rules"
-           :class "fwrule"}
-          (table
-           {}
-           (d/thead
-            (d/tr
-             (d/th "src")
-             (d/th "action")
-             (d/th "dst")
-             (d/th)))
-           (d/tbody
-            (let [rules (filter #(= (:direction %) "inbound") (:fw_rules (get-in app [root :elements (get-in app [root :selected])])))]
-              (map (partial render-rule (get-in app [root :selected])) rules))))))
-        (g/col
-         {:xs 12 :md 6}
-         (p/panel
-          {:header "Outbound rules"
-           :class "fwrule"}
-          (table
-           {}
-           (d/thead
-            (d/tr
-             (d/th "src")
-             (d/th "action")
-             (d/th "dst")
-             (d/th )))
-           (d/tbody
-            (let [rules (filter #(= (:direction %) "outbound") (:fw_rules (get-in app [root :elements (get-in app [root :selected])])))]
-              (map (partial render-rule (get-in app [root :selected])) rules)))))))))))
+        (let [fw-rules (get-in app [root :elements (get-in app [root :selected])])]
+          (g/col
+           {:xs 12 :md 6}
+           (p/panel
+            {:header "Inbound rules"
+             :class "fwrule"}
+            (table
+             {}
+             (d/thead
+              (d/tr
+               (d/th "src")
+               (d/th "action")
+               (d/th "dst")
+               (d/th)))
+             (d/tbody
+              (let [rules (filter #(= (:direction %) "inbound") (:fw_rules fw-rules))]
+                (map (partial render-rule (get-in app [root :selected])) rules))))))
+          (g/col
+           {:xs 12 :md 6}
+           (p/panel
+            {:header "Outbound rules"
+             :class "fwrule"}
+            (table
+             {}
+             (d/thead
+              (d/tr
+               (d/th "src")
+               (d/th "action")
+               (d/th "dst")
+               (d/th )))
+             (d/tbody
+              (let [rules (filter #(= (:direction %) "outbound") (:fw_rules fw-rules))]
+                (map (partial render-rule (get-in app [root :selected])) rules))))))))))))
 
 (defn build-metric [acc {name :name points :points}]
   (match

@@ -9,7 +9,6 @@
 
 (def root :ipranges)
 
-
 (defn list [data]
   (api/list data root))
 

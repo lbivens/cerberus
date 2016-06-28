@@ -209,16 +209,11 @@
       "createvmc")
     om/IWillMount
     (will-mount [_]
-      (if (not (:networks data))
-        (networks/list data))
-      (if (not (:ipranges data))
-        (ipranges/list data))
-      (if (not (:groupings data))
-        (groupings/list data))
-      (if (not (:datasets data))
-        (datasets/list data))
-      (if (not (:packages data))
-        (packages/list data)))
+      (networks/list data)
+      (ipranges/list data)
+      (groupings/list data)
+      (datasets/list data)
+      (packages/list data))
     om/IRenderState
     (render-state [_ state]
       (let [tab (get-in data [:key] 1)

@@ -65,7 +65,9 @@
          ;; max text
          (d/text {:x 10 :y -15 :class "label max"} (str (Math/round max) " " unit))
          ;; min text
-         (d/text {:x 10 :y 100 :class "label min"} 0)
+         (d/text {:x 10  :y 90  :class "label min"} 0 )
+         (d/text {:x 10  :y 100 :class "label min"} "- 1 min")
+         (d/text {:x 130 :y 100 :class "label min"} "now")
          ;; x-line
          (d/polyline
           {:points (mkp [[(- x 4) (- 102 y)] [(+ 120 x) (- 102 y)]])

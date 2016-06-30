@@ -31,10 +31,10 @@
     (reset! local-timer t)
     (reset! timer t)))
 
-(defn max-metric [[_ points]]
+(defn max-metric [[_ {points :points}]]
   (apply max points))
 
-(defn  normalize-metric [max [name points]]
+(defn  normalize-metric [max [name {points :points}]]
   (if (= max 0)
     [name points]
     [name (map #(* (/ (- max  %) max) 100) points)]))
@@ -43,13 +43,14 @@
   (let [max (apply max (map max-metric metrics))]
     {:name name
      :max max
+     :unit (:unit  (second (first metrics)))
      :lines (map (partial normalize-metric max) metrics)}))
 
 (defn mkp [points]
   (apply str (map (fn [[x y]] (str x "," y " ")) points)))
 
 
-(defn omg [{name :name lines :lines max :max} owner]
+(defn omg [{name :name lines :lines max :max unit :unit} owner]
   (reify
     om/IDisplayName
     (display-name [_]
@@ -62,7 +63,7 @@
          {:class   "omg"
           :viewBox "0 0 200 80"}
          ;; max text
-         (d/text {:x 10 :y -15 :class "label max"} (Math/round max))
+         (d/text {:x 10 :y -15 :class "label max"} (str (Math/round max) " " unit))
          ;; min text
          (d/text {:x 10 :y 100 :class "label min"} 0)
          ;; x-line
@@ -113,5 +114,8 @@
            {:xs 12}
            (d/p "No metric storage seems to be configured please install DalmatinerDB and Tachyon to use this feature")))
          (row
-          (let [metrics (map normalize-metrics (reduce build-metric {} (map process-metric data)))]
+          (let [metrics (map process-metric data)
+                metrics (reduce build-metric {} metrics)
+                metrics (map normalize-metrics metrics)]
+
             (om/build-all point-view metrics))))))))

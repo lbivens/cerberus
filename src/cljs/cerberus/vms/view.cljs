@@ -938,28 +938,27 @@
    [name]
 
    [["cpu" sub-metric]]
-   (assoc-in acc ["CPU" sub-metric] points)
+   (assoc-in acc ["CPU" sub-metric] {:unit "%" :points points})
 
    [["memory" sub-metric]]
-   (assoc-in acc ["Memory" sub-metric] points)
+   (assoc-in acc ["Memory" sub-metric] {:unit "MB" :points points})
 
    [["swap" sub-metric]]
-   (assoc-in acc ["Swap" sub-metric] points)
+   (assoc-in acc ["Swap" sub-metric] {:unit "MB" :points points})
 
    [["net" direction "kb" nic]]
-   (assoc-in acc [(str nic " throughput") direction] points)
+   (assoc-in acc [(str nic " throughput") direction] {:unit "KB" :points points})
 
    [["net" direction "ops" nic]]
-   (assoc-in acc [(str nic " OPs") direction] points)
+   (assoc-in acc [(str nic " OPs") direction] {:unit "Ops/s" :points points})
 
    [["zfs" direction "kb"]]
-   (assoc-in acc ["ZFS throughput" direction] points)
+   (assoc-in acc ["ZFS throughput" direction] {:unit "KB" :points points})
 
    [["zfs" direction "ops"]]
-   (assoc-in acc ["ZFS OPs" direction] points)
+   (assoc-in acc ["ZFS OPs" direction] {:unit "Ops/s" :points points})
 
    [_] acc))
-
 
 (defn b [f]
   #(om/build f %2))

@@ -231,7 +231,7 @@
    [name]
 
    [["cpu" sub-metric]]
-   (assoc-in acc ["CPU" sub-metric] points)
+   (assoc-in acc ["CPU" sub-metric] {:points points :unit "cycles"})
 
    [_] acc))
 

@@ -1000,7 +1000,7 @@
                (networks/list data)
                (packages/list data)
                (ipranges/list data))
-   :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config} data]
+   :name-fn  (fn [{:keys [type state uuid hypervisor] {alias :alias} :config} data]
                (d/div
                 {}
                 alias " "

@@ -63,6 +63,10 @@
       (let [uuid (get-in app [root :selected])
             element (get-in app [root :elements uuid])
             conf (:config element)
+            type (:type conf)
+            info (:info element)
+            vnc (:vnc info)
+
             current-owner (:owner element)
             invalid-owner #{"" nil current-owner}
             orgs (get-in app [:orgs :elements])
@@ -138,6 +142,20 @@
               "CPU Cap"    (-> (:cpu_cap conf) fmt-percent)
               "Max Swap"   (->> (:max_swap conf) (fmt-bytes :b))
               "Memory"     (->> (:ram conf) (fmt-bytes :mb)))}))
+          (if vnc
+
+            (let [host (:host vnc)
+                  port (:port vnc)
+                  display (:display vnc)]
+              (g/col
+               {:sm 6 :md 4}
+               (p/panel
+                {:header (d/h3 "VNC")
+                 :list-group
+                 (lg
+                  "Host"    (d/a {:href (str "vnc://" host ":" port)} host)
+                  "Display" display
+                  "Port"    port)}))))
           (g/col
            {:sm 6 :md 4}
            (p/panel

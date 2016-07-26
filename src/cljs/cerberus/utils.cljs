@@ -126,3 +126,5 @@
 
 (defn to-date [date]
   (str (js/Date. (/ date 1000))))
+
+(def version "0.8.3")

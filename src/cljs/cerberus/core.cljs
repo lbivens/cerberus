@@ -34,7 +34,7 @@
    [cerberus.howl :as howl]
 
    [cerberus.timers]
-   [cerberus.utils :refer [goto val-by-id by-id a menu-items]]
+   [cerberus.utils :refer [goto val-by-id by-id a menu-items version]]
    [cerberus.list.utils :refer [large small]]
    [cerberus.state :refer [app-state set-state!]]))
 
@@ -63,7 +63,9 @@
 (defn login [app]
   (r/well
    {:id "login-box"}
-   (d/img {:className "loginlogo" :src "imgs/fifo-logo.png" :alt "FiFo"})
+   (d/img {:className "loginlogo" :src "imgs/fifo-logo.png" :alt "FiFo"
+           :style {:margin-left "40px"}})
+   (d/div {:className "pull-right" :style {:width "40px"}} "v" version)
    (d/form
     nil
     (i/input {:type "text" :placeholder "Login" :id "login" :bs-style (if (:valid-login app) "" "error")})
@@ -109,6 +111,7 @@
     (render-state [_ _]
       (n/navbar
        {:brand (d/a {:href (str "#/")} (d/img {:src "imgs/fifo-logo.png" :alt "FiFo"}))}
+
        (n/nav
         {:collapsible? true}
         (n/nav-item {:key 1 :href "#/vms"} "Machines")
@@ -131,8 +134,11 @@
           ["Stacks & Clusters" "#/groupings"]
           :divider
           ["Logout" #(conf/logout)]
+          :divider
+          [(str "v" version) (str "https://docs.project-fifo.net/v" version "/docs/release-notes")]
           ;;["Logout & Reset UI" #(conf/clear)]
           ))
+
         (let [alerts (:alerts data)]
           (b/dropdown
            {:key 5

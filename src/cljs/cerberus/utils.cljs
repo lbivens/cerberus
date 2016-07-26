@@ -118,7 +118,6 @@
         (d/div {:class "span-label"} label)
         (d/div {:class "span-value"} value)))
 
-
 (defn lg [& items]
   (d/ul
    {:class "list-group"}

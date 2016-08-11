@@ -1,6 +1,6 @@
 (ns cerberus.clients.view
   (:require
-   [clojure.string :refer [blank?]]
+   [clojure.string :as cstr]
    [om.core :as om :include-macros true]
    [om.dom :as dom :include-macros true]
    [om-tools.dom :as d :include-macros true]
@@ -43,7 +43,7 @@
         :id "changepass2"
         :value (:secret2-val state)
         :bs-style (if (or (:secret-validate state)
-                          (blank? (:secret2-val state)))
+                          (cstr/blank? (:secret2-val state)))
                     nil "error")
         :on-change  #(validate/match
                       (val-by-id  "changepass1")
@@ -99,7 +99,7 @@
            (b/button
             {:bs-style "primary"
              :className "pull-right"
-             :on-click #(clients/add-uri uuid (:uri state))
+             :on-click #(clients/add-uri uuid (cstr/trim (:uri state)))
              :disabled? invalid?}
             "Add Redirect URI")))
          (row

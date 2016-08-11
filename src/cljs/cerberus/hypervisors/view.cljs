@@ -1,6 +1,7 @@
 (ns cerberus.hypervisors.view
   (:require-macros [cljs.core.match.macros :refer [match]])
   (:require
+   [clojure.string :as cstr]
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.table :refer [table]]
@@ -14,7 +15,7 @@
    [cerberus.http :as http]
    [cerberus.api :as api]
    [cerberus.hypervisors.api :as hypervisors :refer [root]]
-   [cerberus.services :as services]
+   ;[cerberus.services :as services]
    [cerberus.metadata :as metadata]
    [cerberus.state :refer [set-state! app-state]]
    [cerberus.view :as view]
@@ -46,7 +47,7 @@
      "Mainboard"              mainboard
      "Manufacturer"           manufacturer
      "Serial Number"          serial_number
-     "Virtualisation Support" (clojure.string/join ", " virt_support))}))
+     "Virtualisation Support" (cstr/join ", " virt_support))}))
 
 (defn memory [total provisioned free reserved l1size l1hit]
   (p/panel
@@ -69,14 +70,14 @@
                 (d/b {:class "span-label"} "Disks")
                 (map (fn [[disk disk-info]]
                        [(d/div {:class "span-value"}
-                               (clojure.string/replace (str disk) #"^:" "") ": "
+                               (cstr/replace (str disk) #"^:" "") ": "
                                ((keyword "Size in GB") disk-info))])
                      disks))
           (d/li {:class "list-group-item"}
                 (d/b {:class "span-label"} "Pools")
                 (map (fn [[pool pool-info]]
                        [(d/div {:class "span-value"}
-                               (d/b (d/i (clojure.string/replace (str pool) #"^:" "") ": "))
+                               (d/b (d/i (cstr/replace (str pool) #"^:" "") ": "))
                                (d/br)
                                "Health: "
                                (:health pool-info)
@@ -126,7 +127,7 @@
            (b/button
             {:bs-style "primary"
              :className "pull-right"
-             :on-click #(hypervisors/set-config uuid {:alias (:alias state)})
+             :on-click #(hypervisors/set-config uuid {:alias (cstr/trim (:alias state))})
              :disabled? (empty? (:alias state))}
             "Change alias")))
          (row
@@ -199,7 +200,7 @@
            (b/button
             {:bs-style "primary"
              :className "pull-right"
-             :on-click #(hypervisors/set-characteristic uuid (:char state) (:val state))
+             :on-click #(hypervisors/set-characteristic uuid (cstr/trim (:char state)) (cstr/trim (:val state)))
              :disabled? invalid?}
             "Add Characteristics")))
          (g/row
@@ -237,7 +238,7 @@
 
 (def sections
   {""          {:key  1 :fn  #(om/build render-home %2)     :title "General"}
-   "services"  {:key  3 :fn #(om/build services/render %2   {:opts {:action hypervisors/service-action}})  :title "Services"}
+   ;"services"  {:key  3 :fn #(om/build services/render %2   {:opts {:action hypervisors/service-action}})  :title "Services"}
    "chars"     {:key  4 :fn #(om/build render-chars %2)     :title "Characteristics"}
    ;; "notes"     {:key  5 :fn render-notes     :title "Notes"}
    "metrics"   {:key  5 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}

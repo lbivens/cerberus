@@ -1,7 +1,7 @@
 (ns cerberus.users.view
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require
-   [clojure.string :refer [blank?]]
+   [clojure.string :as cstr]
    [om.core :as om :include-macros true]
    [om.dom :as dom :include-macros true]
    [om-tools.dom :as d :include-macros true]
@@ -47,7 +47,7 @@
         :id "changepass2"
         :value (:password2-val state)
         :bs-style (if (or (:password-validate state)
-                          (blank? (:password2-val state)))
+                          (cstr/blank? (:password2-val state)))
                     nil "error")
         :on-change  #(validate/match
                       (val-by-id  "changepass1")
@@ -365,7 +365,7 @@
 
 (defn create-api-key [owner {:keys [comment scopes uuid] :as state}]
   (go
-    (let [data     {:comment comment :scope scopes}
+    (let [data     {:comment (cstr/trim comment) :scope scopes}
           resp     (<! (http/post [root uuid :tokens] {} {:json-params data}))]
       (if (= 200 (:status resp))
         (do

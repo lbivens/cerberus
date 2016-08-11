@@ -1,6 +1,7 @@
 (ns cerberus.groupings.view
   (:require-macros [cljs.core.match.macros :refer [match]])
   (:require
+   [clojure.string :as cstr]
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.table :refer [table]]
@@ -56,7 +57,7 @@
            (b/button
             {:bs-style "primary"
              :className "pull-right"
-             :on-click #(groupings/set-config uuid (:conf state) (:val state))
+             :on-click #(groupings/set-config uuid (cstr/trim (:conf state)) (cstr/trim (:val state)))
              :disabled? invalid?}
             "Set Configuration")))
          (row

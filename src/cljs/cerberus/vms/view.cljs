@@ -20,7 +20,7 @@
    [cerberus.orgs.api :as orgs]
    [cerberus.hypervisors.api :as hypervisors]
    [cerberus.datasets.api :as datasets]
-   [cerberus.services :as services]
+   ;[cerberus.services :as services]
    [cerberus.metadata :as metadata]
    [cerberus.vms.api :refer [root] :as vms]
    [cerberus.networks.api :as networks]
@@ -74,7 +74,8 @@
             package (api/get-sub-element :packages :package identity element)
             dataset (api/get-sub-element :datasets :dataset identity element)
             hypervisor (api/get-sub-element :hypervisors :hypervisor identity element)
-            services (:services element)]
+            ;services (:services element)
+            ]
         (r/well
          {}
          (row
@@ -89,7 +90,7 @@
            (b/button
             {:bs-style "primary"
              :className "pull-right fbutown"
-             :on-click #(vms/change-alias uuid (:alias state))
+             :on-click #(vms/change-alias uuid (cstr/trim (:alias state)))
              :disabled? (empty? (:alias state))}
             "change-alias")))
          (row
@@ -129,9 +130,10 @@
               "Autoboot"   (:autoboot conf)
               "Dataset"    (d/a {:href (str "#/datasets/" (:uuid dataset))} (:name dataset))
               "Package"    (d/a {:href (str "#/packages/" (:uuid package))} (:name package))
-              "Services" (d/span (count (filter (fn [[_ state]] (= state "maintenance")) services)) "/"
-                                 (count (filter (fn [[_ state]] (= state "online")) services)) "/"
-                                 (count (filter (fn [[_ state]] (= state "disabled")) services))))}))
+              ;; "Services"   (d/span (count (filter (fn [[_ state]] (= state "maintenance")) services)) "/"
+              ;;                      (count (filter (fn [[_ state]] (= state "online")) services)) "/"
+              ;;                      (count (filter (fn [[_ state]] (= state "disabled")) services)))
+              )}))
           (g/col
            {:sm 6 :md 4}
            (p/panel
@@ -245,7 +247,8 @@
                             {:bs-style "primary"
                              :bs-size "small"
                              :className "pull-right fbutown"
-                             :on-click #(datasets/from-vm (:uuid data) uuid (:name state) (:version state) (:os state) (:descs state))
+                             :on-click #(datasets/from-vm (:uuid data) uuid (cstr/trim (:name state)) (cstr/trim (:version state))
+                                                          (cstr/trim (:os state)) (cstr/trim (:descs state)))
                              :disabled? invalid}
                             "Create Image"))))
                   (filter
@@ -331,7 +334,7 @@
                                                 :class "pull-right"
                                                 :bs-size "small"
                                                 :on-click
-                                                #(vms/set-hostname uuid interface (:hostname state))} (r/glyphicon {:glyph "pencil"})))))
+                                                #(vms/set-hostname uuid interface (cstr/trim (:hostname state)))} (r/glyphicon {:glyph "pencil"})))))
                (group-li "Network: " (if-let [net (network-map ip)]
                                        (d/a {:href (str  "#/networks/" net)} (get-in full-nets [net :name]))))
                (group-li "IP Range: "
@@ -525,7 +528,7 @@
             (b/button {:bs-style "primary"
                        :wrapper-classname "col-xs-2"
                        :disabled? (empty? (:name state))
-                       :on-click #(vms/snapshot (:uuid data) (:name state))} "Create")))))
+                       :on-click #(vms/snapshot (:uuid data) (cstr/trim (:name state)))} "Create")))))
         (snapshot-table state owner (:uuid data) (:snapshots data)))))))
 
 
@@ -635,7 +638,7 @@
                     (b/button {:bs-style "primary"
                                :wrapper-classname "col-xs-2"
                                :disabled? (empty? (:name state))
-                               :on-click #(vms/backup (:uuid data) (:name state))} "Create")))))
+                               :on-click #(vms/backup (:uuid data) (cstr/trim (:name state)))} "Create")))))
           (backup-table state owner uuid (:target state) (:backups data))))))))
 
 
@@ -821,7 +824,7 @@
       :code (str->int (:icmp-code state))}]
     (if (:all-ports state)
       "all"
-      (map str->int (cstr/split (:ports state) #"[, ]+") ))))
+      (map str->int (cstr/split (cstr/trim (:ports state)) #"[, ]+") ))))
 
 
 ;; TODO: make this properly check for va
@@ -990,7 +993,7 @@
    "snapshots" {:key  4 :fn (b render-snapshots) :title "Snapshot"}
    "imaging"   {:key  5 :fn (b render-imaging) :title "Imaging"}
    "backups"   {:key  6 :fn #(om/build render-backups %1 {:opts {:uuid (:uuid %2)}})   :title "Backups"}
-   "services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
+   ;"services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
    "logs"      {:key  8 :fn (b render-logs)      :title "Logs"}
    "fw-rules" {:key 9 :fn #(om/build render-fw-rules %1) :title "Firewall"}
    "metrics"   {:key 10 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}

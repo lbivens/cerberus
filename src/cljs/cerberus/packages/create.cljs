@@ -1,5 +1,6 @@
 (ns cerberus.packages.create
   (:require
+   [clojure.string :as string]
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
    [om-bootstrap.grid :as g]
@@ -55,15 +56,17 @@
     value))
 
 (defn mk-rule [{:keys [weight attribute condition low high value]}]
-  (condp = (rule-type weight)
-    :scale  (if (valid attribute low high)
-              {:weight "scale" :attribute attribute :low (str->int low) :high (str->int high)})
-    :random (if (valid attribute low high)
-              {:weight "random" :low (str->int low) :high (str->int high)})
-    :normal (if (valid attribute condition value)
-              {:weight (convert-value "" weight) :attribute attribute :condition condition
-               :value (convert-value condition value)})
-    nil))
+  (let [attribute (string/trim attribute)
+        value (if (string? value) (string/trim value) value)]
+    (condp = (rule-type weight)
+      :scale  (if (valid attribute low high)
+                {:weight "scale" :attribute attribute :low (str->int low) :high (str->int high)})
+      :random (if (valid attribute low high)
+                {:weight "random" :low (str->int low) :high (str->int high)})
+      :normal (if (valid attribute condition value)
+                {:weight (convert-value "" weight) :attribute attribute :condition condition
+                 :value (convert-value condition value)})
+      nil)))
 
 (defn render [data owner]
   (reify

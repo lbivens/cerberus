@@ -67,15 +67,15 @@
    {}
    (d/thead
     (d/tr
-     (d/td "Name") (d/td "Version")))
+     (d/td "Name") (d/td "Type") (d/td "Version")))
    (d/tbody
-    (map (fn [{:keys [uuid name version]}]
+    (map (fn [{:keys [uuid name type version]}]
            (d/tr
             {:class (if (= (get-in data [:data :dataset]) uuid) "active" "inactive")
              :on-click (make-event (fn []
                                      (om/transact! data [:data] #(assoc % :dataset uuid))
                                      (validate-data! (assoc-in data [:data :dataset] uuid))))}
-            (d/td name) (d/td version)))
+            (d/td name) (d/td type) (d/td version)))
          (sort-by #(str (:name %) "-" (:version %))
                   (vals (get-in data [:datasets :elements])))))))
 

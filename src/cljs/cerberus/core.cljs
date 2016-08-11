@@ -111,7 +111,6 @@
     (render-state [_ _]
       (n/navbar
        {:brand (d/a {:href (str "#/")} (d/img {:src "imgs/fifo-logo.png" :alt "FiFo"}))}
-
        (n/nav
         {:collapsible? true}
         (n/nav-item {:key 1 :href "#/vms"} "Machines")
@@ -135,9 +134,7 @@
           :divider
           ["Logout" #(conf/logout)]
           :divider
-          [(str "v" version) (str "https://docs.project-fifo.net/v" version "/docs/release-notes")]
-          ;;["Logout & Reset UI" #(conf/clear)]
-          ))
+          [(str "v" version) (str "https://docs.project-fifo.net/v" version "/docs/release-notes")]))
 
         (let [alerts (:alerts data)]
           (b/dropdown
@@ -153,16 +150,17 @@
              alerts))))
 
         ;;Removed this for now
-        #_(n/nav-item {:key 5 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
-                      (pb/progress-bar {:min 0
-                                        :max (get-in data [:total-memory] 0)
-                                        :now (get-in data [:provisioned-memory] 0) :label "RAM"}))
+        #_(n/nav-item
+           {:key 5 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
+           (pb/progress-bar {:min 0
+                             :max (get-in data [:total-memory] 0)
+                             :now (get-in data [:provisioned-memory] 0) :label "RAM"}))
         ;; Removed this for now
-        #_(n/nav-item {:key 6 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
-                      (pb/progress-bar {:min 0
-                                        :max (get-in data [:disk-size] 0)
-                                        :now (get-in data [:disk-used] 0) :label "Disk"})))
-       ))))
+        #_(n/nav-item
+           {:key 6 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
+           (pb/progress-bar {:min 0
+                             :max (get-in data [:disk-size] 0)
+                             :now (get-in data [:disk-used] 0) :label "Disk"})))))))
 
 (defn main-view [data]
   (condp = (:section data)

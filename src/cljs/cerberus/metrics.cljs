@@ -100,7 +100,7 @@
         (om/build omg data))))))
 
 (defn process-metric [{name :n points :v}]
-  {:name (clojure.string/split name #"-")
+  {:name (clojure.string/split (clojure.string/replace name "'" "") #"-")
    :points points})
 
 (defn render [data owner {build-metric :translate}]
@@ -119,5 +119,4 @@
           (let [metrics (map process-metric data)
                 metrics (reduce build-metric {} metrics)
                 metrics (map normalize-metrics metrics)]
-
             (om/build-all point-view metrics))))))))

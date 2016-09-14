@@ -89,5 +89,5 @@
 (def render
   (view/make root sections datasets/get
              :name-fn #(if-let [homepage (get-in % [:metadata :homepage])]
-                         (d/a {:href homepage} (:name %))
-                         (:name %))))
+                         (d/a {:href homepage} (str  (:name %) " (" (:type %) ")"))
+                         (str  (:name %) " (" (:type %) ")"))))

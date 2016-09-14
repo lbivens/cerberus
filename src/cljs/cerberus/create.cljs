@@ -7,6 +7,7 @@
    [cerberus.api :as api]
    [cerberus.http :as http]
    [cerberus.debug :as dbg]
+   [clojure.string :as string]
    [cerberus.utils :refer [make-event val-by-id str->int]]))
 
 (defn default-validator [data-type]
@@ -26,12 +27,16 @@
   (let [validator (or validator (default-validator data-type))]
     #(or (and optional (not-set? %3)) (validator %1 %2 %3))))
 
+(defn strip-ws [v]
+  (if (string? v)
+    (string/trim v)))
+
 (defn to-dt [data-type val]
   (condp = data-type
     :integer (if (not-set? val)
                nil
                (str->int val))
-    val))
+    (strip-ws val)))
 
 (defn from-dt [data-type val]
   (condp = data-type

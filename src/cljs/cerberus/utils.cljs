@@ -118,7 +118,6 @@
         (d/div {:class "span-label"} label)
         (d/div {:class "span-value"} value)))
 
-
 (defn lg [& items]
   (d/ul
    {:class "list-group"}
@@ -126,3 +125,5 @@
 
 (defn to-date [date]
   (str (js/Date. (/ date 1000))))
+
+(def version "0.8.3")

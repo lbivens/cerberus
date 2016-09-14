@@ -34,7 +34,7 @@
    [cerberus.howl :as howl]
 
    [cerberus.timers]
-   [cerberus.utils :refer [goto val-by-id by-id a menu-items]]
+   [cerberus.utils :refer [goto val-by-id by-id a menu-items version]]
    [cerberus.list.utils :refer [large small]]
    [cerberus.state :refer [app-state set-state!]]))
 
@@ -63,7 +63,9 @@
 (defn login [app]
   (r/well
    {:id "login-box"}
-   (d/img {:className "loginlogo" :src "imgs/fifo-logo.png" :alt "FiFo"})
+   (d/img {:className "loginlogo" :src "imgs/fifo-logo.png" :alt "FiFo"
+           :style {:margin-left "40px"}})
+   (d/div {:className "pull-right" :style {:width "40px"}} "v" version)
    (d/form
     nil
     (i/input {:type "text" :placeholder "Login" :id "login" :bs-style (if (:valid-login app) "" "error")})
@@ -131,8 +133,9 @@
           ["Stacks & Clusters" "#/groupings"]
           :divider
           ["Logout" #(conf/logout)]
-          ;;["Logout & Reset UI" #(conf/clear)]
-          ))
+          :divider
+          [(str "v" version) (str "https://docs.project-fifo.net/v" version "/docs/release-notes")]))
+
         (let [alerts (:alerts data)]
           (b/dropdown
            {:key 5
@@ -147,16 +150,17 @@
              alerts))))
 
         ;;Removed this for now
-        #_(n/nav-item {:key 5 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
-                      (pb/progress-bar {:min 0
-                                        :max (get-in data [:total-memory] 0)
-                                        :now (get-in data [:provisioned-memory] 0) :label "RAM"}))
+        #_(n/nav-item
+           {:key 5 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
+           (pb/progress-bar {:min 0
+                             :max (get-in data [:total-memory] 0)
+                             :now (get-in data [:provisioned-memory] 0) :label "RAM"}))
         ;; Removed this for now
-        #_(n/nav-item {:key 6 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
-                      (pb/progress-bar {:min 0
-                                        :max (get-in data [:disk-size] 0)
-                                        :now (get-in data [:disk-used] 0) :label "Disk"})))
-       ))))
+        #_(n/nav-item
+           {:key 6 :style {:height 20 :width 200} :class "navbar-right hidden-xs hidden-sm"}
+           (pb/progress-bar {:min 0
+                             :max (get-in data [:disk-size] 0)
+                             :now (get-in data [:disk-used] 0) :label "Disk"})))))))
 
 (defn main-view [data]
   (condp = (:section data)

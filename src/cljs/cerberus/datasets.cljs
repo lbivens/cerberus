@@ -18,8 +18,11 @@
   [(del/menue-item uuid)])
 
 (def config (mk-config root "Datasets" actions
-                       :version {:title "Version" :key :version :type :string}
-                       :imported {:title "Imported" :key :imported :type :percent-flt}))
+                       :version {:title "Version" :key :version :type :string :order -20}
+                       :type {:title "Type" :key :type :order -10}
+                       :imported {:title "Imported" :key :imported :type :percent-flt}
+
+                       ))
 
 (set-state! [root :fields] (initial-state config))
 

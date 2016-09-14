@@ -2,6 +2,7 @@
   (:require-macros [cljs.core.async.macros :refer [go]]
                    [cljs.core.match.macros :refer [match]])
   (:require
+   [clojure.string :as cstr]
    [om.core :as om :include-macros true]
    [om.dom :as dom :include-macros true]
    [om-tools.dom :as d :include-macros true]
@@ -111,7 +112,7 @@
            (b/button
             {:bs-style "primary"
              :className "pull-right"
-             :on-click #(orgs/inc-resource uuid (:res state) (str->int (:val state)))
+             :on-click #(orgs/inc-resource uuid (cstr/trim (:res state)) (str->int (:val state)))
              :disabled? invalid?}
             "Increase"))
           (g/col
@@ -119,7 +120,7 @@
            (b/button
             {:bs-style "primary"
              :className "pull-right"
-             :on-click #(orgs/dec-resource uuid (:res state) (str->int (:val state)))
+             :on-click #(orgs/dec-resource uuid (cstr/trim (:res state)) (str->int (:val state)))
              :disabled? invalid?}
             "Decrease")))
          (row

@@ -7,7 +7,8 @@
    [om-bootstrap.pagination :as pg]
    [om-bootstrap.button :as b]
    [cerberus.list.utils :refer [large]]
-   [cerberus.utils :refer [goto make-event menu-items]]
+   [cerberus.config :as config]
+   [cerberus.utils :refer [goto make-event menu-items ensure-kw]]
    [cerberus.state :refer [set-state!]]))
 
 (defn cell-opt [opts opt field]
@@ -15,14 +16,11 @@
     (assoc opts opt style)
     opts))
 
-(def flip-order {:asc :desc
-                 :desc :asc})
+(def flip-order {"asc" "desc"
+                 "desc" "asc"})
 
-(def order-class {:asc "asc"
-                  :desc "desc"})
-
-(def order-str {:asc (r/glyphicon {:glyph "chevron-up"})
-                :desc (r/glyphicon {:glyph "chevron-down"})})
+(def order-str {"asc" (r/glyphicon {:glyph "chevron-up"})
+                "desc" (r/glyphicon {:glyph "chevron-down"})})
 
 (defn page-click-fn [root page]
   (make-event #(set-state! [root :page] page)))
@@ -50,7 +48,7 @@
            (pg/next {:on-click (page-click-fn root current) :disabled? true})
            (pg/next {:on-click (page-click-fn root (inc current))}))])))))
 
-(defn tbl-header [data owner {:keys [field]}]
+(defn tbl-header [data owner {:keys [field root]}]
   (reify
     om/IDisplayName
     (display-name [_]
@@ -59,14 +57,20 @@
     (render [_]
       (let [id (:id field)
             style {}
-            order (get-in data [:sort :order] :asc)]
+            order (get-in data [:sort :order] "asc")
+            toggle-fn #(let [flipped (flip-order order)]
+                         (config/set! [root :sort :order] flipped)
+                         (om/transact! data [:sort :order] (constantly flipped)))
+            set-fn #(let [s {:field id :order "asc"}]
+                      (config/set! [root :sort] s)
+                      (om/transact! data [:sort] (constantly s)))]
 
-        (if (= id (get-in data [:sort :field]))
-          (d/td {:style style} (d/a {:onClick #(om/transact! data [:sort :order] (fn [_] (flip-order order)))
-                         :className (order-class order)} (:title field) " " (order-str order)))
-          (d/td {:style style} (d/a {:onClick #(om/transact! data [:sort] (constantly {:field id :order :asc}))} (:title field))))))))
+        (if (= id (ensure-kw (get-in data [:sort :field])))
+          (d/td {:style style} (d/a {:onClick toggle-fn
+                         :className order} (:title field) " " (order-str order)))
+          (d/td {:style style} (d/a {:onClick set-fn} (:title field))))))))
 
-(defn tbl-headers [data owner {:keys [fields actions]}]
+(defn tbl-headers [data owner {:keys [fields actions root]}]
   (reify
     om/IDisplayName
     (display-name [_]
@@ -75,7 +79,7 @@
     (render [_]
       (d/thead
        (d/tr
-        (map #(om/build tbl-header data {:opts {:field %}}) fields)
+        (map #(om/build tbl-header data {:opts {:field % :root root}}) fields)
         (if actions
           (d/td {:class "actions"})))))))
 
@@ -126,5 +130,4 @@
       {:condensed? true :hover? true}
       (om/build tbl-headers data {:opts opts})
       (d/tbody
-       (om/build-all tbl-row elements {:key :uuid :opts opts}))))
-   #_(pagination root data)))
+       (om/build-all tbl-row elements {:key :uuid :opts opts}))))))

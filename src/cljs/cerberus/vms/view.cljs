@@ -27,6 +27,7 @@
    [cerberus.ipranges.api :as ipranges]
    [cerberus.view :as view]
    [cerberus.packages.api :as packages]
+   [cerberus.groupings.api :as groupings]
    [cerberus.state :refer [app-state set-state!]]
    [cerberus.fields :as fields]
    [cerberus.metrics :as metrics]
@@ -1020,6 +1021,7 @@
                (hypervisors/list data)
                (networks/list data)
                (packages/list data)
+               (groupings/list data)
                (ipranges/list data))
    :name-fn  (fn [{:keys [type state uuid hypervisor] {alias :alias} :config} data]
                (d/div

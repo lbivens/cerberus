@@ -152,7 +152,10 @@
      (g/row
       {}
       (g/col
-       {:xs 12}
+       {:xs 1}
+       (d/h4 "Cluster:"))
+      (g/col
+       {:xs 11}
        (i/input {:type "select" :value (get-in data [:data :config :grouping])
                  :id "vm-create-cluster"
                  :on-change

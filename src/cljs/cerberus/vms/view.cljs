@@ -911,6 +911,7 @@
        :direction "inbound"
        :protocol "tcp"
        :all-ports false
+       :icmp-code "0"
        :target "all"})
     om/IRenderState
     (render-state [_ state]

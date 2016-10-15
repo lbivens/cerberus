@@ -404,7 +404,8 @@
    "accounting" {:key 3 :title "Accounting" :fn #(om/build render-accounting %2)}
    "triggers"   {:key 4 :title "Triggers"   :fn #(om/build render-triggers   %1 {:opts {:id (:uuid %2)}})}
    "docker"     {:key 5 :title "Docker"     :fn #(om/build render-docker   %1 {:opts {:id (:uuid %2)}})}
-   "metadata"   {:key 6 :title "Metadata"   :fn #(om/build metadata/render   %2)}})
+   "metadata"   {:key 6 :title "Metadata"   :fn #(om/build metadata/render
+    (:metadata %2) {:opts {:root "orgs" :uuid (:uuid %2)}})   %2)}})
 
 (def render
   (view/make

@@ -73,7 +73,8 @@
 (def sections
   {""          {:key  1 :fn #(om/build render-home %2)     :title "General"}
    "ipranges"  {:key  2 :fn #(om/build render-ranges %1) :title "IP Ranges"}
-   "metadata"  {:key  3 :fn #(om/build metadata/render %2) :title "Metadata"}})
+   "metadata"  {:key  3 :fn #(om/build metadata/render
+    (:metadata %2) {:opts {:root "networks" :uuid (:uuid %2)}}) :title "Metadata"}})
 
 (def render
   (view/make

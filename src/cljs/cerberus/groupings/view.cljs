@@ -160,7 +160,8 @@
                                                 :element %2
                                                 :root root}})     :title "Elements"}
    "config"    {:key  3 :fn #(om/build render-config %2)    :title "Configuration"}
-   "metadata"  {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+   "metadata"  {:key  4 :fn #(om/build metadata/render
+    (:metadata %2) {:opts {:root "groupings" :uuid (:uuid %2)}})  :title "Metadata"}})
 
 
 (def render

@@ -18,6 +18,23 @@
 
 (enable-console-print!)
 
+(defn key_tab [owner key event]
+  (if (= (.-keyCode (.-nativeEvent event)) 9)
+    (let [
+      selectionStart (.-selectionStart (.-target event))
+      selectionEnd (.-selectionEnd (.-target event))
+      newPosition (+ 2 selectionEnd)
+      currentValue  (.-value (.-target(.-nativeEvent event)))
+      newValue (str (subs currentValue 0 selectionStart) "  "
+                    (subs currentValue selectionEnd))]  
+
+        (.stopPropagation event)
+        (.preventDefault event)
+        (set! (.-value (.-target event)) newValue)
+        (.setSelectionRange (.-target event) newPosition newPosition)
+        (om/set-state! owner key newValue)
+        nil)))
+
 (defn flatten-map
   ([form separator]
      (into {} (flatten-map form separator nil)))
@@ -104,6 +121,7 @@
             (i/input
               {:type "textarea"
                :rows "10"
-               :value (:metadata state ) 
+               :value (:metadata state) 
                :on-change (->state owner :metadata) 
+               :on-key-down #(key_tab owner :metadata %)
                }))))))))

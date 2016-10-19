@@ -135,6 +135,9 @@
 (defn change-alias [uuid alias]
   (change-config uuid {:alias alias}))
 
+(defn change-resolvers [uuid resolvers]
+  (change-config uuid {:resolvers resolvers}))
+
 (defn add-network [uuid network]
   (api/post root [uuid :nics] {:network network}
             (a-get uuid "Adding network." "Failed to add network.")))

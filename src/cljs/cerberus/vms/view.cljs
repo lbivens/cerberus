@@ -4,6 +4,7 @@
   (:require
    [cljs.core.async :refer [<!]]
    [clojure.string :as cstr]
+   [clojure.string :refer [split]]
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
    [cerberus.del :as del]
@@ -31,7 +32,7 @@
    [cerberus.state :refer [app-state set-state!]]
    [cerberus.fields :as fields]
    [cerberus.metrics :as metrics]
-   [cerberus.utils :refer [make-event menu-items]]
+   [cerberus.utils :refer [make-event menu-items event-val]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
 (def token-path "sessions/one_time_token")
@@ -51,6 +52,12 @@
 (defn get-dataset [element]
   (sub-element :datasets :dataset [:name] element))
 
+(defn group-li [& args]
+  (d/li {:class "list-group-item"} args))
+
+(defn invalid-resolvers? [resolvers]
+  (nil? (re-matches #"(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:,(?:[0-9]{1,3}\.){3}[0-9]{1,3})+" resolvers)))
+
 (defn render-home [app owner opts]
   (reify
     om/IInitState
@@ -58,7 +65,9 @@
       (let [uuid (get-in app [root :selected])]
         {:org (or (get-in app [root :elements uuid :owner])
                   "")
-         :alias (get-in app [root :elements uuid :config :alias])}))
+         :alias (get-in app [root :elements uuid :config :alias])
+         :resolvers (cstr/join ", " (get-in app [root :elements uuid :config :resolvers]))}))
+    
     om/IRenderState
     (render-state [_ state]
       (let [uuid (get-in app [root :selected])
@@ -174,12 +183,36 @@
            (p/panel
             {:header (d/h3 "Networking")
              :list-group
-             (lg
-              "Hostname"       (:hostname conf)
-              "DNS Domain"     (:dns_domain conf)
-              "Resolvers"      (cstr/join ", " (:resolvers conf))
-              "Firewall Rules" (count (:fw_rules conf))
-              "IPs" (cstr/join ", " (map :ip (:networks conf))))}))))))))
+             (d/ul {:class "list-group"}
+              
+              (group-li "Hostname: " (:hostname conf))
+              (group-li "DNS Domain: " (:dns_domain conf))
+              
+
+              (group-li "DNS Resolvers: " (g/row
+                                       {}
+                                       (g/col {:md 10}
+                                              (i/input {:type "text"
+                                                        :on-change (->state owner :resolvers)
+                                                        :value (:resolvers state)}))
+
+                                       (let [rs (:resolvers state)
+                                             current (cstr/join ", " (:resolvers conf))
+                                             unchanged? (= current rs) ]
+
+                                          (g/col {:md 2}
+                                            (b/button
+                                             {:bs-style "primary"
+                                              :class "pull-right"
+                                              :bs-size "small"
+                                              :disabled? (or unchanged?
+                                                            (empty? (:resolvers state))
+                                                            (invalid-resolvers? (:resolvers state)))
+                                              :on-click
+                                              #(vms/change-resolvers uuid (split (:resolvers state) #","))} (r/glyphicon {:glyph "pencil"}))))))
+
+              (group-li "Firewall Rules: " (count (:fw_rules conf)))
+              (group-li "IPs: " (cstr/join ", " (map :ip (:networks conf)))))}))))))))
 
 (defn render-imaging [data owner opts]
   (reify
@@ -280,8 +313,6 @@
                (d/td log)))
             logs))))))))
 
-(defn group-li [& args]
-  (d/li {:class "list-group-item"} args))
 
 (defn render-network
   [{interface :interface

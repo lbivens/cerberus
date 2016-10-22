@@ -171,7 +171,8 @@
           (g/col
            {:sm 6 :md 4}
            (p/panel
-            {:header (d/h3 "Disk")
+            {:header (d/h3 "Disk " (if (:indestructible_zoneroot conf)
+                                     (r/glyphicon {:glyph "lock"})))
              :list-group
              (lg
               "Quota"         (->> (:quota conf) (fmt-bytes :gb))
@@ -179,7 +180,10 @@
               "Backups"       (count (:backups element))
               "Snapshots"     (count (:snapshots element))
               "Delegate"      (if (empty? (:datasets conf))
-                                "No" "Yes"))}))
+                                "No"
+                                (d/span "Yes "
+                                        (if (:indestructible_delegated conf)
+                                          (r/glyphicon {:glyph "lock"})))))}))
           (g/col
            {:sm 6 :md 4}
            (p/panel

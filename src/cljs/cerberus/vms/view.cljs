@@ -175,15 +175,15 @@
                                      (r/glyphicon {:glyph "lock"})))
              :list-group
              (lg
-              "Quota"         (->> (:quota conf) (fmt-bytes :gb))
-              "I/O Priority"  (:zfs_io_priority conf)
-              "Backups"       (count (:backups element))
-              "Snapshots"     (count (:snapshots element))
               "Delegate"      (if (empty? (:datasets conf))
                                 "No"
                                 (d/span "Yes "
                                         (if (:indestructible_delegated conf)
-                                          (r/glyphicon {:glyph "lock"})))))}))
+                                          (r/glyphicon {:glyph "lock"}))))
+              "Quota"         (->> (:quota conf) (fmt-bytes :gb))
+              "I/O Priority"  (:zfs_io_priority conf)
+              "Backups"       (count (:backups element))
+              "Snapshots"     (count (:snapshots element)))}))
           (g/col
            {:sm 6 :md 4}
            (p/panel

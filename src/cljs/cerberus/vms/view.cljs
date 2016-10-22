@@ -21,7 +21,7 @@
    [cerberus.orgs.api :as orgs]
    [cerberus.hypervisors.api :as hypervisors]
    [cerberus.datasets.api :as datasets]
-   ;[cerberus.services :as services]
+                                        ;[cerberus.services :as services]
    [cerberus.metadata :as metadata]
    [cerberus.vms.api :refer [root] :as vms]
    [cerberus.networks.api :as networks]
@@ -67,7 +67,7 @@
                   "")
          :alias (get-in app [root :elements uuid :config :alias])
          :resolvers (cstr/join ", " (get-in app [root :elements uuid :config :resolvers]))}))
-    
+
     om/IRenderState
     (render-state [_ state]
       (let [uuid (get-in app [root :selected])
@@ -84,7 +84,7 @@
             package (api/get-sub-element :packages :package identity element)
             dataset (api/get-sub-element :datasets :dataset identity element)
             hypervisor (api/get-sub-element :hypervisors :hypervisor identity element)
-            ;services (:services element)
+                                        ;services (:services element)
             ]
         (r/well
          {}
@@ -177,42 +177,44 @@
               "Quota"         (->> (:quota conf) (fmt-bytes :gb))
               "I/O Priority"  (:zfs_io_priority conf)
               "Backups"       (count (:backups element))
-              "Snapshots"     (count (:snapshots element)))}))
+              "Snapshots"     (count (:snapshots element))
+              "Delegate"      (if (empty? (:datasets conf))
+                                "No" "Yes"))}))
           (g/col
            {:sm 6 :md 4}
            (p/panel
             {:header (d/h3 "Networking")
              :list-group
              (d/ul {:class "list-group"}
-              
-              (group-li "Hostname: " (:hostname conf))
-              (group-li "DNS Domain: " (:dns_domain conf))
-              
 
-              (group-li "DNS Resolvers: " (g/row
-                                       {}
-                                       (g/col {:md 10}
-                                              (i/input {:type "text"
-                                                        :on-change (->state owner :resolvers)
-                                                        :value (:resolvers state)}))
+                   (group-li "Hostname: " (:hostname conf))
+                   (group-li "DNS Domain: " (:dns_domain conf))
 
-                                       (let [rs (:resolvers state)
-                                             current (cstr/join ", " (:resolvers conf))
-                                             unchanged? (= current rs) ]
 
-                                          (g/col {:md 2}
-                                            (b/button
-                                             {:bs-style "primary"
-                                              :class "pull-right"
-                                              :bs-size "small"
-                                              :disabled? (or unchanged?
-                                                            (empty? (:resolvers state))
-                                                            (invalid-resolvers? (:resolvers state)))
-                                              :on-click
-                                              #(vms/change-resolvers uuid (split (:resolvers state) #","))} (r/glyphicon {:glyph "pencil"}))))))
+                   (group-li "DNS Resolvers: " (g/row
+                                                {}
+                                                (g/col {:md 10}
+                                                       (i/input {:type "text"
+                                                                 :on-change (->state owner :resolvers)
+                                                                 :value (:resolvers state)}))
 
-              (group-li "Firewall Rules: " (count (:fw_rules conf)))
-              (group-li "IPs: " (cstr/join ", " (map :ip (:networks conf)))))}))))))))
+                                                (let [rs (:resolvers state)
+                                                      current (cstr/join ", " (:resolvers conf))
+                                                      unchanged? (= current rs) ]
+
+                                                  (g/col {:md 2}
+                                                         (b/button
+                                                          {:bs-style "primary"
+                                                           :class "pull-right"
+                                                           :bs-size "small"
+                                                           :disabled? (or unchanged?
+                                                                          (empty? (:resolvers state))
+                                                                          (invalid-resolvers? (:resolvers state)))
+                                                           :on-click
+                                                           #(vms/change-resolvers uuid (split (:resolvers state) #","))} (r/glyphicon {:glyph "pencil"}))))))
+
+                   (group-li "Firewall Rules: " (count (:fw_rules conf)))
+                   (group-li "IPs: " (cstr/join ", " (map :ip (:networks conf)))))}))))))))
 
 (defn render-imaging [data owner opts]
   (reify
@@ -1026,12 +1028,12 @@
    "snapshots" {:key  4 :fn (b render-snapshots) :title "Snapshot"}
    "imaging"   {:key  5 :fn (b render-imaging) :title "Imaging"}
    "backups"   {:key  6 :fn #(om/build render-backups %1 {:opts {:uuid (:uuid %2)}})   :title "Backups"}
-   ;"services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
+                                        ;"services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
    "logs"      {:key  8 :fn (b render-logs)      :title "Logs"}
    "fw-rules" {:key 9 :fn #(om/build render-fw-rules %1) :title "Firewall"}
    "metrics"   {:key 10 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
    "metadata"  {:key 11 :fn #(om/build metadata/render
-    (:metadata %2) {:opts {:root "vms" :uuid (:uuid %2)}})  :title "Metadata"}})
+                                       (:metadata %2) {:opts {:root "vms" :uuid (:uuid %2)}})  :title "Metadata"}})
 
 
 

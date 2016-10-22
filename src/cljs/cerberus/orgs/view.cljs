@@ -31,11 +31,11 @@
 
 (defn start-of-month []
   (let [date (js/Date.)]
-         (.setUTCDate date 1)
-         (.setUTCHours date 0)
-         (.setUTCMinutes date 0)
-         (.setUTCSeconds date 0)
-         (* (.setUTCMilliseconds date 0) 1000)))
+    (.setUTCDate date 1)
+    (.setUTCHours date 0)
+    (.setUTCMinutes date 0)
+    (.setUTCSeconds date 0)
+    (* (.setUTCMilliseconds date 0) 1000)))
 
 (defn now []
   (* (.getTime (js/Date.)) 1000))
@@ -70,9 +70,9 @@
             (p/panel
              {:header (d/h3 res)
               :list-group
-                (d/ul
-                 {:class "list-group"}
-                 (map li (prepare-res data)))})))
+              (d/ul
+               {:class "list-group"}
+               (map li (prepare-res data)))})))
          (group-by :resource (:acc state)))
 
         )))))
@@ -404,8 +404,9 @@
    "accounting" {:key 3 :title "Accounting" :fn #(om/build render-accounting %2)}
    "triggers"   {:key 4 :title "Triggers"   :fn #(om/build render-triggers   %1 {:opts {:id (:uuid %2)}})}
    "docker"     {:key 5 :title "Docker"     :fn #(om/build render-docker   %1 {:opts {:id (:uuid %2)}})}
-   "metadata"   {:key 6 :title "Metadata"   :fn #(om/build metadata/render
-    (:metadata %2) {:opts {:root "orgs" :uuid (:uuid %2)}})   %2)}})
+   "metadata"   {:key 6 :title "Metadata"
+                 :fn #(om/build metadata/render
+                                (:metadata %2) {:opts {:root "orgs" :uuid (:uuid %2)}}    %2)}})
 
 (def render
   (view/make

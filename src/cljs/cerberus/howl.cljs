@@ -55,9 +55,10 @@
      :data  {:action "deleted" :uuid snap-id}}]
    (delete-state! [:vms :elements channel :snapshots (keyword snap-id)])
 
-   ;; currently only update "alias"
-   [{:event "update", :data {:config {:alias alias}}}]
-   (set-state! [:vms :elements channel :alias] alias)
+   ;; currently only update some fields
+   [{:event "update", :data {:config config}}]
+   ((set-state! [:vms :elements channel :alias] {:alias config}) ;TODO This cant possible be right
+    (set-state! [:vms :elements channel :config :maintain_resolvers] (:maintain_resolvers config)))
 
    [_]
    (dbg/warning "[howl] unknown message:" channel message)))

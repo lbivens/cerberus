@@ -66,7 +66,8 @@
         {:org (or (get-in app [root :elements uuid :owner])
                   "")
          :alias (get-in app [root :elements uuid :config :alias])
-         :resolvers (cstr/join ", " (get-in app [root :elements uuid :config :resolvers]))}))
+         :resolvers (cstr/join ", " (get-in app [root :elements uuid :config :resolvers]))
+         :maintain_resolvers (true? (get-in app [root :elements uuid :config :maintain_resolvers]))}))
 
     om/IRenderState
     (render-state [_ state]
@@ -194,28 +195,49 @@
                    (group-li "Hostname: " (:hostname conf))
                    (group-li "DNS Domain: " (:dns_domain conf))
 
+                   (let [global_mr (true? (get-in app [root :elements uuid :config :maintain_resolvers]))
+                         munchanged? (= global_mr (:maintain_resolvers state))
+                         rcurrent (cstr/join ", " (:resolvers conf))
+                         runchanged? (= rcurrent (:resolvers state))]
+                    (group-li
+                      (g/row
+                      {}
+                      (g/col {:md 10}
+                        (i/input
+                          {:type "checkbox"
+                           :checked (:maintain_resolvers state)
+                           :on-change #(om/set-state! owner :maintain_resolvers (.-checked (.-target %1)))
+                           :label "Maintain Resolvers"}))
+                      (g/col {:md 2}
+                        (b/button
+                         {:bs-style "primary"
+                          :bs-size "small"
+                          :disabled? munchanged?
+                          :on-click #(vms/change-maintain-resolvers uuid (:maintain_resolvers state))
+                          } (r/glyphicon {:glyph "pencil"}))))
 
-                   (group-li "DNS Resolvers: " (g/row
-                                                {}
-                                                (g/col {:md 10}
-                                                       (i/input {:type "text"
-                                                                 :on-change (->state owner :resolvers)
-                                                                 :value (:resolvers state)}))
 
-                                                (let [rs (:resolvers state)
-                                                      current (cstr/join ", " (:resolvers conf))
-                                                      unchanged? (= current rs) ]
-
-                                                  (g/col {:md 2}
-                                                         (b/button
-                                                          {:bs-style "primary"
-                                                           :class "pull-right"
-                                                           :bs-size "small"
-                                                           :disabled? (or unchanged?
-                                                                          (empty? (:resolvers state))
-                                                                          (invalid-resolvers? (:resolvers state)))
-                                                           :on-click
-                                                           #(vms/change-resolvers uuid (split (:resolvers state) #","))} (r/glyphicon {:glyph "pencil"}))))))
+                    (group-li "DNS Resolvers: " 
+                      (g/row
+                      {}
+                      (g/col {:md 10}
+                        (i/input {:type "text"
+                                  :on-change (->state owner :resolvers)
+                                  :value (:resolvers state)}))
+ 
+                      (g/col {:md 2}
+                        (b/button
+                         {:bs-style "primary"
+                          :class "pull-right"
+                          :bs-size "small"
+                          :disabled? (or runchanged?
+                                        (empty? (:resolvers state))
+                                        (invalid-resolvers? (:resolvers state))
+                                        (false? (:maintain_resolvers conf)))
+                          :on-click
+                            #(vms/change-resolvers uuid (split (:resolvers state) #","))
+                          } (r/glyphicon {:glyph "pencil"})))))))
+                   
 
                    (group-li "Firewall Rules: " (count (:fw_rules conf)))
                    (group-li "IPs: " (cstr/join ", " (map :ip (:networks conf)))))}))))))))

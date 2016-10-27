@@ -138,6 +138,9 @@
 (defn change-resolvers [uuid resolvers]
   (change-config uuid {:resolvers resolvers}))
 
+(defn change-maintain-resolvers [uuid maintain_resolvers]
+  (change-config uuid {:maintain_resolvers maintain_resolvers}))
+
 (defn add-network [uuid network]
   (api/post root [uuid :nics] {:network network}
             (a-get uuid "Adding network." "Failed to add network.")))

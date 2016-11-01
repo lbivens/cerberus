@@ -17,7 +17,7 @@ brew install leiningen
 git clone https://github.com/project-fifo/cerberus.git
 cd cerberus
 cp config.json.example config.json
-cp resources/public/config/config.js.example resources/public/config/s
+cp resources/public/config/config.js.example resources/public/config/config.js
 vi config.json
 lein repl
 cerberus.server=> (run)

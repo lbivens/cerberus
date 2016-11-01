@@ -10,8 +10,6 @@
 
 (def root :datasets)
 
-(def server (global/get "datasets" "http://datasets.at/images"))
-
 (defn list [data]
   (api/list data root))
 
@@ -24,8 +22,8 @@
   (api/delete data root [uuid]
               (alerts "Dataset deleted." "Failed to delete dataset.")))
 
-(defn import [uuid]
-  (api/post root [] {:url (str server "/" uuid)}
+(defn import [url]
+  (api/post root [] {:url url}
             (alerts "Dataset import started." "Dataset import failed.")))
 
 (defn from-vm [vm snapshot name version os desc]

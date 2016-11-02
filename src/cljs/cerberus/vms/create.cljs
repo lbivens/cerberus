@@ -149,6 +149,17 @@
   (let [groupings (get-in  data [:groupings :elements])]
     (g/grid
      {:md 10}
+     (g/col
+      {:xs 10}
+      (let [checked (boolean (get-in data [:data :config :delegate_dataset]))]
+        (pr (get-in data [:data :config]))
+        (i/input
+         {:type "checkbox"
+          :checked checked
+          :label "Delegate Dataset"
+          :on-click
+          (fn []
+            (om/update! data [:data :config :delegate_dataset] (not checked)))})))
      (g/row
       {}
       (g/col

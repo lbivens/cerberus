@@ -24,12 +24,18 @@
   (api/delete data root [uuid] (alerts "Grouping removed." "Failed to remove grouping.")))
 
 (defn set-config [uuid conf val]
-  (api/put root [uuid :config] {conf val}
-           (a-get uuid "Configuration updated." "Failed to update configuration.")))
+  (let [[path key] (if (string? conf)
+                     [[uuid :config] conf]
+                     [(concat [uuid :config] (butlast conf)) (last conf)])]
+    (api/put root path {key val}
+             (a-get uuid "Configuration updated." "Failed to update configuration."))))
 
 (defn delete-config [uuid conf]
-  (api/delete root [uuid :config conf]
-              (a-get uuid "Configuration deleted." "Failed to delete configuration.")))
+  (let [path (if (string? conf)
+               [uuid :config conf]
+               (concat [uuid :config] conf))]
+    (api/delete root path
+                (a-get uuid "Configuration deleted." "Failed to delete configuration."))))
 
 (defn add-element [uuid grouping]
   (api/put root [uuid :elements grouping] {}

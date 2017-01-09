@@ -77,7 +77,6 @@
             type (:type conf)
             info (:info element)
             vnc (:vnc info)
-
             current-owner (:owner element)
             invalid-owner #{"" nil current-owner}
             orgs (get-in app [:orgs :elements])
@@ -156,7 +155,6 @@
               "Max Swap"   (->> (:max_swap conf) (fmt-bytes :b))
               "Memory"     (->> (:ram conf) (fmt-bytes :mb)))}))
           (if vnc
-
             (let [host (:host vnc)
                   port (:port vnc)
                   display (:display vnc)]
@@ -1084,7 +1082,8 @@
                (packages/list data)
                (groupings/list data)
                (ipranges/list data))
-   :name-fn  (fn [{:keys [type state uuid hypervisor] {alias :alias} :config} data]
+   :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config :as vm} data]
+               (pr  "info:" (get-in vm [:info :vnc]))
                (d/div
                 {}
                 alias " "
@@ -1093,7 +1092,7 @@
                  (b/button
                   {:bs-size "small"
                    :bs-style "primary"
-                   :on-click #(open-with-ott (str "./" (if (= type "kvm") "vnc" "console")  ".html?uuid=" uuid))
+                   :on-click #(open-with-ott (str "./" (if (get-in vm [:info :vnc]) "vnc" "console")  ".html?uuid=" uuid))
                    :disabled? (not= state "running")}
                   (r/glyphicon {:glyph "modal-window"}))
                  (b/button

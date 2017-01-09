@@ -56,9 +56,9 @@
           ; This kind of sucks, but we are changing the config data type,
           ; so at least with this something shows up, and it will be relatively 
           ; easy to debug why the users config changes are not being used.
-          [f (if (coll? (global/get "datasets" ["https://datasets.project-fifo.net/images"]))
-                  (global/get "datasets" ["https://datasets.project-fifo.net/images"])
-                  ["https://datasets.project-fifo.net/images"])] 
+          [f (if (coll? (global/get "datasets" ["https://datasets.project-fifo.net/images/", "http://datasets.at/images"]))
+                  (global/get "datasets" ["https://datasets.project-fifo.net/images/", "http://datasets.at/images"])
+                  ["https://datasets.project-fifo.net/images/", "http://datasets.at/images"])] 
           (go (let 
             [resp (<! (http/get f {:with-credentials? false 
                                    :headers {"Accept" "application/json"}}))]

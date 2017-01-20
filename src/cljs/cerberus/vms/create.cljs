@@ -149,13 +149,26 @@
   (let [groupings (get-in  data [:groupings :elements])]
     (g/grid
      {:md 10}
+     (g/col
+      {:xs 10}
+      (let [checked (boolean (get-in data [:data :config :delegate_dataset]))]
+        (pr (get-in data [:data :config]))
+        (i/input
+         {:type "checkbox"
+          :checked checked
+          :label "Delegate Dataset"
+          :on-click
+          (fn []
+            (om/update! data [:data :config :delegate_dataset] (not checked)))})))
      (g/row
       {}
       (g/col
-       {:xs 1}
-       (d/h4 "Cluster:"))
+       {:xs 9}
+       (d/h4 "Cluster")))
+     (g/row
+      {}
       (g/col
-       {:xs 11}
+       {:xs 9}
        (i/input {:type "select" :value (get-in data [:data :config :grouping])
                  :id "vm-create-cluster"
                  :on-change
@@ -164,7 +177,7 @@
                                  (if (empty? v)
                                    (om/update! data [:data :config] #(dissoc % :grouping))
                                    (om/update! data [:data :config :grouping] v)))))}
-                (d/option "")
+                (d/option " ")
                 (map #(d/option {:value (:uuid %)}  (:name %)) (filter #(= (:type %) "cluster") (map second groupings))))))
      (g/row
       {}

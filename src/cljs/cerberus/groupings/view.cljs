@@ -22,6 +22,24 @@
    [cerberus.metrics :as metrics]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
+(defn print-conf-rows [uuid pfx confs]
+  (map
+   (fn [[c v]]
+     (if (map? v)
+       (print-conf-rows uuid (str pfx (name c) ".") v)
+       (let [k (str pfx (name c))
+             path (cstr/split k #"\.")]
+         (pr path)
+         (d/tr
+          (d/td k)
+          (d/td v)
+          (d/td
+           (b/button {:bs-size "xsmall"
+                      :className "pull-right"
+                      :on-click #(groupings/delete-config uuid path)}
+                     (r/glyphicon {:glyph "remove"})))))))
+   confs))
+
 (defn render-config [element owner opts]
   (reify
     om/IDisplayName
@@ -57,7 +75,7 @@
            (b/button
             {:bs-style "primary"
              :className "pull-right"
-             :on-click #(groupings/set-config uuid (cstr/trim (:conf state)) (cstr/trim (:val state)))
+             :on-click #(groupings/set-config uuid (cstr/split (cstr/trim (:conf state)) #"\.") (cstr/trim (:val state)))
              :disabled? invalid?}
             "Set Configuration")))
          (row
@@ -71,17 +89,7 @@
               (d/th "Value")
               (d/th "")))
             (d/tbody
-             (map
-              (fn [[c v]]
-                (d/tr
-                 (d/td (name c))
-                 (d/td v)
-                 (d/td
-                  (b/button {:bs-size "xsmall"
-                             :className "pull-right"
-                             :on-click #(groupings/delete-config uuid (name c))}
-                            (r/glyphicon {:glyph "remove"})))))
-              confs))))))))))
+             (print-conf-rows uuid "" confs))))))))))
 
 (defn render-home [element owner opts]
   (reify
@@ -160,7 +168,8 @@
                                                 :element %2
                                                 :root root}})     :title "Elements"}
    "config"    {:key  3 :fn #(om/build render-config %2)    :title "Configuration"}
-   "metadata"  {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+   "metadata"  {:key  4 :fn #(om/build metadata/render
+    (:metadata %2) {:opts {:root "groupings" :uuid (:uuid %2)}})  :title "Metadata"}})
 
 
 (def render

@@ -126,4 +126,9 @@
 (defn to-date [date]
   (str (js/Date. (/ date 1000))))
 
-(def version "0.8.3")
+(defn ensure-kw [s]
+  (if (string? s)
+    (keyword s)
+    s))
+
+(def version "0.9.0")

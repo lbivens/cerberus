@@ -15,7 +15,7 @@
    [cerberus.list.table :as table]
    [cerberus.list.well :as well]
    [cerberus.list.utils :refer [show-field get-filter-field expand-fields large small]]
-   [cerberus.utils :refer [goto, val-by-id make-event value-by-key str->int]]))
+   [cerberus.utils :refer [goto, val-by-id make-event value-by-key str->int ensure-kw]]))
 
 (defn toggle-field [field aset]
   (if (contains? aset field)
@@ -80,10 +80,10 @@
     identity))
 
 (defn do-sort [list fields sort]
-  (let [field (:field sort)]
+  (let [field (ensure-kw (:field sort))]
     (if-let [key (or (:sort-key (fields field)) (:key (fields field)))]
       (let [sorted (sort-by (partial value-by-key key) list)]
-        (doall (if (= (keyword (:order sort)) :desc)
+        (doall (if (= (:order sort) "desc")
                  (reverse sorted)
                  sorted)))
       list)))
@@ -110,7 +110,6 @@
     (init-state [_]
       {:filter ""
        :fields (cerberus.utils/initial-state config)
-       :order :asc
        :page 0})
     om/IRenderState
     (render-state [_ state]

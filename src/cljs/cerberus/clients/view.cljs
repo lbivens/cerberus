@@ -127,6 +127,7 @@
 (def sections {""            {:key  1 :fn #(om/build render-auth %2)  :title "Authentication"}
                "permissions" {:key  2 :fn #(om/build permissions/render %2 {:opts {:grant clients/grant :revoke clients/revoke}}) :title "Permissions"}
                "uris"        {:key  3 :fn #(om/build render-uris %2) :title "URI's"}
-               "metadata"    {:key  4 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+               "metadata"    {:key  4 :fn #(om/build metadata/render
+    (:metadata %2) {:opts {:root "clients" :uuid (:uuid %2)}})  :title "Metadata"}})
 
 (def render (view/make root sections clients/get :name-fn :name))

@@ -476,7 +476,9 @@
    "tokens"   {:key  5 :fn #(om/build render-tokens %1
                                       {:opts {:id (get-in %1 [root :selected])}})
                :title "Tokens"}
-   "metadata" {:key  6 :fn #(om/build metadata/render (get-in %1 [root :elements (get-in %1 [root :selected])]))  :title "Metadata"}})
+
+   "metadata" {:key  6 :fn #(om/build metadata/render 
+         (:metadata (get-in %1 [root :elements (get-in %1 [root :selected])])) {:opts {:root "users" :uuid (:uuid %2)}})  :title "Metadata"}})
 
 (def render
   (view/make

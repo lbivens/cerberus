@@ -242,7 +242,8 @@
    "chars"     {:key  4 :fn #(om/build render-chars %2)     :title "Characteristics"}
    ;; "notes"     {:key  5 :fn render-notes     :title "Notes"}
    "metrics"   {:key  5 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
-   "metadata"  {:key  6 :fn #(om/build metadata/render %2)  :title "Metadata"}})
+   "metadata"  {:key  6 :fn #(om/build metadata/render
+    (:metadata %2) {:opts {:root "hypervisors" :uuid (:uuid %2)}}) :title "Metadata"}})
 
 
 (def logo

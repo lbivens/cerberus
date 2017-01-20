@@ -69,6 +69,7 @@
 (def sections
   {""          {:key  1 :fn #(om/build render-home %2)     :title "General"}
    "ips"       {:key  2 :fn #(om/build render-ips %2)      :title "IPs"}
-   "metadata"  {:key  3 :fn #(om/build metadata/render %2) :title "Metadata"}})
+   "metadata"  {:key  3 :fn #(om/build metadata/render
+    (:metadata %2) {:opts {:root "ipranges" :uuid (:uuid %2)}}) :title "Metadata"}})
 
 (def render (view/make root sections ipranges/get :name-fn :name))

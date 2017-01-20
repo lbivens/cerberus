@@ -125,7 +125,7 @@
      #(not (nil? (:fields (second %)))) @app-state))))
 
 (defn print []
-  (dbg/debug "[config] " (extract)))
+  (pr "[config] " (extract)))
 
 (defn user [] (get-in @app-state [:user]))
 

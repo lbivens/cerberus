@@ -4,6 +4,7 @@
   (:require
    [cljs.core.async :refer [<!]]
    [clojure.string :as cstr]
+   [clojure.string :refer [split]]
    [om.core :as om :include-macros true]
    [om-tools.dom :as d :include-macros true]
    [cerberus.del :as del]
@@ -20,7 +21,7 @@
    [cerberus.orgs.api :as orgs]
    [cerberus.hypervisors.api :as hypervisors]
    [cerberus.datasets.api :as datasets]
-   ;[cerberus.services :as services]
+                                        ;[cerberus.services :as services]
    [cerberus.metadata :as metadata]
    [cerberus.vms.api :refer [root] :as vms]
    [cerberus.networks.api :as networks]
@@ -31,7 +32,7 @@
    [cerberus.state :refer [app-state set-state!]]
    [cerberus.fields :as fields]
    [cerberus.metrics :as metrics]
-   [cerberus.utils :refer [make-event menu-items]]
+   [cerberus.utils :refer [make-event menu-items event-val]]
    [cerberus.fields :refer [fmt-bytes fmt-percent]]))
 
 (def token-path "sessions/one_time_token")
@@ -51,6 +52,12 @@
 (defn get-dataset [element]
   (sub-element :datasets :dataset [:name] element))
 
+(defn group-li [& args]
+  (d/li {:class "list-group-item"} args))
+
+(defn invalid-resolvers? [resolvers]
+  (nil? (re-matches #"(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:,(?:[0-9]{1,3}\.){3}[0-9]{1,3})+" resolvers)))
+
 (defn render-home [app owner opts]
   (reify
     om/IInitState
@@ -58,7 +65,10 @@
       (let [uuid (get-in app [root :selected])]
         {:org (or (get-in app [root :elements uuid :owner])
                   "")
-         :alias (get-in app [root :elements uuid :config :alias])}))
+         :alias (get-in app [root :elements uuid :config :alias])
+         :resolvers (cstr/join ", " (get-in app [root :elements uuid :config :resolvers]))
+         :maintain_resolvers (true? (get-in app [root :elements uuid :config :maintain_resolvers]))}))
+
     om/IRenderState
     (render-state [_ state]
       (let [uuid (get-in app [root :selected])
@@ -67,7 +77,6 @@
             type (:type conf)
             info (:info element)
             vnc (:vnc info)
-
             current-owner (:owner element)
             invalid-owner #{"" nil current-owner}
             orgs (get-in app [:orgs :elements])
@@ -75,7 +84,7 @@
             package (api/get-sub-element :packages :package identity element)
             dataset (api/get-sub-element :datasets :dataset identity element)
             hypervisor (api/get-sub-element :hypervisors :hypervisor identity element)
-            ;services (:services element)
+                                        ;services (:services element)
             ]
         (r/well
          {}
@@ -146,7 +155,6 @@
               "Max Swap"   (->> (:max_swap conf) (fmt-bytes :b))
               "Memory"     (->> (:ram conf) (fmt-bytes :mb)))}))
           (if vnc
-
             (let [host (:host vnc)
                   port (:port vnc)
                   display (:display vnc)]
@@ -162,9 +170,15 @@
           (g/col
            {:sm 6 :md 4}
            (p/panel
-            {:header (d/h3 "Disk")
+            {:header (d/h3 "Disk " (if (:indestructible_zoneroot conf)
+                                     (r/glyphicon {:glyph "lock"})))
              :list-group
              (lg
+              "Delegate"      (if (empty? (:datasets conf))
+                                "No"
+                                (d/span "Yes "
+                                        (if (:indestructible_delegated conf)
+                                          (r/glyphicon {:glyph "lock"}))))
               "Quota"         (->> (:quota conf) (fmt-bytes :gb))
               "I/O Priority"  (:zfs_io_priority conf)
               "Backups"       (count (:backups element))
@@ -174,12 +188,57 @@
            (p/panel
             {:header (d/h3 "Networking")
              :list-group
-             (lg
-              "Hostname"       (:hostname conf)
-              "DNS Domain"     (:dns_domain conf)
-              "Resolvers"      (cstr/join ", " (:resolvers conf))
-              "Firewall Rules" (count (:fw_rules conf))
-              "IPs" (cstr/join ", " (map :ip (:networks conf))))}))))))))
+             (d/ul {:class "list-group"}
+
+                   (group-li "Hostname: " (:hostname conf))
+                   (group-li "DNS Domain: " (:dns_domain conf))
+
+                   (let [global_mr (true? (get-in app [root :elements uuid :config :maintain_resolvers]))
+                         munchanged? (= global_mr (:maintain_resolvers state))
+                         rcurrent (cstr/join ", " (:resolvers conf))
+                         runchanged? (= rcurrent (:resolvers state))]
+                    (group-li
+                      (g/row
+                      {}
+                      (g/col {:md 10}
+                        (i/input
+                          {:type "checkbox"
+                           :checked (:maintain_resolvers state)
+                           :on-change #(om/set-state! owner :maintain_resolvers (.-checked (.-target %1)))
+                           :label "Maintain Resolvers"}))
+                      (g/col {:md 2}
+                        (b/button
+                         {:bs-style "primary"
+                          :bs-size "small"
+                          :disabled? munchanged?
+                          :on-click #(vms/change-maintain-resolvers uuid (:maintain_resolvers state))
+                          } (r/glyphicon {:glyph "pencil"}))))
+
+
+                    (group-li "DNS Resolvers: " 
+                      (g/row
+                      {}
+                      (g/col {:md 10}
+                        (i/input {:type "text"
+                                  :on-change (->state owner :resolvers)
+                                  :value (:resolvers state)}))
+ 
+                      (g/col {:md 2}
+                        (b/button
+                         {:bs-style "primary"
+                          :class "pull-right"
+                          :bs-size "small"
+                          :disabled? (or runchanged?
+                                        (empty? (:resolvers state))
+                                        (invalid-resolvers? (:resolvers state))
+                                        (false? (:maintain_resolvers conf)))
+                          :on-click
+                            #(vms/change-resolvers uuid (split (:resolvers state) #","))
+                          } (r/glyphicon {:glyph "pencil"})))))))
+                   
+
+                   (group-li "Firewall Rules: " (count (:fw_rules conf)))
+                   (group-li "IPs: " (cstr/join ", " (map :ip (:networks conf)))))}))))))))
 
 (defn render-imaging [data owner opts]
   (reify
@@ -280,8 +339,6 @@
                (d/td log)))
             logs))))))))
 
-(defn group-li [& args]
-  (d/li {:class "list-group-item"} args))
 
 (defn render-network
   [{interface :interface
@@ -937,7 +994,7 @@
          {:xs 12}
          (b/button
           {:bs-style "primary"
-           :class "fwaddbtn"
+           :class "rightbtn"
            :on-click #(add-rule state)}
           "add rule")))
        (row
@@ -995,11 +1052,12 @@
    "snapshots" {:key  4 :fn (b render-snapshots) :title "Snapshot"}
    "imaging"   {:key  5 :fn (b render-imaging) :title "Imaging"}
    "backups"   {:key  6 :fn #(om/build render-backups %1 {:opts {:uuid (:uuid %2)}})   :title "Backups"}
-   ;"services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
+                                        ;"services"  {:key  7 :fn #(om/build services/render %2 {:opts {:action vms/service-action}})  :title "Services"}
    "logs"      {:key  8 :fn (b render-logs)      :title "Logs"}
    "fw-rules" {:key 9 :fn #(om/build render-fw-rules %1) :title "Firewall"}
    "metrics"   {:key 10 :fn #(om/build metrics/render (:metrics %2) {:opts {:translate build-metric}})   :title "Metrics"}
-   "metadata"  {:key 11 :fn (b metadata/render)  :title "Metadata"}})
+   "metadata"  {:key 11 :fn #(om/build metadata/render
+                                       (:metadata %2) {:opts {:root "vms" :uuid (:uuid %2)}})  :title "Metadata"}})
 
 
 
@@ -1024,7 +1082,8 @@
                (packages/list data)
                (groupings/list data)
                (ipranges/list data))
-   :name-fn  (fn [{:keys [type state uuid hypervisor] {alias :alias} :config} data]
+   :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config :as vm} data]
+               (pr  "info:" (get-in vm [:info :vnc]))
                (d/div
                 {}
                 alias " "
@@ -1033,7 +1092,7 @@
                  (b/button
                   {:bs-size "small"
                    :bs-style "primary"
-                   :on-click #(open-with-ott (str "./" (if (= type "kvm") "vnc" "console")  ".html?uuid=" uuid))
+                   :on-click #(open-with-ott (str "./" (if (get-in vm [:info :vnc]) "vnc" "console")  ".html?uuid=" uuid))
                    :disabled? (not= state "running")}
                   (r/glyphicon {:glyph "modal-window"}))
                  (b/button

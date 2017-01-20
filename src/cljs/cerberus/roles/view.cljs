@@ -44,7 +44,8 @@
    "permissions"  {:key  2 :fn #(om/build permissions/render %1
                                           {:key (str (:uuid %2) "-permissions")
                                            :opts {:element %2 :grant roles/grant :revoke roles/revoke}}) :title "Permissions"}
-   "metadata"     {:key  3 :fn #(om/build metadata/render %2)    :title "Metadata"}})
+   "metadata"     {:key  3 :fn #(om/build metadata/render
+    (:metadata %2) {:opts {:root "roles" :uuid (:uuid %2)}})    :title "Metadata"}})
 
 (def render
   (view/make root sections roles/get :name-fn :name))

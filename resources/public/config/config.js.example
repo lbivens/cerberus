@@ -9,7 +9,7 @@ var Config = {
      */
 
     /*
-     * datasets source
+     * datasets sources as a list
      */
-  datasets: "https://datasets.at/images"
+  datasets: ["https://datasets.project-fifo.net/images/", "http://datasets.at/images"]
 };

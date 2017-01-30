@@ -131,4 +131,4 @@
     (keyword s)
     s))
 
-(def version "0.9.0")
+(def version "0.9.1")

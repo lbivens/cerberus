@@ -5,7 +5,7 @@
    [om.core :as om :include-macros true]
    [cerberus.api :as api]
    [cerberus.global :as global]
-   [cerberus.alert :refer [alerts]]
+   [cerberus.alert :refer [alerts raise]]
    [cerberus.state :refer [set-state!]]))
 
 (def root :datasets)
@@ -23,8 +23,15 @@
               (alerts "Dataset deleted." "Failed to delete dataset.")))
 
 (defn import [url]
-  (api/post root [] {:url url}
-            (alerts "Dataset import started." "Dataset import failed.")))
+  (let [success "Dataset import started."
+        error "Dataset import failed."]
+    (api/post root [] {:url url}
+              {:success (fn [resp]
+                          ((api/post-success-fn root) resp)
+                          (raise :success success))
+               :error #(raise :danger error)
+               503 #(raise :danger  (str error " - not all services are available."))
+               404 #(raise :warning (str error " - not found."))})))
 
 (defn from-vm [vm snapshot name version os desc]
   (let [payload {:vm vm

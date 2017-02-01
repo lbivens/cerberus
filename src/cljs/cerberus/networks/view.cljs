@@ -57,6 +57,40 @@
                           (r/glyphicon {:glyph "remove"}))))
              current-ipranges)))))))))
 
+(defn render-resolvers [app owner opts]
+  (reify
+    om/IRenderState
+    (render-state [_ _]
+      (let [id (get-in app [root :selected])
+            element (get-in app [root :elements id])
+            current-resolvers (sort (or (:resolvers element) ["8.8.8.8", "8.8.4.4"]))]
+        (r/well
+         {}
+         (row
+          (col
+           {:xs 10 :sm 4}
+           (i/input
+            {:type "text" :id "resolver"}))
+          (col
+           {:xs 2 :sm 1}
+           (b/button
+            {:bs-style "primary"
+             :className "pull-right"
+             :onClick #(networks/add-resolver id (val-by-id "resolver"))}
+            "Add"))
+          (col
+           {:xs 12 :sm 6}
+           (d/ul
+            (map
+             (fn [resolver]
+               (d/li
+                resolver
+                (b/button {:bs-size "xsmall"
+                           :className "pull-right"
+                           :onClick #(networks/remove-resolver id resolver)}
+                          (r/glyphicon {:glyph "remove"}))))
+             current-resolvers)))))))))
+
 (defn render-home [data owner opts]
   (reify
     om/IRenderState
@@ -71,10 +105,11 @@
             "IPRanges" (count (:ipranges data)))})))))
 
 (def sections
-  {""          {:key  1 :fn #(om/build render-home %2)     :title "General"}
-   "ipranges"  {:key  2 :fn #(om/build render-ranges %1) :title "IP Ranges"}
-   "metadata"  {:key  3 :fn #(om/build metadata/render
-    (:metadata %2) {:opts {:root "networks" :uuid (:uuid %2)}}) :title "Metadata"}})
+  {""           {:key  1 :fn #(om/build render-home %2)     :title "General"}
+   "ipranges"   {:key  2 :fn #(om/build render-ranges %1) :title "IP Ranges"}
+   "resolvers"  {:key  3 :fn #(om/build render-resolvers %1) :title "Resolvers"}
+   "metadata"   {:key  4 :fn #(om/build metadata/render
+                                        (:metadata %2) {:opts {:root "networks" :uuid (:uuid %2)}}) :title "Metadata"}})
 
 (def render
   (view/make

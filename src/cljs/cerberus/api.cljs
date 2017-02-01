@@ -118,10 +118,8 @@
           (error resp))))))
 
 (defn delete-path [data root path]
-  (pr "delete-path" root path)
   (if (= 1 (count path))
     (let [uuid (first path)]
-      (pr "deleting" uuid)
       (om/transact! data [root :elements]
                     #(dissoc % uuid)))))
 

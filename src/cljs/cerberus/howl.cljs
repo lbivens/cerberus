@@ -59,6 +59,9 @@
    [{:event "update", :data {:config config}}]
    ((set-state! [:vms :elements channel :alias] {:alias config}) ;TODO This cant possible be right
     (set-state! [:vms :elements channel :config :maintain_resolvers] (:maintain_resolvers config)))
+   ;; update the owner
+   [{:event "update", :data {:owner owner}}]
+   ((set-state! [:vms :elements channel :owner] owner))
 
    [_]
    (dbg/warning "[howl] unknown message:" channel message)))

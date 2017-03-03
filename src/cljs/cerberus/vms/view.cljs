@@ -37,6 +37,10 @@
 
 (def token-path "sessions/one_time_token")
 
+(defn has-delegates? [vm]
+  (pr "data:" (get-in  vm [:config :datasets]))
+  (not (empty? (:datasets (:config vm)))))
+
 (defn open-with-ott [path]
   (go
     (let [response (<! (http/get token-path))]
@@ -174,11 +178,11 @@
                                      (r/glyphicon {:glyph "lock"})))
              :list-group
              (lg
-              "Delegate"      (if (empty? (:datasets conf))
-                                "No"
+              "Delegate"      (if (has-delegates? element)
                                 (d/span "Yes "
                                         (if (:indestructible_delegated conf)
-                                          (r/glyphicon {:glyph "lock"}))))
+                                          (r/glyphicon {:glyph "lock"})))
+                                "No")
               "Quota"         (->> (:quota conf) (fmt-bytes :gb))
               "I/O Priority"  (:zfs_io_priority conf)
               "Backups"       (count (:backups element))
@@ -649,55 +653,57 @@
     om/IRenderState
     (render-state [_ state]
       (let [data (get-in app [root :elements uuid])]
-        (r/well
-         {}
-         (if (not (empty? (:hypervisor data)))
+        (if (has-delegates? data)
+          (r/well {}  (d/p "Backups can not be created for zones that have delegated datasets!"))
+          (r/well
+           {}
+           (if (not (empty? (:hypervisor data)))
+             (row
+              (g/col
+               {:xs 12}
+               (d/p
+                "Once a backup is made it is possible to remove a zone from"
+                " a hypervisor without deleting the backups, that way the"
+                " zone can later on be deployed again."
+                (b/button {:bs-style "danger"
+                           :disabled? (empty? (:backups data))
+                           :on-click #(vms/delete-hypervisor (:uuid data))
+
+                           :class "pull-right"} "Delete from hypervisor"))))
+             (row
+              (g/col {}
+                     (d/p
+                      "This vm is in 'limbo' it currently has no hypervisors assigned"
+                      " that means it can be re-deployed.")
+                     (i/input {:type "select"
+                               :value (:target state)
+                               :on-change (->state owner :target)}
+                              (d/option "")
+                              (map
+                               (fn [[h-uidd {alias :alias}]]
+                                 (d/option {:value h-uidd} alias))
+                               (get-in app [:hypervisors :elements])))
+                     )))
            (row
+
             (g/col
-             {:xs 12}
-             (d/p
-              "Once a backup is made it is possible to remove a zone from"
-              " a hypervisor without deleting the backups, that way the"
-              " zone can later on be deployed again."
-              (b/button {:bs-style "danger"
-                         :disabled? (empty? (:backups data))
-                         :on-click #(vms/delete-hypervisor (:uuid data))
-
-                         :class "pull-right"} "Delete from hypervisor"))))
-           (row
-            (g/col {}
-                   (d/p
-                    "This vm is in 'limbo' it currently has no hypervisors assigned"
-                    " that means it can be re-deployed.")
-                   (i/input {:type "select"
-                             :value (:target state)
-                             :on-change (->state owner :target)}
-                            (d/option "")
-                            (map
-                             (fn [[h-uidd {alias :alias}]]
-                               (d/option {:value h-uidd} alias))
-                             (get-in app [:hypervisors :elements])))
-                   )))
-         (row
-
-          (g/col
-           {:md 12}
-           (i/input
-            {:label "New Backup"}
-            (row
-             (g/col
-              {:xs 10}
-              (i/input {:type :text
-                        :placeholder "Backup Comment"
-                        :on-change (->state owner :name)
-                        :value (:name state)
-                        :id "backup-comment"}))
-             (g/col {:xs 2}
-                    (b/button {:bs-style "primary"
-                               :wrapper-classname "col-xs-2"
-                               :disabled? (empty? (:name state))
-                               :on-click #(vms/backup (:uuid data) (cstr/trim (:name state)))} "Create")))))
-          (backup-table state owner uuid (:target state) (:backups data))))))))
+             {:md 12}
+             (i/input
+              {:label "New Backup"}
+              (row
+               (g/col
+                {:xs 10}
+                (i/input {:type :text
+                          :placeholder "Backup Comment"
+                          :on-change (->state owner :name)
+                          :value (:name state)
+                          :id "backup-comment"}))
+               (g/col {:xs 2}
+                      (b/button {:bs-style "primary"
+                                 :wrapper-classname "col-xs-2"
+                                 :disabled? (empty? (:name state))
+                                 :on-click #(vms/backup (:uuid data) (cstr/trim (:name state)))} "Create")))))
+            (backup-table state owner uuid (:target state) (:backups data)))))))))
 
 
 (defn o-state! [owner id]

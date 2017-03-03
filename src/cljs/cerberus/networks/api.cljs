@@ -29,3 +29,11 @@
 (defn remove-iprange [uuid iprange]
   (api/delete root [uuid :ipranges iprange]
               (a-get uuid "IPRange removed." "Failed to remove IPRange.")))
+
+(defn add-resolver [uuid resolver]
+  (api/put root [uuid :resolvers resolver] {}
+           (a-get uuid "Resolver added." "Failed to add resolver.")))
+
+(defn remove-resolver [uuid resolver]
+  (api/delete root [uuid :resolvers resolver]
+              (a-get uuid "Resolver removed." "Failed to remove resolver.")))

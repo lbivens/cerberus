@@ -8,6 +8,7 @@
    [cerberus.http :as http]
    [cerberus.howl :as howl]
    [clojure.string :refer [join]]
+   [cerberus.alert :refer [raise]]
    [cerberus.utils :refer [goto value-by-key]]
    [cerberus.state :refer [app-state path-vec set-state! delete-state!]]))
 
@@ -15,15 +16,16 @@
   (set-state! :token false)
   (goto))
 
-(defn to-state
-  ([state-path req]
-   (go (let [resp (<! req)]
-         (set-state! state-path (js->clj (:body resp))))))
-  ([state-path req map-fn]
-   (go (let [resp (<! req)]
-         (if (= 401 (:status resp))
-           (check-login)
-           (set-state! state-path (map map-fn (js->clj (:body resp)))))))))
+(defn to-state [error-dest state-path req]
+  (go (let [resp (<! req)]
+        (condp = (:status resp)
+          401 (check-login)
+          404 (do
+                (raise :warning (str (name  (first state-path)) " " (nth state-path 2) " not found!"))
+                (pr error-dest)
+                (if error-dest (goto error-dest))
+                (delete-state! state-path))
+          200 (set-state! state-path (js->clj (:body resp)))))))
 
 (defn full-list
   ([path]
@@ -35,7 +37,6 @@
   [path fields] (if fields
                   (str path "?full-list=true&full-list-fields=" fields)
                   (str path "?full-list=true")))
-
 
 (defn list
   ([data root]
@@ -66,9 +67,12 @@
                            (reduce dissoc old deleted))))))))))
 
 
-
 (defn get [root uuid]
-  (to-state [root :elements uuid] (http/get [root uuid])))
+  (to-state false [root :elements uuid] (http/get [root uuid])))
+
+
+(defn get-page [root uuid]
+  (to-state (str "/" (name root)) [root :elements uuid] (http/get [root uuid])))
 
 (defn join-and [other-fn]
   (fn join-and* [resp]

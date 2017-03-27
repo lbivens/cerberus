@@ -38,7 +38,6 @@
 (def token-path "sessions/one_time_token")
 
 (defn has-delegates? [vm]
-  (pr "data:" (get-in  vm [:config :datasets]))
   (not (empty? (:datasets (:config vm)))))
 
 (defn open-with-ott [path]
@@ -1070,6 +1069,7 @@
 (defn tick [uuid local-timer]
   (let [app @app-state]
     (if (and
+         (get-in app [root :elements uuid])
          (not= (get-in app [root :elements uuid :metrics]) :no-metrics)
          (= (get-in app [root :selected]) uuid)
          (= (:section app) :vms))
@@ -1079,7 +1079,7 @@
 (def render
   (view/make
    root sections
-   vms/get
+   vms/get-page
    :mount-fn (fn [uuid {:type type :as  data}]
                (metrics/start-timer! (partial tick uuid))
                (orgs/list data)
@@ -1089,7 +1089,6 @@
                (groupings/list data)
                (ipranges/list data))
    :name-fn  (fn [{:keys [state uuid hypervisor] {alias :alias} :config :as vm} data]
-               (pr  "info:" (get-in vm [:info :vnc]))
                (d/div
                 {}
                 alias " "

@@ -130,4 +130,4 @@
                "metadata"    {:key  4 :fn #(om/build metadata/render
     (:metadata %2) {:opts {:root "clients" :uuid (:uuid %2)}})  :title "Metadata"}})
 
-(def render (view/make root sections clients/get :name-fn :name))
+(def render (view/make root sections clients/get-page :name-fn :name))

@@ -17,6 +17,9 @@
 
 (def get (partial api/get root))
 
+(defn get-page [uuid]
+  (api/get-page root uuid))
+
 (defn a-get [uuid success error]
   (assoc (alerts success error) :always #(get uuid)))
 

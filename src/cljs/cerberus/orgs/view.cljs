@@ -410,7 +410,7 @@
 
 (def render
   (view/make
-   root sections orgs/get
+   root sections orgs/get-page
    :mount-fn (fn [uuid data]
                (orgs/list data)
                (networks/list data)

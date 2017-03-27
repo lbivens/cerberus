@@ -177,4 +177,4 @@
    root sections
    :mount-fn (fn [uuid data]
                (groupings/list data))
-   groupings/get))
+   groupings/get-page))

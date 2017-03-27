@@ -114,7 +114,7 @@
 (def render
   (view/make
    root sections
-   networks/get
+   networks/get-page
    :mount-fn (fn [uuid data]
                (ipranges/list data))
    :name-fn :name))

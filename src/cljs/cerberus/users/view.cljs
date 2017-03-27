@@ -483,7 +483,7 @@
 (def render
   (view/make
    root sections
-   users/get
+   users/get-page
    :mount-fn (fn [uuid data]
                (orgs/list data)
                (clients/list data)

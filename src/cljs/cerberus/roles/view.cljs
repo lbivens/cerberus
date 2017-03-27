@@ -48,4 +48,4 @@
     (:metadata %2) {:opts {:root "roles" :uuid (:uuid %2)}})    :title "Metadata"}})
 
 (def render
-  (view/make root sections roles/get :name-fn :name))
+  (view/make root sections roles/get-page :name-fn :name))

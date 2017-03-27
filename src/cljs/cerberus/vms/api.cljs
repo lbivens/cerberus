@@ -23,6 +23,10 @@
   (howl/join uuid)
   (api/get root uuid))
 
+(defn get-page [uuid]
+  (howl/join uuid)
+  (api/get-page root uuid))
+
 (defn a-get [uuid success error]
   (assoc (alerts success error) :always #(api/get root uuid)))
 

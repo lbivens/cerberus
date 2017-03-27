@@ -262,7 +262,7 @@
 (def render
   (view/make
    root sections
-   hypervisors/get
+   hypervisors/get-page
    :init-state {:edit-alias false}
    :mount-fn (fn [uuid data]
                (metrics/start-timer! (partial tick uuid)))

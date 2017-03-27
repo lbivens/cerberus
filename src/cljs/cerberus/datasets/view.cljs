@@ -88,7 +88,7 @@
     (:metadata %2) {:opts {:root "datasets" :uuid (:uuid %2)}})  :title "Metadata"}})
 
 (def render
-  (view/make root sections datasets/get
+  (view/make root sections datasets/get-page
              :name-fn #(if-let [homepage (get-in % [:metadata :homepage])]
                          (d/a {:href homepage} (str  (:name %) " (" (:type %) ")"))
                          (str  (:name %) " (" (:type %) ")"))))

@@ -91,4 +91,4 @@
    "metadata"     {:key  3 :fn #(om/build metadata/render
     (:metadata %2) {:opts {:root "packages" :uuid (:uuid %2)}})  :title "Metadata"}})
 
-(def render (view/make root sections packages/get :name-fn :name))
+(def render (view/make root sections packages/get-page :name-fn :name))

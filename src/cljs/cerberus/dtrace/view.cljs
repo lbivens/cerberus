@@ -29,5 +29,5 @@
 (def render
   (view/make
    root sections
-   dtrace/get
+   dtrace/get-page
    :name-fn :name))

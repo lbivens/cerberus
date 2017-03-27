@@ -13,6 +13,8 @@
   (api/list data root))
 
 (def get (partial api/get root))
+(defn get-page [uuid]
+  (api/get-page root uuid))
 
 (defn a-delete [uuid success error]
   (assoc (alerts success error) :success #(swap! app-state update-in [root :elements]

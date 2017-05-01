@@ -28,7 +28,10 @@
                            (d/div {:class "pull-right"}
                                   (b/dropdown {:bs-size "xsmall" :title (r/glyphicon {:glyph "option-vertical"})
                                                :on-click (make-event identity)}
-                                              (apply menu-items (actions data)))))]}
+                                              (apply menu-items
+                                                     ["Details" #(goto (str "/" (name root) "/" (:uuid data)))]
+                                                     :divider
+                                                     (actions data)))))]}
                (map
                 (fn [field]
                   (d/div

@@ -78,7 +78,9 @@
                              view-path v)]
                   (om/update! data view-path v)
                   (if key
-                    (om/update! data data-path dv))
+                    (if (nil? dv)
+                      (om/transact! data (butlast data-path) (fn [ds] (dissoc ds key)))
+                      (om/update! data data-path dv)))
                   (validate-data! data' spec))]
     (if (and default (nil? val))
       (do

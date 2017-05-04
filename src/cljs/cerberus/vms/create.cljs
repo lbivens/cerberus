@@ -233,8 +233,7 @@
     om/IRenderState
     (render-state [_ state]
       (let [tab (get-in data [:key] 1)
-            mkopts (partial mkopts data)
-            ]
+            mkopts (partial mkopts data)]
         (g/grid
          {:id "vm-create-grid" :class "vms-create"}
          (g/row

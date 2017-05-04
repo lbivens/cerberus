@@ -406,7 +406,7 @@
    "docker"     {:key 5 :title "Docker"     :fn #(om/build render-docker   %1 {:opts {:id (:uuid %2)}})}
    "metadata"   {:key 6 :title "Metadata"
                  :fn #(om/build metadata/render
-                                (:metadata %2) {:opts {:root "orgs" :uuid (:uuid %2)}}    %2)}})
+                                (:metadata %2) {:opts {:root "vmorgs" :uuid (:uuid %2)}})}})
 
 (def render
   (view/make

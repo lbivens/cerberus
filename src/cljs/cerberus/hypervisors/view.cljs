@@ -248,6 +248,7 @@
 
 (def logo
   {:smartos "/imgs/smartos-stacked-logo.png"
+   :freebsd "/imgs/freebsd-logo.png"
    :other "/imgs/unknown-logo.png"})
 
 (defn tick [uuid local-timer]
